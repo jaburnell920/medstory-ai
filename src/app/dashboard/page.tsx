@@ -195,8 +195,8 @@ export default function Dashboard() {
         <li>
           <Link className={linkClass} href="/slide-presentation/deck-evaluation">MEDSTORY deck evaluation</Link>
         </li>
-        <li>
-          <Link className={linkClass} href="/slide-presentation/more" className="text-blue-300">More...</Link>
+           <li>
+          <Link className={clsx(linkClass, 'text-blue-300')} href="/scientific-investigation/more">More...</Link>
         </li>
       </ul>
     </div>
