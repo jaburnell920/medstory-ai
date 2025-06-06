@@ -9,13 +9,13 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      console.error("❌ No user session or email.");
+      console.error('❌ No user session or email.');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { result } = await req.json();
     if (!result) {
-      console.error("❌ No result provided in request body.");
+      console.error('❌ No result provided in request body.');
       return NextResponse.json({ error: 'Missing result' }, { status: 400 });
     }
 
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
-    console.error("🔥 Save failed:", err);
+    console.error('🔥 Save failed:', err);
     const errorMessage = err instanceof Error ? err.message : 'Unknown error';
     return NextResponse.json({ error: 'Server error', detail: errorMessage }, { status: 500 });
   }
