@@ -1,21 +1,22 @@
-import { cookies } from 'next/headers';
+// src/app/api/auth-password/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
   const { password } = await req.json();
-  const correctPassword = process.env.SITE_PASSWORD;
 
-  if (password === correctPassword) {
-    (await cookies()).set('medstory-auth', password, {
+  if (password === process.env.SITE_PASSWORD) {
+    const response = NextResponse.json({ success: true });
+
+    response.cookies.set('medstory-auth', password, {
       httpOnly: true,
       path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 1 week
+      maxAge: 60 * 60 * 24 * 7, // 7 days
       secure: true,
-      sameSite: 'none', // Important for iframe cross-origin
+      sameSite: 'lax',
     });
 
-    return NextResponse.json({ success: true });
+    return response;
   }
 
-  return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
+  return NextResponse.json({ success: false }, { status: 401 });
 }
