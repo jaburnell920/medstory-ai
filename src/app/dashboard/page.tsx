@@ -1,7 +1,6 @@
 // src/app/dashboard/page.tsx
 'use client';
 
-import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
@@ -11,9 +10,6 @@ import Link from 'next/link';
 import clsx from 'clsx';
 
 export default function Dashboard() {
-  const { status } = useSession();
-  const { data: session } = useSession();
-
   const pathname = usePathname();
 
   const router = useRouter();
@@ -91,8 +87,9 @@ export default function Dashboard() {
     <div className="flex min-h-screen text-black">
       {/* Sidebar */}
       <aside className="w-72 bg-[#002F6C] text-white flex flex-col p-6">
-        <h2 className="text-2xl font-bold text-orange-400 mb-4">
-          MEDSTORY<span className="text-white">AI</span>
+        <h2 className="text-2xl font-bold mb-4">
+          <span style={{ color: '#35b4fc' }}>MEDSTORY</span>
+          <span style={{ color: '#ff914d' }}>AI</span>
         </h2>
 
         <nav className="flex flex-col space-y-6 text-sm">
@@ -249,22 +246,11 @@ export default function Dashboard() {
             </ul>
           </div>
         </nav>
-
-        {/* Sign out button */}
-        <p className=" mt-auto px-3 py-1.5 rounded self-start ml-24 text-xs text-gray-400">
-          Hello, {session?.user?.name || 'Guest'}!
-        </p>
-        <button
-          onClick={() => signOut()}
-          className="mt-auto bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded text-sm font-semibold self-start ml-24"
-        >
-          Sign out
-        </button>
       </aside>
 
       {/* Main Content */}
       <main className="flex-1 bg-gray-50 p-12">
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-10">
+        <h1 className="text-3xl font-extrabold text-[#063471] mb-10">
           Welcome to Core Story Concept creation!
         </h1>
         <p className="text-sm text-gray-600 mb-10">
