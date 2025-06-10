@@ -1,8 +1,7 @@
 // src/app/dashboard/page.tsx
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 
@@ -11,8 +10,6 @@ import clsx from 'clsx';
 
 export default function Dashboard() {
   const pathname = usePathname();
-
-  const router = useRouter();
 
   const saveResult = async () => {
     try {
@@ -32,12 +29,6 @@ export default function Dashboard() {
       console.error(err);
     }
   };
-
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/');
-    }
-  }, [status, router]);
 
   const [form, setForm] = useState({
     drug: '',
@@ -80,8 +71,6 @@ export default function Dashboard() {
   const linkClass =
     'text-gray-200 hover:text-orange-300 hover:underline transition-all duration-200';
   const selectedLinkClass = 'text-orange-400 underline font-semibold';
-
-  if (status === 'loading') return <p>Loading...</p>;
 
   return (
     <div className="flex min-h-screen text-black">
