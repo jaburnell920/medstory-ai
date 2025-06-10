@@ -4,7 +4,10 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   experimental: {
-    serverActions: true, // if you use them
+    serverActions: {
+      bodySizeLimit: '1mb', // Example value
+      allowedOrigins: ['*'], // Example value
+    }, // if you use them
   },
   // ✅ This allows embedding in iframes and prevents headers from blocking it
   headers: async () => [
