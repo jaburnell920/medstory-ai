@@ -1,4 +1,3 @@
-// src/app/dashboard/page.tsx
 'use client';
 
 import { useState } from 'react';
@@ -16,7 +15,7 @@ export default function Dashboard() {
       const res = await fetch('/api/save-result', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ result }),
+        body: JSON.stringify({ result: messages.map((m) => m.content).join('\n') }),
       });
 
       if (res.ok) {
@@ -30,44 +29,80 @@ export default function Dashboard() {
     }
   };
 
-  const [form, setForm] = useState({
-    drug: '',
-    disease: '',
-    audience: '',
-    intensity: '',
-  });
-
-  const [result, setResult] = useState('');
+  const [messages, setMessages] = useState([
+    {
+      role: 'assistant',
+      content: `Please provide the following information in order to proceed:\n• Drug or intervention\n• Disease or condition\n• Audience\n• Intensity of emotion/creativity (low, medium, or high)`,
+    },
+  ]);
+  const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
+  const [step, setStep] = useState<'gathering-info' | 'asking-count' | 'showing-result'>(
+    'gathering-info'
+  );
+  const [userContext, setUserContext] = useState('');
+  const [result, setResult] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!input.trim()) return;
     setLoading(true);
-    setResult('');
+
+    const userMessage = { role: 'user', content: input };
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
+    setInput('');
 
     try {
-      const response = await fetch('/api/openai', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(form),
-      });
+      if (step === 'gathering-info') {
+        setUserContext(input);
+        setMessages([
+          ...updatedMessages,
+          {
+            role: 'assistant',
+            content: `Great. Thank you for providing that info.\nHow many Core Story Concept Candidates would you like me to generate?`,
+          },
+        ]);
+        setStep('asking-count');
+      } else if (step === 'asking-count') {
+        setMessages([
+          ...updatedMessages,
+          {
+            role: 'assistant',
+            content: `Ok, here we go...`,
+          },
+        ]);
 
-      const data = await response.json();
-      setResult(data.result);
+        // Call OpenAI with combined context
+        const res = await fetch('/api/openai', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [
+              {
+                role: 'system',
+                content: `You're an expert medical strategist helping generate core story concept candidates.`,
+              },
+              {
+                role: 'user',
+                content: `Here is the context:\n${userContext}\nGenerate ${input} core story concept candidates.`,
+              },
+            ],
+          }),
+        });
+
+        const data = await res.json();
+        setResult(data.result);
+        setStep('showing-result');
+      }
     } catch (err) {
-      setResult('Something went wrong.');
+      toast.error('Something went wrong.');
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
+
   const linkClass =
     'text-gray-200 hover:text-orange-300 hover:underline transition-all duration-200';
   const selectedLinkClass = 'text-orange-400 underline font-semibold';
@@ -80,9 +115,7 @@ export default function Dashboard() {
           <span style={{ color: '#35b4fc' }}>MEDSTORY</span>
           <span style={{ color: '#ff914d' }}>AI</span>
         </h2>
-
         <nav className="flex flex-col space-y-6 text-sm">
-          {/* Section: Scientific Investigation */}
           <div>
             <p className="font-bold text-white mb-1">🔬 Scientific Investigation</p>
             <ul className="ml-4 space-y-1 text-gray-200">
@@ -111,8 +144,6 @@ export default function Dashboard() {
               </li>
             </ul>
           </div>
-
-          {/* Section: Stakeholder Interviews */}
           <div>
             <p className="font-bold text-white mb-1">🎤 Stakeholder Interviews</p>
             <ul className="ml-4 space-y-1 text-gray-200">
@@ -141,8 +172,6 @@ export default function Dashboard() {
               </li>
             </ul>
           </div>
-
-          {/* Section: Core Story Concept */}
           <div>
             <p className="font-bold text-white mb-1">🎯 Core Story Concept</p>
             <ul className="ml-4 space-y-1 text-gray-200">
@@ -174,8 +203,6 @@ export default function Dashboard() {
               </li>
             </ul>
           </div>
-
-          {/* Section: Story Flow Map */}
           <div>
             <p className="font-bold text-white mb-1">🗺️ Story Flow Map</p>
             <ul className="ml-4 space-y-1 text-gray-200">
@@ -204,8 +231,6 @@ export default function Dashboard() {
               </li>
             </ul>
           </div>
-
-          {/* Section: Slide Presentation */}
           <div>
             <p className="font-bold text-white mb-1">📽️ MEDSTORY Slide Presentation</p>
             <ul className="ml-4 space-y-1 text-gray-200">
@@ -243,106 +268,89 @@ export default function Dashboard() {
           Welcome to Core Story Concept creation!
         </h1>
         <p className="text-sm text-gray-600 mb-10">
-          <strong>MEDSTORYmake</strong> can generate 1 to 5 Core Story Concept candidates—the big
-          idea, the moral of your story—that you want to communicate to target audiences.
+          <strong>MEDSTORYmake</strong> helps you explore the big idea you want to communicate to
+          your target audience.
         </p>
 
         <div className="flex flex-col lg:flex-row gap-12">
-          {/* Left Column: Form */}
-          <form
-            onSubmit={handleSubmit}
-            className="bg-white border border-gray-300 shadow-md rounded-lg p-6 space-y-6 w-full lg:w-1/2"
-          >
-            <p className="text-sm text-gray-600">
-              Please provide the following information in order to proceed:
-            </p>
-            <div>
-              <label className="block font-bold mb-1 text-gray-800">Drug or intervention</label>
-              <input
-                type="text"
-                name="drug"
-                value={form.drug}
-                onChange={handleChange}
-                className="border rounded w-full px-3 py-2 text-black"
-                placeholder="Enter drug name"
-              />
+          {/* Chat Section */}
+          <div className="bg-white border border-gray-300 shadow-md rounded-lg p-6 w-full lg:w-1/2 space-y-4">
+            <div className="space-y-4">
+              {messages.map((m, i) => (
+                <div key={i} className="w-full max-w-full">
+                  {m.role === 'assistant' ? (
+                    <div className="bg-white rounded-lg border border-gray-300 shadow-md w-full">
+                      <div className="bg-[#002F6C] text-white font-bold rounded-t-lg px-4 py-2">
+                        <span className="text-[#35b4fc]">MEDSTORY</span>
+                        <span className="text-[#ff914d]">AI</span>
+                      </div>
+                      <div className="px-4 py-3 text-gray-800 whitespace-pre-wrap">{m.content}</div>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-200 text-black rounded-lg px-4 py-3 self-end w-fit max-w-[90%] ml-auto">
+                      <div className="text-sm font-semibold text-gray-700 mb-1">You</div>
+                      <div className="whitespace-pre-wrap">{m.content}</div>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
 
-            <div>
-              <label className="block font-bold mb-1 text-gray-800">Disease or condition</label>
+            <form onSubmit={handleSubmit} className="flex space-x-2 pt-4">
               <input
                 type="text"
-                name="disease"
-                value={form.disease}
-                onChange={handleChange}
-                className="border rounded w-full px-3 py-2 text-black"
-                placeholder="Enter disease or condition"
+                className="flex-1 border rounded px-4 py-2 text-black"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Type your response..."
               />
-            </div>
-
-            <div>
-              <label className="block font-bold mb-1 text-gray-800">Audience</label>
-              <input
-                type="text"
-                name="audience"
-                value={form.audience}
-                onChange={handleChange}
-                className="border rounded w-full px-3 py-2 text-black"
-                placeholder="Target audience (e.g., physicians, researchers)"
-              />
-            </div>
-
-            <div>
-              <label className="block font-bold mb-1 text-gray-800">
-                Intensity of emotion/creativity
-              </label>
-              <select
-                name="intensity"
-                value={form.intensity}
-                onChange={handleChange}
-                className="border rounded w-full px-3 py-2 text-black"
+              <button
+                type="submit"
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                disabled={loading}
               >
-                <option value="">Select intensity</option>
-                <option value="low">Low</option>
-                <option value="moderate">Moderate</option>
-                <option value="high">High</option>
-              </select>
-            </div>
-
-            <button
-              type="submit"
-              className="bg-blue-600 text-white font-semibold py-2 px-4 rounded hover:bg-blue-700 w-full"
-            >
-              Submit to AI
-            </button>
-          </form>
+                {loading ? '...' : 'Send'}
+              </button>
+            </form>
+          </div>
 
           {/* Right Column: Result */}
           <div className="flex-1 space-y-6">
-            {loading && <p className="text-gray-500">Generating core story...</p>}
-
-            {result && (
+            {step === 'showing-result' && (
               <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md space-y-6">
-                <h2 className="text-xl font-bold text-blue-900">Core Story Concept Candidate</h2>
+                <h2 className="text-xl font-bold text-blue-900">Core Story Concept Candidates</h2>
                 {result.split('\n\n').map((block, i) => (
                   <div key={i} className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                     <p className="text-gray-800 whitespace-pre-wrap">{block}</p>
                   </div>
                 ))}
-                <div className="flex justify-end space-x-4 mt-4">
+                <div className="flex justify-end">
                   <button
                     className="px-4 py-2 border border-blue-600 text-blue-600 font-semibold rounded hover:bg-blue-50 transition"
                     onClick={saveResult}
                   >
                     Save
                   </button>
-                  <button className="px-4 py-2 border border-blue-600 text-blue-600 font-semibold rounded hover:bg-blue-50 transition">
-                    View Next Core Story Concept
-                  </button>
                 </div>
               </div>
             )}
           </div>
+
+          {/* Save Option */}
+          {/* <div className="flex-1 space-y-6">
+            <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md space-y-6">
+              <h2 className="text-xl font-bold text-blue-900">Chat Summary</h2>
+              <p className="text-gray-600 text-sm">
+                This summary will represent the current conversation. Click below to save.
+              </p>
+              <button
+                className="px-4 py-2 border border-blue-600 text-blue-600 font-semibold rounded hover:bg-blue-50 transition"
+                onClick={saveResult}
+              >
+                Save
+              </button>
+            </div>
+          </div> */}
         </div>
       </main>
     </div>
