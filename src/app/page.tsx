@@ -1,31 +1,25 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 
 export default function Home() {
-  const router = useRouter();
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    const res = await fetch('/api/auth-password', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    });
 
-    if (password === 'yourpassword123') {
-      router.push('/dashboard');
+    if (res.redirected) {
+      // Browser will follow this automatically in iframe
+      window.location.href = res.url;
     } else {
-      const res = await fetch('/api/auth-password', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
-      });
-
-      if (res.ok) {
-        router.push('/dashboard');
-      } else {
-        setError('Incorrect password');
-      }
+      setError('Incorrect password');
     }
   };
 
