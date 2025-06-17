@@ -1,9 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
-import clsx from 'clsx';
 import SidebarMenu from '@/app/SidebarMenu';
 import toast from 'react-hot-toast';
 
@@ -18,7 +15,6 @@ const questions = [
 ];
 
 export default function LandmarkPublicationsPage() {
-  const pathname = usePathname();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
   const [input, setInput] = useState('');
@@ -73,6 +69,7 @@ export default function LandmarkPublicationsPage() {
         });
         const data = await res.json();
         setResult(data.result);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (err) {
         setMessages((prev) => [...prev, { role: 'assistant', content: 'Failed to load results.' }]);
       } finally {
@@ -80,10 +77,6 @@ export default function LandmarkPublicationsPage() {
       }
     }
   };
-
-  const linkClass =
-    'text-gray-200 hover:text-orange-300 hover:underline transition-all duration-200';
-  const selectedLinkClass = 'text-orange-400 underline font-semibold';
 
   return (
     <div className="flex min-h-screen text-black">

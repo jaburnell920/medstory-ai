@@ -53,14 +53,11 @@
 'use client';
 
 import { useState } from 'react';
-import { usePathname } from 'next/navigation';
 import { toast } from 'react-hot-toast';
-import Link from 'next/link';
-import clsx from 'clsx';
+
 import SidebarMenu from './SidebarMenu';
 
 export default function Dashboard() {
-  const pathname = usePathname();
   const [step, setStep] = useState(0);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -84,7 +81,7 @@ export default function Dashboard() {
     'How many Core Story Concept Candidates would you like me to generate?',
   ];
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     if (!input.trim()) return;
     const newMessages = [...messages, { role: 'user', content: input }];
@@ -136,10 +133,6 @@ export default function Dashboard() {
     }
     setInput('');
   };
-
-  const linkClass =
-    'text-gray-200 hover:text-orange-300 hover:underline transition-all duration-200';
-  const selectedLinkClass = 'text-orange-400 underline font-semibold';
 
   return (
     <div className="flex min-h-screen text-black">
