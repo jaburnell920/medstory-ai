@@ -1,0 +1,3 @@
+- they want to fine tune the model
+- to allow an increase in the quality of the model
+- especially for creating a presentation
