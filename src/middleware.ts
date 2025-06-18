@@ -1,25 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const PUBLIC_PATHS = ['/', '/api/auth-password'];
+const PUBLIC_PATHS = ['/', '/dashboard', '/favicon.ico', '/api/auth-password'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Allow access to public routes and static assets
   if (PUBLIC_PATHS.includes(pathname) || pathname.startsWith('/_next')) {
-    return NextResponse.next();
+    return withHeaders(NextResponse.next());
   }
 
   const cookie = request.cookies.get('medstory-auth')?.value;
-  if (cookie === process.env.SITE_PASSWORD) {
-    return NextResponse.next();
-  }
 
-  if (request.headers.get('referer')?.includes('/')) {
-    // Prevent infinite redirect loop in iframe
-    return new NextResponse(null, { status: 204 });
+  if (cookie === process.env.SITE_PASSWORD) {
+    return withHeaders(NextResponse.next());
   }
 
   const url = request.nextUrl.clone();
   url.pathname = '/';
-  return NextResponse.redirect(url);
+  return withHeaders(NextResponse.redirect(url));
+}
+
+// ✅ Add required headers to support embedding in an iframe
+function withHeaders(response: NextResponse) {
+  response.headers.set('X-Frame-Options', 'ALLOWALL');
+  response.headers.set('Access-Control-Allow-Origin', '*'); // Or your WordPress domain
+  response.headers.set('Access-Control-Allow-Credentials', 'true');
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type');
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  return response;
 }
