@@ -19,7 +19,8 @@ export default function SidebarMenu() {
       </h2>
       <nav className="flex flex-col space-y-6 text-sm">
         <Section
-          title="🔬 Scientific Investigation"
+          title="🔬"
+          sectionName="Scientific Investigation"
           links={[
             {
               href: '/scientific-investigation/landmark-publications',
@@ -30,10 +31,6 @@ export default function SidebarMenu() {
               label: 'Top N most important publications',
             },
             {
-              href: '/scientific-investigation/top-publications',
-              label: 'Top N most important thought leaders',
-            },
-            {
               href: '/scientific-investigation/more',
               label: 'More...',
               extraClass: 'text-blue-300',
@@ -42,7 +39,8 @@ export default function SidebarMenu() {
         />
 
         <Section
-          title="🎤 Stakeholder Interviews"
+          title="🎤"
+          sectionName="Stakeholder Interviews"
           links={[
             {
               href: '/stakeholder-interviews/questions',
@@ -53,7 +51,7 @@ export default function SidebarMenu() {
               label: 'Analyze thought leader interview transcript',
             },
             {
-              href: '/stakeholder-interviews/simulated-interview',
+              href: '/scientific-investigation/top-publications',
               label: 'Simulated thought leader interview',
             },
             {
@@ -65,7 +63,8 @@ export default function SidebarMenu() {
         />
 
         <Section
-          title="🎯 Core Story Concept"
+          title="🎯"
+          sectionName="Core Story Concept"
           links={[
             { href: '/dashboard', label: 'Core Story Concept creation' },
             { href: '/core-story-concept/optimization', label: 'Core Story Concept optimization' },
@@ -79,7 +78,8 @@ export default function SidebarMenu() {
         />
 
         <Section
-          title="🗺️ Story Flow Map"
+          title="🗺️"
+          sectionName="Story Flow Map"
           links={[
             {
               href: '/story-flow-map/tension-resolution-generation',
@@ -102,9 +102,10 @@ export default function SidebarMenu() {
         />
 
         <Section
-          title="📽️ MEDSTORY Slide Presentation"
+          title="📽️"
+          sectionName="MEDSTORY Slide Deck"
           links={[
-            { href: '/slide-presentation/deck-generation', label: 'MEDSTORY deck generation' },
+            { href: '/slide-presentation/deck-generation', label: 'Create MEDSTORY deck' },
             { href: '/slide-presentation/deck-optimization', label: 'MEDSTORY deck optimization' },
             { href: '/slide-presentation/deck-evaluation', label: 'MEDSTORY deck evaluation' },
             {
@@ -120,14 +121,19 @@ export default function SidebarMenu() {
 
   function Section({
     title,
+    sectionName,
     links,
   }: {
     title: string;
+    sectionName: string;
     links: { href: string; label: string; extraClass?: string }[];
   }) {
     return (
       <div>
-        <p className="font-bold text-white mb-1">{title}</p>
+        <div className="flex flex-col items-start mb-2">
+          <div className="text-4xl mb-1">{title}</div>
+          <p className="font-bold text-white text-sm">{sectionName}</p>
+        </div>
         <ul className="ml-4 space-y-1 text-gray-200">
           {links.map((link) => (
             <li key={link.href}>
