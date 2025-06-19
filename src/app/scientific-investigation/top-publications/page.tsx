@@ -17,6 +17,20 @@ export default function TopPublicationsPage() {
   const [interviewStarted, setInterviewStarted] = useState(false);
   const [expertInfo, setExpertInfo] = useState('');
 
+  const handleReset = () => {
+    setInput('');
+    setMessages([
+      {
+        role: 'assistant',
+        content:
+          'Great. I will simulate an interview with an expert. Please provide the following information:\n\nWhich would you like to interview (pick one):\n• A specific individual - please provide the full name of the person\n• An expert in a particular field - please provide the field or specialization and if a specific experience or background is desired',
+      },
+    ]);
+    setLoading(false);
+    setInterviewStarted(false);
+    setExpertInfo('');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -104,6 +118,7 @@ export default function TopPublicationsPage() {
                 : "Specify the expert you'd like to interview..."
             }
             removeExpertPrefix={true}
+            onReset={handleReset}
           />
         </div>
       </div>

@@ -33,6 +33,23 @@ export default function DeckGenerationPage() {
   const [result, setResult] = useState('');
   const [showFinalMessage, setShowFinalMessage] = useState(false);
 
+  const handleReset = () => {
+    setStep(0);
+    setAnswers([]);
+    setInput('');
+    setMessages([
+      {
+        role: 'assistant',
+        content:
+          'Got it - you need me to generate an outline for a MEDSTORY® presentation deck. First I will need a few bits of information to generate your optimized presentation deck. This should not take long - just 8 quick questions and we will be on our way.\n\n1. ' +
+          questions[0],
+      },
+    ]);
+    setLoading(false);
+    setResult('');
+    setShowFinalMessage(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -142,6 +159,7 @@ Generate the entire outline without stopping for user input.
             loading={loading}
             showInput={!showFinalMessage}
             placeholder="Type your response..."
+            onReset={handleReset}
           />
         </div>
 

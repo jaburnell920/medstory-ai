@@ -31,6 +31,23 @@ export default function LandmarkPublicationsPage() {
   const [result, setResult] = useState('');
   const [showFinalMessage, setShowFinalMessage] = useState(false);
 
+  const handleReset = () => {
+    setStep(0);
+    setAnswers([]);
+    setInput('');
+    setMessages([
+      {
+        role: 'assistant',
+        content:
+          'OK, before we get started, please provide the information below. (Please answer each question one at a time):\n\n1. ' +
+          questions[0],
+      },
+    ]);
+    setLoading(false);
+    setResult('');
+    setShowFinalMessage(false);
+  };
+
   const formatLandmarkResult = (content: string) => {
     // Format the numbered response according to requirements
     // Each number on new line, remove vertical bars and quotes
@@ -118,6 +135,7 @@ export default function LandmarkPublicationsPage() {
             loading={loading}
             showInput={!showFinalMessage}
             placeholder="Type your response..."
+            onReset={handleReset}
           />
         </div>
 
