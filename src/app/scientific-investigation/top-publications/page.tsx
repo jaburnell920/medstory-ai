@@ -2,10 +2,8 @@
 
 import { useState } from 'react';
 import SidebarMenu from '@/app/SidebarMenu';
-import toast from 'react-hot-toast';
 
 export default function TopPublicationsPage() {
-  const [step, setStep] = useState(0);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([
     {
@@ -15,7 +13,6 @@ export default function TopPublicationsPage() {
     },
   ]);
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState('');
   const [interviewStarted, setInterviewStarted] = useState(false);
   const [expertInfo, setExpertInfo] = useState('');
 
@@ -25,7 +22,7 @@ export default function TopPublicationsPage() {
 
     const newMessages = [...messages, { role: 'user', content: input }];
     setMessages(newMessages);
-    
+
     if (!interviewStarted) {
       // First response - store expert info and start interview
       setExpertInfo(input);
@@ -36,19 +33,20 @@ export default function TopPublicationsPage() {
         const res = await fetch('/api/expert-interview', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             action: 'start',
-            expertInfo: input 
+            expertInfo: input,
           }),
         });
         const data = await res.json();
-        
-        setMessages([
-          ...newMessages,
-          { role: 'assistant', content: data.result }
-        ]);
+
+        setMessages([...newMessages, { role: 'assistant', content: data.result }]);
       } catch (err) {
-        setMessages((prev) => [...prev, { role: 'assistant', content: 'Failed to start interview.' }]);
+        console.error('Error starting interview:', err);
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', content: 'Failed to start interview.' },
+        ]);
       } finally {
         setLoading(false);
       }
@@ -60,26 +58,27 @@ export default function TopPublicationsPage() {
         const res = await fetch('/api/expert-interview', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             action: 'continue',
             expertInfo: expertInfo,
             userMessage: input,
-            conversationHistory: messages
+            conversationHistory: messages,
           }),
         });
         const data = await res.json();
-        
-        setMessages([
-          ...newMessages,
-          { role: 'assistant', content: data.result }
-        ]);
+
+        setMessages([...newMessages, { role: 'assistant', content: data.result }]);
       } catch (err) {
-        setMessages((prev) => [...prev, { role: 'assistant', content: 'Failed to continue interview.' }]);
+        console.error('Error continuing interview:', err);
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', content: 'Failed to continue interview.' },
+        ]);
       } finally {
         setLoading(false);
       }
     }
-    
+
     setInput('');
   };
 
@@ -98,11 +97,15 @@ export default function TopPublicationsPage() {
 
       {/* Main Content */}
       <main className="flex-1 bg-gray-50 p-12">
-        <h1 className="text-3xl font-extrabold text-[#063471] mb-10">Top N Most Important Publications</h1>
-        
+        <h1 className="text-3xl font-extrabold text-[#063471] mb-10">
+          Top N Most Important Publications
+        </h1>
+
         {/* Expert Interview Section */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-[#063471] mb-4">Stakeholder Interviews - Simulate an Expert Interview</h2>
+          <h2 className="text-2xl font-bold text-[#063471] mb-4">
+            Stakeholder Interviews - Simulate an Expert Interview
+          </h2>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-12">
@@ -134,7 +137,11 @@ export default function TopPublicationsPage() {
                 className="flex-1 border rounded px-4 py-2 text-black"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder={interviewStarted ? "Ask your question..." : "Specify the expert you'd like to interview..."}
+                placeholder={
+                  interviewStarted
+                    ? 'Ask your question...'
+                    : "Specify the expert you'd like to interview..."
+                }
               />
               <button
                 type="submit"
@@ -151,13 +158,17 @@ export default function TopPublicationsPage() {
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md">
               <h3 className="text-lg font-bold text-[#063471] mb-4">Interview Guidelines</h3>
               <div className="text-sm text-gray-700 space-y-2">
-                <p><strong>Expert Types:</strong></p>
+                <p>
+                  <strong>Expert Types:</strong>
+                </p>
                 <ul className="list-disc ml-4 space-y-1">
                   <li>Specific individual (provide full name)</li>
                   <li>Expert in a field (specify field/specialization)</li>
                 </ul>
-                
-                <p className="mt-4"><strong>Interview Features:</strong></p>
+
+                <p className="mt-4">
+                  <strong>Interview Features:</strong>
+                </p>
                 <ul className="list-disc ml-4 space-y-1">
                   <li>Expert responds based on public materials</li>
                   <li>Conversational, professional tone</li>

@@ -5,6 +5,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
+  console.log('');
   const { action, expertInfo, userMessage, conversationHistory } = body;
 
   if (action === 'start') {
@@ -33,12 +34,15 @@ Now simulate the expert and start the interview by having them acknowledge they'
 
     try {
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4',
+        model: 'gpt-3.5-turbo',
         messages: [
-          { role: 'system', content: 'You are simulating an expert interview. Follow the guidelines exactly as specified.' },
+          {
+            role: 'system',
+            content:
+              'You are simulating an expert interview. Follow the guidelines exactly as specified.',
+          },
           { role: 'user', content: startPrompt },
         ],
-        temperature: 0.7,
       });
 
       return NextResponse.json({ result: completion.choices[0].message.content });
@@ -81,7 +85,11 @@ Respond as the expert to the latest question, maintaining consistency with their
       const completion = await openai.chat.completions.create({
         model: 'gpt-4',
         messages: [
-          { role: 'system', content: 'You are simulating an expert interview. Follow the guidelines exactly as specified and maintain character consistency.' },
+          {
+            role: 'system',
+            content:
+              'You are simulating an expert interview. Follow the guidelines exactly as specified and maintain character consistency.',
+          },
           { role: 'user', content: continuePrompt },
         ],
         temperature: 0.7,

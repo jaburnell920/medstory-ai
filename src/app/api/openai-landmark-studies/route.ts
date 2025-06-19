@@ -6,6 +6,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const query = body.query;
+  console.log('Received request body:', body);
 
   const fullPrompt = `
 You are a scientific assistant helping identify landmark studies in a specific domain.
