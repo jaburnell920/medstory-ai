@@ -53,7 +53,10 @@ Now simulate the expert and start the interview by having them acknowledge they'
   } else if (action === 'continue') {
     // Build conversation context
     const conversationContext = conversationHistory
-      .map((msg: any) => `${msg.role === 'user' ? 'Interviewer' : 'Expert'}: ${msg.content}`)
+      .map(
+        (msg: { role: 'user' | 'expert'; content: string }) =>
+          `${msg.role === 'user' ? 'Interviewer' : 'Expert'}: ${msg.content}`
+      )
       .join('\n\n');
 
     const continuePrompt = `
