@@ -16,6 +16,7 @@ interface ChatInterfaceProps {
   showInput?: boolean;
   placeholder?: string;
   removeExpertPrefix?: boolean;
+  onReset?: () => void;
 }
 
 export default function ChatInterface({
@@ -26,7 +27,8 @@ export default function ChatInterface({
   loading,
   showInput = true,
   placeholder = "Type your response...",
-  removeExpertPrefix = false
+  removeExpertPrefix = false,
+  onReset
 }: ChatInterfaceProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -75,6 +77,19 @@ export default function ChatInterface({
             )}
           </div>
         ))}
+
+        {onReset && (
+          <div className="flex justify-end pt-2">
+            <button
+              type="button"
+              onClick={onReset}
+              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 shadow-md text-sm"
+              disabled={loading}
+            >
+              Reset Conversation
+            </button>
+          </div>
+        )}
 
         {showInput && (
           <form onSubmit={onSubmit} className="flex space-x-2 pt-2">

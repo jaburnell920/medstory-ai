@@ -25,6 +25,26 @@ export default function Dashboard() {
     },
   ]);
 
+  const handleReset = () => {
+    setStep(0);
+    setInput('');
+    setLoading(false);
+    setResult('');
+    setContext({
+      drug: '',
+      disease: '',
+      audience: '',
+      intensity: '',
+      count: '',
+    });
+    setMessages([
+      {
+        role: 'assistant',
+        content: 'What drug or intervention are you exploring today?',
+      },
+    ]);
+  };
+
   const questions = [
     'What drug or intervention are you exploring today?',
     'What disease or condition is being treated?',
@@ -115,6 +135,7 @@ export default function Dashboard() {
             loading={loading}
             showInput={step <= questions.length - 1}
             placeholder="Type your response..."
+            onReset={handleReset}
           />
         </div>
 
