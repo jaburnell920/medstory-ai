@@ -14,17 +14,19 @@ const questions = [
   'What is your desired tone? (eg, provocative, academic, friendly, calm - or a combination)',
   'How visual should it be? (e.g. minimal, moderate visuals, highly visual)',
   'Do you want me to write speaker notes for each slide? (Y/N)',
-  'Would you like me to mimic the visual style of a specific Powerpoint deck? (Y/N - if yes, upload the file)'
+  'Would you like me to mimic the visual style of a specific Powerpoint deck? (Y/N - if yes, upload the file)',
 ];
 
 export default function DeckGenerationPage() {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<{ role: 'assistant' | 'user'; content: string }[]>([
     {
-      role: 'assistant' as const,
-      content: 'Got it - you need me to generate an outline for a MEDSTORY® presentation deck. First I will need a few bits of information to generate your optimized presentation deck. This should not take long - just 8 quick questions and we will be on our way.\n\n1. ' + questions[0],
+      role: 'assistant',
+      content:
+        'Got it - you need me to generate an outline for a MEDSTORY® presentation deck. First I will need a few bits of information to generate your optimized presentation deck. This should not take long - just 8 quick questions and we will be on our way.\n\n1. ' +
+        questions[0],
     },
   ]);
   const [loading, setLoading] = useState(false);
@@ -50,7 +52,11 @@ export default function DeckGenerationPage() {
       setAnswers([...answers, input]);
       setMessages([
         ...newMessages,
-        { role: 'assistant' as const, content: 'Thanks for that info. Give me a moment and your presentation outline will be ready shortly...' },
+        {
+          role: 'assistant' as const,
+          content:
+            'Thanks for that info. Give me a moment and your presentation outline will be ready shortly...',
+        },
       ]);
       setShowFinalMessage(true);
       setLoading(true);
@@ -113,7 +119,10 @@ Generate the entire outline without stopping for user input.
       } catch (err) {
         toast.error('Something went wrong.');
         console.error(err);
-        setMessages((prev) => [...prev, { role: 'assistant', content: 'Failed to generate presentation outline.' }]);
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', content: 'Failed to generate presentation outline.' },
+        ]);
       } finally {
         setLoading(false);
       }
@@ -121,11 +130,7 @@ Generate the entire outline without stopping for user input.
   };
 
   return (
-    <PageLayout
-      sectionIcon="📽️"
-      sectionName="MEDSTORY Slide Deck"
-      taskName="Create MEDSTORY deck"
-    >
+    <PageLayout sectionIcon="📽️" sectionName="MEDSTORY Slide Deck" taskName="Create MEDSTORY deck">
       <div className="flex flex-col lg:flex-row gap-12">
         {/* Chat Interface - Left Side */}
         <div className="w-full lg:w-1/2">
@@ -144,10 +149,10 @@ Generate the entire outline without stopping for user input.
         {result && (
           <div className="flex-1 space-y-6">
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md">
-              <h2 className="text-xl font-bold text-blue-900 mb-4">MEDSTORY Presentation Outline</h2>
-              <div className="text-gray-800 whitespace-pre-wrap">
-                {result}
-              </div>
+              <h2 className="text-xl font-bold text-blue-900 mb-4">
+                MEDSTORY Presentation Outline
+              </h2>
+              <div className="text-gray-800 whitespace-pre-wrap">{result}</div>
             </div>
           </div>
         )}
