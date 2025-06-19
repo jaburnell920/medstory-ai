@@ -30,11 +30,6 @@ export default function SidebarMenu() {
               href: '',
               label: 'Top N most important publications',
             },
-            {
-              href: '/scientific-investigation/more',
-              label: 'More...',
-              extraClass: 'text-blue-300',
-            },
           ]}
         />
 
@@ -54,11 +49,6 @@ export default function SidebarMenu() {
               href: '/scientific-investigation/top-publications',
               label: 'Simulated thought leader interview',
             },
-            {
-              href: '/scientific-investigation/more',
-              label: 'More...',
-              extraClass: 'text-blue-300',
-            },
           ]}
         />
 
@@ -69,11 +59,6 @@ export default function SidebarMenu() {
             { href: '/dashboard', label: 'Core Story Concept creation' },
             { href: '/core-story-concept/optimization', label: 'Core Story Concept optimization' },
             { href: '/core-story-concept/evaluation', label: 'Core Story Concept evaluation' },
-            {
-              href: '/scientific-investigation/more',
-              label: 'More...',
-              extraClass: 'text-blue-300',
-            },
           ]}
         />
 
@@ -93,11 +78,6 @@ export default function SidebarMenu() {
               href: '/story-flow-map/generation-optimization',
               label: 'Story Flow Map generation & optimization',
             },
-            {
-              href: '/scientific-investigation/more',
-              label: 'More...',
-              extraClass: 'text-blue-300',
-            },
           ]}
         />
 
@@ -108,11 +88,6 @@ export default function SidebarMenu() {
             { href: '/slide-presentation/deck-generation', label: 'Create MEDSTORY deck' },
             { href: '/slide-presentation/deck-optimization', label: 'MEDSTORY deck optimization' },
             { href: '/slide-presentation/deck-evaluation', label: 'MEDSTORY deck evaluation' },
-            {
-              href: '/scientific-investigation/more',
-              label: 'More...',
-              extraClass: 'text-blue-300',
-            },
           ]}
         />
       </nav>

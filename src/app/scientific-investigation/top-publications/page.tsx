@@ -106,33 +106,6 @@ export default function TopPublicationsPage() {
             removeExpertPrefix={true}
           />
         </div>
-
-        {/* Instructions Panel - Right Side */}
-        <div className="flex-1 space-y-6">
-          <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md">
-            <h3 className="text-lg font-bold text-[#063471] mb-4">Interview Guidelines</h3>
-            <div className="text-sm text-gray-700 space-y-2">
-              <p>
-                <strong>Expert Types:</strong>
-              </p>
-              <ul className="list-disc ml-4 space-y-1">
-                <li>Specific individual (provide full name)</li>
-                <li>Expert in a field (specify field/specialization)</li>
-              </ul>
-
-              <p className="mt-4">
-                <strong>Interview Features:</strong>
-              </p>
-              <ul className="list-disc ml-4 space-y-1">
-                <li>Expert responds based on public materials</li>
-                <li>Conversational, professional tone</li>
-                <li>Expert will not ask follow-up questions</li>
-                <li>You control the interview direction</li>
-                <li>Expert may ask for clarification when needed</li>
-              </ul>
-            </div>
-          </div>
-        </div>
       </div>
     </PageLayout>
   );

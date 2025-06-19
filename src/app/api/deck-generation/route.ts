@@ -3,11 +3,11 @@ import OpenAI from 'openai';
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { answers, detailedPrompt } = body;
+  const { detailedPrompt } = body;
 
   // Check if API key is available
   if (!process.env.OPENAI_API_KEY) {
-    return NextResponse.json({ 
+    return NextResponse.json({
       result: `# MEDSTORY® Presentation Outline
 
 ## Presentation Overview
@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
 - Implementation/Future: 2 minutes
 - Q&A: 1 minute
 
-*Note: This is a demo outline. For full AI-powered generation, please configure your OpenAI API key.*`
+*Note: This is a demo outline. For full AI-powered generation, please configure your OpenAI API key.*`,
     });
   }
 
@@ -109,7 +109,8 @@ export async function POST(req: NextRequest) {
       messages: [
         {
           role: 'system',
-          content: 'You are a world-class expert in presentation design, medical storytelling, generative AI prompting, PowerPoint design, live presentation coaching, TED Talk-style speaking, narrative storytelling structure, cognitive and behavioral psychology, persuasive science/business communication, visual data storytelling and infographic design, and stoic philosophy for clarity, simplicity, and purpose.',
+          content:
+            'You are a world-class expert in presentation design, medical storytelling, generative AI prompting, PowerPoint design, live presentation coaching, TED Talk-style speaking, narrative storytelling structure, cognitive and behavioral psychology, persuasive science/business communication, visual data storytelling and infographic design, and stoic philosophy for clarity, simplicity, and purpose.',
         },
         {
           role: 'user',
