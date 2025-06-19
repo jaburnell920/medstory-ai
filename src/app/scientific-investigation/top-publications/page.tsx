@@ -98,7 +98,7 @@ export default function TopPublicationsPage() {
       {/* Main Content */}
       <main className="flex-1 bg-gray-50 p-12">
         <h1 className="text-3xl font-extrabold text-[#063471] mb-10">
-          Top N Most Important Publications
+          Top N Most Important Thought Leaders
         </h1>
 
         {/* Expert Interview Section */}
