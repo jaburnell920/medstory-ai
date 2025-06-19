@@ -10,16 +10,21 @@ interface PageLayoutProps {
   children: React.ReactNode;
 }
 
-export default function PageLayout({ sectionIcon, sectionName, taskName, children }: PageLayoutProps) {
+export default function PageLayout({
+  sectionIcon,
+  sectionName,
+  taskName,
+  children,
+}: PageLayoutProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  // const scrollToBottom = () => {
+  //   messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  // };
 
-  useEffect(() => {
-    scrollToBottom();
-  });
+  // useEffect(() => {
+  //   scrollToBottom();
+  // });
 
   return (
     <div className="flex min-h-screen text-black">
