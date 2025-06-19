@@ -19,9 +19,9 @@ export default function LandmarkPublicationsPage() {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<{ role: 'assistant' | 'user'; content: string }[]>([
     {
-      role: 'assistant' as const,
+      role: 'assistant',
       content:
         'OK, before we get started, please provide the information below. (Please answer each question one at a time):\n\n1. ' +
         questions[0],
@@ -35,16 +35,16 @@ export default function LandmarkPublicationsPage() {
     // Format the numbered response according to requirements
     // Each number on new line, remove vertical bars and quotes
     // Format: authors (period) title (period) journal abbreviation (period) year (semicolon) volume number (colon) page range then new line and significance
-    
+
     let formatted = content;
-    
+
     // Remove quotes and vertical bars
     formatted = formatted.replace(/"/g, '');
     formatted = formatted.replace(/\|/g, '');
-    
+
     // Ensure each numbered item starts on a new line
     formatted = formatted.replace(/(\d+)\.\s*/g, '\n$1. ');
-    
+
     return formatted;
   };
 
@@ -67,7 +67,10 @@ export default function LandmarkPublicationsPage() {
       setAnswers([...answers, input]);
       setMessages([
         ...newMessages,
-        { role: 'assistant' as const, content: 'Thanks, Generated response will be on the right side of the screen' },
+        {
+          role: 'assistant' as const,
+          content: 'Thanks, Generated response will be on the right side of the screen',
+        },
       ]);
       setShowFinalMessage(true);
       setLoading(true);
@@ -123,7 +126,7 @@ export default function LandmarkPublicationsPage() {
           <div className="flex-1 space-y-6">
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md">
               <h2 className="text-xl font-bold text-blue-900 mb-4">Landmark Publications</h2>
-              <div 
+              <div
                 className="text-gray-800 whitespace-pre-wrap"
                 dangerouslySetInnerHTML={{ __html: result }}
               />

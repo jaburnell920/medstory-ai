@@ -7,17 +7,13 @@ import clsx from 'clsx';
 export default function SidebarMenu() {
   const pathname = usePathname();
 
-  const linkClass =
-    'text-gray-200 hover:text-orange-300 hover:underline transition-all duration-200';
+  const baseLinkClass = 'text-gray-200 hover:text-orange-300 transition-all duration-200';
   const selectedLinkClass = 'text-orange-400 underline font-semibold';
+  const bullet = '•';
 
   return (
     <aside className="w-72 bg-[#002F6C] text-white flex flex-col p-6">
-      <h2 className="text-2xl font-bold mb-4">
-        <span style={{ color: '#35b4fc' }}>MEDSTORY</span>
-        <span style={{ color: '#ff914d' }}>AI</span>
-      </h2>
-      <nav className="flex flex-col space-y-6 text-sm">
+      <nav className="flex flex-col space-y-8 text-sm">
         <Section
           title="🔬"
           sectionName="Scientific Investigation"
@@ -28,7 +24,11 @@ export default function SidebarMenu() {
             },
             {
               href: '',
-              label: 'Top N most important publications',
+              label: 'Identify top thought leaders',
+            },
+            {
+              href: '',
+              label: 'Uncover unmet needs',
             },
           ]}
         />
@@ -38,16 +38,16 @@ export default function SidebarMenu() {
           sectionName="Stakeholder Interviews"
           links={[
             {
-              href: '/stakeholder-interviews/questions',
-              label: 'Suggested questions for thought leader interviews',
-            },
-            {
-              href: '/stakeholder-interviews/analyze-transcript',
-              label: 'Analyze thought leader interview transcript',
-            },
-            {
               href: '/scientific-investigation/top-publications',
-              label: 'Simulated thought leader interview',
+              label: 'Simulated expert interview',
+            },
+            {
+              href: '',
+              label: 'Create question list of expert interview',
+            },
+            {
+              href: '',
+              label: 'Analyze expert interview transcript',
             },
           ]}
         />
@@ -56,9 +56,9 @@ export default function SidebarMenu() {
           title="🎯"
           sectionName="Core Story Concept"
           links={[
-            { href: '/dashboard', label: 'Core Story Concept creation' },
-            { href: '/core-story-concept/optimization', label: 'Core Story Concept optimization' },
-            { href: '/core-story-concept/evaluation', label: 'Core Story Concept evaluation' },
+            { href: '', label: 'Create Core Story Concept options' },
+            { href: '', label: 'Optimize Core Story Concept' },
+            { href: '', label: 'Evaluate Core Story Concept' },
           ]}
         />
 
@@ -67,16 +67,16 @@ export default function SidebarMenu() {
           sectionName="Story Flow Map"
           links={[
             {
-              href: '/story-flow-map/tension-resolution-generation',
-              label: 'Tension-Resolution Point generation',
+              href: '/dashboard',
+              label: 'Create tension-resolution points',
             },
             {
-              href: '/story-flow-map/tension-resolution-optimization',
-              label: 'Tension-Resolution Point optimization',
+              href: '',
+              label: 'Evaluate tension-resolution points',
             },
             {
-              href: '/story-flow-map/generation-optimization',
-              label: 'Story Flow Map generation & optimization',
+              href: '',
+              label: 'Create story flow map',
             },
           ]}
         />
@@ -86,8 +86,8 @@ export default function SidebarMenu() {
           sectionName="MEDSTORY Slide Deck"
           links={[
             { href: '/slide-presentation/deck-generation', label: 'Create MEDSTORY deck' },
-            { href: '/slide-presentation/deck-optimization', label: 'MEDSTORY deck optimization' },
-            { href: '/slide-presentation/deck-evaluation', label: 'MEDSTORY deck evaluation' },
+            { href: '', label: 'Optimize MEDSTORY deck' },
+            { href: '', label: 'Evaluate MEDSTORY deck' },
           ]}
         />
       </nav>
@@ -106,22 +106,29 @@ export default function SidebarMenu() {
     return (
       <div>
         <div className="flex flex-col items-start mb-2">
-          <div className="text-4xl mb-1">{title}</div>
+          <div className="text-2xl mb-1">{title}</div>
           <p className="font-bold text-white text-sm">{sectionName}</p>
         </div>
         <ul className="ml-4 space-y-1 text-gray-200">
           {links.map((link) => (
-            <li key={link.href}>
-              <Link
-                className={clsx(
-                  linkClass,
-                  pathname === link.href && selectedLinkClass,
-                  link.extraClass
-                )}
-                href={link.href}
-              >
-                {link.label}
-              </Link>
+            <li key={link.label}>
+              {link.href ? (
+                <Link
+                  className={clsx(
+                    baseLinkClass,
+                    pathname === link.href && selectedLinkClass,
+                    link.extraClass,
+                    'flex items-start'
+                  )}
+                  href={link.href}
+                >
+                  <span className="mr-1">{bullet}</span> {link.label}
+                </Link>
+              ) : (
+                <span className="text-gray-400 flex items-start cursor-default">
+                  <span className="mr-1">{bullet}</span> {link.label}
+                </span>
+              )}
             </li>
           ))}
         </ul>

@@ -18,9 +18,9 @@ export default function Dashboard() {
     count: '',
   });
 
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<{ role: 'assistant' | 'user'; content: string }[]>([
     {
-      role: 'assistant' as const,
+      role: 'assistant',
       content: 'What drug or intervention are you exploring today?',
     },
   ]);
@@ -101,8 +101,8 @@ export default function Dashboard() {
   return (
     <PageLayout
       sectionIcon="🎯"
-      sectionName="Core Story Concept"
-      taskName="Core Story Concept creation"
+      sectionName="Story Flow Map"
+      taskName="Create tension-resolution points"
     >
       <div className="flex flex-col lg:flex-row gap-12">
         {/* Chat Interface - Left Side */}
