@@ -6,9 +6,9 @@ import ChatInterface from '@/app/components/ChatInterface';
 
 export default function TopPublicationsPage() {
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<{ role: 'assistant' | 'user'; content: string }[]>([
     {
-      role: 'assistant' as const,
+      role: 'assistant',
       content:
         'Great. I will simulate an interview with an expert. Please provide the following information:\n\nWhich would you like to interview (pick one):\n• A specific individual - please provide the full name of the person\n• An expert in a particular field - please provide the field or specialization and if a specific experience or background is desired',
     },
