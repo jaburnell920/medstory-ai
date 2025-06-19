@@ -26,11 +26,11 @@ export default function SidebarMenu() {
               label: 'Find landmark publications',
             },
             {
-              href: '/scientific-investigation/top-publications',
+              href: '',
               label: 'Top N most important publications',
             },
             {
-              href: '/scientific-investigation/thought-leaders',
+              href: '/scientific-investigation/top-publications',
               label: 'Top N most important thought leaders',
             },
             {
