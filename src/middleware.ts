@@ -7,6 +7,7 @@ const PUBLIC_PATHS = [
   '/api/auth-password',
   '/scientific-investigation/landmark-publications',
   '/scientific-investigation/top-publications',
+  '/slide-presentation/deck-generation',
 ];
 
 export function middleware(request: NextRequest) {

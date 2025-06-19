@@ -209,7 +209,7 @@ import { useRouter } from 'next/navigation';
 export default function Home() {
   const router = useRouter();
   useEffect(() => {
-    router.push('/dashboard');
+    router.push('/scientific-investigation/landmark-publications');
   }, [router]);
   return null;
 }

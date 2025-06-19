@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import SidebarMenu from '../SidebarMenu';
+import PageLayout from '@/app/components/PageLayout';
+import ChatInterface from '@/app/components/ChatInterface';
 
 export default function Dashboard() {
   const [step, setStep] = useState(0);
@@ -17,7 +18,7 @@ export default function Dashboard() {
     count: '',
   });
 
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<{ role: 'assistant' | 'user'; content: string }[]>([
     {
       role: 'assistant',
       content: 'What drug or intervention are you exploring today?',
@@ -36,7 +37,7 @@ export default function Dashboard() {
     e.preventDefault();
     if (!input.trim()) return;
 
-    const userMsg = { role: 'user', content: input };
+    const userMsg = { role: 'user' as const, content: input };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
     setInput('');
@@ -98,79 +99,39 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex min-h-screen text-black">
-      {/* Sidebar */}
-      <aside className="w-72 bg-[#002F6C] text-white flex flex-col p-6">
-        <h2 className="text-2xl font-bold mb-4">
-          <span style={{ color: '#35b4fc' }}>MEDSTORY</span>
-          <span style={{ color: '#ff914d' }}>AI</span>
-        </h2>
-        <SidebarMenu />
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 bg-gray-50 p-12">
-        <h1 className="text-3xl font-extrabold text-[#063471] mb-10">
-          Welcome to Core Story Concept creation!
-        </h1>
-
-        <div className="flex flex-col lg:flex-row gap-12">
-          {/* Chat Area */}
-          <div className="bg-white border border-gray-300 shadow-md rounded-lg p-6 w-full lg:w-1/2 space-y-4">
-            {messages.map((m, i) => (
-              <div key={i} className="w-full">
-                {m.role === 'assistant' ? (
-                  <div className="bg-white border border-gray-300 rounded-md shadow-sm">
-                    <div className="bg-[#002F6C] text-white font-bold px-4 py-2 rounded-t-md">
-                      <span className="text-[#35b4fc]">MEDSTORY</span>
-                      <span className="text-[#ff914d]">AI</span>
-                    </div>
-                    <div className="px-4 py-3 whitespace-pre-wrap text-gray-800">{m.content}</div>
-                  </div>
-                ) : (
-                  <div className="bg-gray-200 px-4 py-3 rounded-md text-black ml-auto w-fit max-w-[90%]">
-                    <div className="text-sm font-semibold text-gray-700 mb-1">You</div>
-                    {m.content}
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {step <= questions.length - 1 && (
-              <form onSubmit={handleSubmit} className="flex space-x-2 pt-2">
-                <input
-                  type="text"
-                  className="flex-1 border rounded px-4 py-2 text-black"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Type your response..."
-                />
-                <button
-                  type="submit"
-                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                  disabled={loading}
-                >
-                  {loading ? '...' : 'Send'}
-                </button>
-              </form>
-            )}
-          </div>
-
-          {/* Result Section */}
-          {result && (
-            <div className="flex-1 space-y-6">
-              <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md space-y-6">
-                <h2 className="text-xl font-bold text-blue-900">Core Story Concept Candidates</h2>
-                {result.split('\n\n').map((block, i) => (
-                  <div key={i} className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                    <p className="text-gray-800 whitespace-pre-wrap">{block}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+    <PageLayout
+      sectionIcon="🎯"
+      sectionName="Story Flow Map"
+      taskName="Create tension-resolution points"
+    >
+      <div className="flex flex-col lg:flex-row gap-12">
+        {/* Chat Interface - Left Side */}
+        <div className="w-full lg:w-1/2">
+          <ChatInterface
+            messages={messages}
+            input={input}
+            setInput={setInput}
+            onSubmit={handleSubmit}
+            loading={loading}
+            showInput={step <= questions.length - 1}
+            placeholder="Type your response..."
+          />
         </div>
-      </main>
-    </div>
+
+        {/* Result Section - Right Side */}
+        {result && (
+          <div className="flex-1 space-y-6">
+            <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md space-y-6">
+              <h2 className="text-xl font-bold text-blue-900">Core Story Concept Candidates</h2>
+              {result.split('\n\n').map((block, i) => (
+                <div key={i} className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <p className="text-gray-800 whitespace-pre-wrap">{block}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </PageLayout>
   );
 }
