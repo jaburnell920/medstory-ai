@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
+import { memo } from 'react';
 
-export default function SidebarMenu() {
+function SidebarMenu() {
   const pathname = usePathname();
 
   const baseLinkClass = 'text-gray-200 hover:text-orange-300 transition-all duration-200';
@@ -136,3 +137,5 @@ export default function SidebarMenu() {
     );
   }
 }
+
+export default memo(SidebarMenu);
