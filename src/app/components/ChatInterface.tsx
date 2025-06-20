@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -26,30 +26,30 @@ export default function ChatInterface({
   onSubmit,
   loading,
   showInput = true,
-  placeholder = "Type your response...",
+  placeholder = 'Type your response...',
   removeExpertPrefix = false,
-  onReset
+  onReset,
 }: ChatInterfaceProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  // const scrollToBottom = () => {
+  //   messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  // };
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  // useEffect(() => {
+  //   scrollToBottom();
+  // }, [messages]);
 
   const formatContent = (content: string) => {
     if (removeExpertPrefix) {
       content = content.replace(/^Expert:\s*/gm, '');
     }
-    
+
     // Format numbered responses - each number on new line, remove vertical bars and quotes
     content = content.replace(/(\d+)\.\s*/g, '\n$1. ');
     content = content.replace(/\|/g, '');
     content = content.replace(/"/g, '');
-    
+
     return content;
   };
 
