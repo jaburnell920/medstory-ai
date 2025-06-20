@@ -11,9 +11,35 @@ const nextConfig: NextConfig = {
           value: 'ALLOWALL',
         },
         {
+          key: 'Content-Security-Policy',
+          value: 'frame-ancestors *;',
+        },
+        {
           key: 'Access-Control-Allow-Origin',
           value: '*',
         },
+        {
+          key: 'Access-Control-Allow-Methods',
+          value: 'GET, POST, OPTIONS, PUT, DELETE',
+        },
+        {
+          key: 'Access-Control-Allow-Headers',
+          value: 'Content-Type, Authorization, X-Requested-With',
+        },
+      ],
+    },
+    {
+      source: '/api/(.*)',
+      headers: [
+        {
+          key: 'Cache-Control',
+          value: 'no-cache, no-store, must-revalidate',
+        },
+      ],
+    },
+    {
+      source: '/_next/static/(.*)',
+      headers: [
         {
           key: 'Cache-Control',
           value: 'public, max-age=31536000, immutable',
