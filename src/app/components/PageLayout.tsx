@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import SidebarMenu from '../SidebarMenu';
 
 interface PageLayoutProps {
-  sectionIcon: string;
+  sectionIcon: React.ReactNode;
   sectionName: string;
   taskName: string;
   children: React.ReactNode;

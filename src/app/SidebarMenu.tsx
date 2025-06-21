@@ -16,7 +16,13 @@ function SidebarMenu() {
     <aside className="w-84 bg-[#002F6C] text-white flex flex-col -ml-2">
       <nav className="flex flex-col space-y-8 text-sm">
         <Section
-          title="🔬"
+          title={
+            <img
+              src="/scientific_investigation_menu.svg"
+              alt="Scientific Investigation"
+              className="w-6 h-6"
+            />
+          }
           sectionName="Scientific Investigation"
           links={[
             {
@@ -35,7 +41,13 @@ function SidebarMenu() {
         />
 
         <Section
-          title="🎤"
+          title={
+            <img
+              src="/stakeholder_interview_menu.svg"
+              alt="Stakeholder Interviews"
+              className="w-6 h-6"
+            />
+          }
           sectionName="Stakeholder Interviews"
           links={[
             {
@@ -54,7 +66,9 @@ function SidebarMenu() {
         />
 
         <Section
-          title="🎯"
+          title={
+            <img src="/core_story_concept_menu.svg" alt="Core Story Concept" className="w-6 h-6" />
+          }
           sectionName="Core Story Concept"
           links={[
             { href: '', label: 'Create Core Story Concept options' },
@@ -64,7 +78,7 @@ function SidebarMenu() {
         />
 
         <Section
-          title="🗺️"
+          title={<img src="/story_flow_map_menu.svg" alt="Story Flow Map" className="w-6 h-6" />}
           sectionName="Story Flow Map"
           links={[
             {
@@ -83,7 +97,13 @@ function SidebarMenu() {
         />
 
         <Section
-          title="📽️"
+          title={
+            <img
+              src="/medstory_slide_deck_menu.svg"
+              alt="MEDSTORY Slide Deck"
+              className="w-6 h-6"
+            />
+          }
           sectionName="MEDSTORY Slide Deck"
           links={[
             { href: '/slide-presentation/deck-generation', label: 'Create MEDSTORY deck' },
@@ -100,14 +120,14 @@ function SidebarMenu() {
     sectionName,
     links,
   }: {
-    title: string;
+    title: React.ReactNode;
     sectionName: string;
     links: { href: string; label: string; extraClass?: string }[];
   }) {
     return (
       <div>
         <div className="flex items-center mb-2">
-          <div className="text-2xl mr-3">{title}</div>
+          <div className="text-6xl mr-3">{title}</div>
           <p className="font-bold text-white text-sm">{sectionName}</p>
         </div>
         <ul className="ml-9 space-y-1 text-gray-200">
