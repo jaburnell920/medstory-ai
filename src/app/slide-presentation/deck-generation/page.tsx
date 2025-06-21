@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import PageLayout from '@/app/components/PageLayout';
 import ChatInterface from '@/app/components/ChatInterface';
@@ -32,6 +32,13 @@ export default function DeckGenerationPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState('');
   const [showFinalMessage, setShowFinalMessage] = useState(false);
+  const resultRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (resultRef.current) {
+      resultRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [result]);
 
   const handleReset = () => {
     setStep(0);
@@ -165,7 +172,7 @@ Generate the entire outline without stopping for user input.
 
         {/* Result Section - Right Side */}
         {result && (
-          <div className="flex-1 space-y-6">
+          <div className="flex-1 space-y-6" ref={resultRef}>
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md">
               <h2 className="text-xl font-bold text-blue-900 mb-4">
                 MEDSTORY Presentation Outline

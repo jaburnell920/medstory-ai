@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import PageLayout from '@/app/components/PageLayout';
 import ChatInterface from '@/app/components/ChatInterface';
@@ -30,6 +30,13 @@ export default function LandmarkPublicationsPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState('');
   const [showFinalMessage, setShowFinalMessage] = useState(false);
+  const resultRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (resultRef.current) {
+      resultRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [result]);
 
   const handleReset = () => {
     setStep(0);
@@ -86,7 +93,7 @@ export default function LandmarkPublicationsPage() {
         ...newMessages,
         {
           role: 'assistant' as const,
-          content: 'Thanks, Generated response will be on the right side of the screen',
+          content: 'Thanks, Please wait while I find landmark publications based on your answers.',
         },
       ]);
       setShowFinalMessage(true);
@@ -109,6 +116,9 @@ export default function LandmarkPublicationsPage() {
         });
         const data = await res.json();
         setResult(formatLandmarkResult(data.result));
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 100);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (err) {
         setMessages((prev) => [...prev, { role: 'assistant', content: 'Failed to load results.' }]);
@@ -141,7 +151,7 @@ export default function LandmarkPublicationsPage() {
 
         {/* Result Section - Right Side */}
         {result && (
-          <div className="flex-1 space-y-6">
+          <div className="flex-1 space-y-6" ref={resultRef}>
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md">
               <h2 className="text-xl font-bold text-blue-900 mb-4">Landmark Publications</h2>
               <div
