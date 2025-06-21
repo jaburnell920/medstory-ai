@@ -40,7 +40,7 @@ function SidebarMenu() {
           links={[
             {
               href: '/scientific-investigation/top-publications',
-              label: 'Simulated expert interview',
+              label: 'Simulate expert interview',
             },
             {
               href: '',
