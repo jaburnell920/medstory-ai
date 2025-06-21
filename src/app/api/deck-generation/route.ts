@@ -3,12 +3,11 @@ import OpenAI from 'openai';
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { detailedPrompt } = body;
+  const { detailedPrompt, answers } = body;
 
   // Check if API key is available
   if (!process.env.OPENAI_API_KEY) {
-    return NextResponse.json({
-      result: `# MEDSTORY® Presentation Outline
+    const demoResult = `# MEDSTORY® Presentation Outline
 
 ## Presentation Overview
 **Target Audience:** Cardiologists  
@@ -95,7 +94,73 @@ export async function POST(req: NextRequest) {
 - Implementation/Future: 2 minutes
 - Q&A: 1 minute
 
-*Note: This is a demo outline. For full AI-powered generation, please configure your OpenAI API key.*`,
+*Note: This is a demo outline. For full AI-powered generation, please configure your OpenAI API key.*`;
+
+    const demoGammaFormatted = `MEDSTORY® Presentation: Advancing Cardiology Practice
+
+# Introduction
+Welcome to our presentation on advancing cardiology practice through innovative approaches and evidence-based solutions.
+
+# Current Challenges in Cardiology
+- Rising cardiovascular disease prevalence
+- Treatment resistance in complex cases
+- Need for personalized medicine approaches
+- Healthcare cost considerations
+
+# Clinical Evidence Overview
+Recent studies demonstrate significant gaps in current treatment protocols, with up to 30% of patients not responding optimally to standard care approaches.
+
+# Patient Case Study
+Meet Sarah, a 58-year-old patient with complex cardiovascular conditions who represents the challenges we face in modern cardiology practice.
+
+# Standard Treatment Limitations
+- Limited efficacy in certain patient populations
+- Side effect profiles affecting quality of life
+- One-size-fits-all approach limitations
+- Long-term sustainability concerns
+
+# Our Innovative Solution
+Introducing a comprehensive, personalized approach that addresses the root causes while maintaining safety and efficacy standards.
+
+# Mechanism of Action
+Our approach works through targeted intervention at the cellular level, optimizing cardiovascular function through precision medicine principles.
+
+# Clinical Trial Results
+- 45% improvement in patient outcomes
+- 60% reduction in adverse events
+- 80% patient satisfaction rate
+- Significant cost-effectiveness benefits
+
+# Real-World Patient Impact
+Sarah's case demonstrates the transformative potential of our approach, with marked improvement in quality of life and clinical markers.
+
+# Implementation Strategy
+- Phased rollout approach
+- Comprehensive training programs
+- Ongoing support and monitoring
+- Integration with existing workflows
+
+# Case Study Resolution
+Sarah's successful treatment outcome showcases the potential for improved patient care through innovative approaches.
+
+# Future Directions
+- Expanded clinical trials
+- AI-powered personalization
+- Global implementation strategies
+- Continued research and development
+
+# Key Takeaways
+- Personalized medicine is the future of cardiology
+- Evidence-based approaches improve outcomes
+- Patient-centered care drives innovation
+- Collaboration accelerates progress
+
+# Questions & Discussion
+Thank you for your attention. Let's discuss how we can implement these innovations in your practice.`;
+
+    return NextResponse.json({
+      result: demoResult,
+      gammaFormatted: demoGammaFormatted,
     });
   }
 
@@ -104,7 +169,8 @@ export async function POST(req: NextRequest) {
   });
 
   try {
-    const chatCompletion = await openai.chat.completions.create({
+    // Generate the detailed outline
+    const outlineCompletion = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [
         {
@@ -121,7 +187,50 @@ export async function POST(req: NextRequest) {
       temperature: 0.7,
     });
 
-    return NextResponse.json({ result: chatCompletion.choices[0].message.content });
+    // Generate Gamma-optimized format
+    const gammaPrompt = `
+Based on the following presentation answers, create a Gamma.app-optimized presentation outline that can be easily imported into Gamma:
+
+Target Audience: ${answers[2]}
+Presentation Length: ${answers[3]} minutes
+Maximum Slides: ${answers[4]}
+Desired Tone: ${answers[5]}
+Visual Level: ${answers[6]}
+
+Create a clean, structured outline using this format:
+- Use # for slide titles (one per slide)
+- Use simple bullet points with - for content
+- Keep content concise and impactful
+- Focus on key messages that work well with Gamma's AI design
+- Make it easy for Gamma to understand and visualize
+- Include a compelling title slide
+- Structure the flow logically for the target audience
+
+The outline should be ready to paste directly into Gamma.app's "Paste in text" feature.
+Generate approximately ${answers[4] === 'none' ? '12-15' : answers[4]} slides.
+    `;
+
+    const gammaCompletion = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [
+        {
+          role: 'system',
+          content:
+            'You are an expert at creating presentation outlines optimized for Gamma.app. You understand how to structure content that Gamma\'s AI can easily transform into beautiful presentations.',
+        },
+        {
+          role: 'user',
+          content: gammaPrompt,
+        },
+      ],
+      max_tokens: 2000,
+      temperature: 0.7,
+    });
+
+    return NextResponse.json({ 
+      result: outlineCompletion.choices[0].message.content,
+      gammaFormatted: gammaCompletion.choices[0].message.content
+    });
   } catch (error) {
     console.error('OpenAI Error:', error);
     return NextResponse.json({ error: 'Failed to generate presentation outline' }, { status: 500 });
