@@ -5,7 +5,11 @@ import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
 import { memo } from 'react';
 
-function SidebarMenu() {
+interface SidebarMenuProps {
+  onLinkClick?: () => void;
+}
+
+function SidebarMenu({ onLinkClick }: SidebarMenuProps) {
   const pathname = usePathname();
 
   const baseLinkClass = 'text-gray-200 hover:text-orange-300 transition-all duration-200';
@@ -122,6 +126,7 @@ function SidebarMenu() {
                     'flex items-start'
                   )}
                   href={link.href}
+                  onClick={onLinkClick}
                 >
                   <span className="mr-1">{bullet}</span> {link.label}
                 </Link>
