@@ -29,7 +29,7 @@ CRITICAL SIMULATION GUIDELINES - Follow these rules diligently:
 13. Do not simulate the user (me) asking questions. Start the process by having the expert acknowledge they are pleased to be part of this interview but have them word it in their own way.
 14. Do not have the expert make any preliminary comments. He or she should just say a few words about being ready for the interview.
 
-Now simulate the expert and start the interview by having them acknowledge they're ready for the interview in their own voice and style.
+Now simulate the expert and start the interview by having them acknowledge they're ready for the interview in their own voice and style and remember, Never ask a follow up question at any point during the conversation. 
 `;
 
     try {
