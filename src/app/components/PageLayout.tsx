@@ -52,7 +52,6 @@ export default function PageLayout({
           {/* Back Button */}
           <a
             href="https://sciencebranding.com"
-            target="_blank"
             rel="noopener noreferrer"
             className="flex items-center px-4 py-2 bg-[#002F6C] text-white rounded-lg hover:bg-[#063471] transition-colors duration-200 font-medium"
           >
