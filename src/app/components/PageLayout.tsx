@@ -27,9 +27,9 @@ export default function PageLayout({
   });
 
   return (
-    <div className="flex min-h-screen text-black">
+    <div className="flex h-screen text-black overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-72 bg-[#002F6C] text-white flex flex-col p-6">
+      <aside className="w-72 bg-[#002F6C] text-white flex flex-col p-6 flex-shrink-0">
         <h2 className="text-2xl font-bold mb-4">
           <span style={{ color: '#35b4fc' }}>MEDSTORY</span>
           <span style={{ color: '#ff914d' }}>AI</span>
@@ -38,9 +38,9 @@ export default function PageLayout({
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 bg-gray-50 p-12">
-        {/* Header with Section and Task */}
-        <div className="flex items-center justify-between mb-10">
+      <main className="flex-1 bg-gray-50 flex flex-col overflow-hidden">
+        {/* Fixed Header with Section and Task */}
+        <div className="flex items-center justify-between p-12 pb-6 flex-shrink-0 bg-gray-50">
           <div className="flex items-center">
             <span className="text-4xl mr-4">{sectionIcon}</span>
             <div>
@@ -67,8 +67,11 @@ export default function PageLayout({
           </a>
         </div>
 
-        {children}
-        <div ref={messagesEndRef} />
+        {/* Scrollable Content Area */}
+        <div className="flex-1 overflow-y-auto px-12 pb-12">
+          {children}
+          <div ref={messagesEndRef} />
+        </div>
       </main>
     </div>
   );
