@@ -30,10 +30,10 @@ export default function PageLayout({
     <div className="flex h-screen text-black overflow-hidden">
       {/* Sidebar */}
       <aside className="w-72 bg-[#002F6C] text-white flex flex-col p-6 flex-shrink-0">
-        <h2 className="text-2xl font-bold mb-4">
-          <span style={{ color: '#35b4fc' }}>MEDSTORY</span>
-          <span style={{ color: '#ff914d' }}>AI</span>
-        </h2>
+        <div className="mb-6">
+          <img src="/logo.svg" alt="MEDSTORYAI Logo" className="w-40 h-auto" />
+        </div>
+
         <SidebarMenu />
       </aside>
 
