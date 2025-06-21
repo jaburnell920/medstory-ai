@@ -106,8 +106,8 @@ function SidebarMenu() {
   }) {
     return (
       <div>
-        <div className="flex flex-col items-start mb-2">
-          <div className="text-2xl mb-1">{title}</div>
+        <div className="flex items-center mb-2">
+          <div className="text-2xl mr-3">{title}</div>
           <p className="font-bold text-white text-sm">{sectionName}</p>
         </div>
         <ul className="ml-4 space-y-1 text-gray-200">
