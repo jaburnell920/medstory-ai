@@ -31,7 +31,9 @@ export default function DeckGenerationPage() {
   ]);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState('');
+  const [gammaFormattedResult, setGammaFormattedResult] = useState('');
   const [showFinalMessage, setShowFinalMessage] = useState(false);
+  const [showGammaIntegration, setShowGammaIntegration] = useState(false);
 
   const handleReset = () => {
     setStep(0);
@@ -47,7 +49,9 @@ export default function DeckGenerationPage() {
     ]);
     setLoading(false);
     setResult('');
+    setGammaFormattedResult('');
     setShowFinalMessage(false);
+    setShowGammaIntegration(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -133,6 +137,8 @@ Generate the entire outline without stopping for user input.
         });
         const data = await res.json();
         setResult(data.result);
+        setGammaFormattedResult(data.gammaFormatted);
+        setShowGammaIntegration(true);
       } catch (err) {
         toast.error('Something went wrong.');
         console.error(err);
@@ -144,6 +150,26 @@ Generate the entire outline without stopping for user input.
         setLoading(false);
       }
     }
+  };
+
+  const handleCopyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success('Content copied to clipboard!');
+  };
+
+  const handleOpenGamma = () => {
+    window.open('https://gamma.app/', '_blank');
+  };
+
+  const handleCreateInGamma = () => {
+    // Copy the Gamma-formatted content to clipboard
+    navigator.clipboard.writeText(gammaFormattedResult);
+    toast.success('Content copied! Opening Gamma.app...');
+    
+    // Open Gamma.app in a new tab
+    setTimeout(() => {
+      window.open('https://gamma.app/', '_blank');
+    }, 500);
   };
 
   return (
@@ -171,7 +197,78 @@ Generate the entire outline without stopping for user input.
                 MEDSTORY Presentation Outline
               </h2>
               <div className="text-gray-800 whitespace-pre-wrap">{result}</div>
+              
+              <div className="mt-6 pt-4 border-t border-gray-200">
+                <button
+                  onClick={() => handleCopyToClipboard(result)}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  📋 Copy Outline
+                </button>
+              </div>
             </div>
+
+            {/* Gamma Integration Section */}
+            {showGammaIntegration && gammaFormattedResult && (
+              <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 p-6 rounded-lg shadow-md">
+                <div className="flex items-center mb-4">
+                  <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center mr-3">
+                    <span className="text-white font-bold">γ</span>
+                  </div>
+                  <h2 className="text-xl font-bold text-purple-900">
+                    Create in Gamma.app
+                  </h2>
+                </div>
+                
+                <p className="text-gray-700 mb-4">
+                  Transform your outline into a beautiful presentation with Gamma.app's AI-powered design tools.
+                </p>
+
+                <div className="space-y-3">
+                  <button
+                    onClick={handleCreateInGamma}
+                    className="w-full bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors font-semibold flex items-center justify-center"
+                  >
+                    🚀 Create Presentation in Gamma
+                  </button>
+                  
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleCopyToClipboard(gammaFormattedResult)}
+                      className="flex-1 bg-white border border-purple-300 text-purple-700 px-4 py-2 rounded-lg hover:bg-purple-50 transition-colors"
+                    >
+                      📋 Copy Gamma Format
+                    </button>
+                    <button
+                      onClick={handleOpenGamma}
+                      className="flex-1 bg-white border border-purple-300 text-purple-700 px-4 py-2 rounded-lg hover:bg-purple-50 transition-colors"
+                    >
+                      🌐 Open Gamma.app
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-4 p-4 bg-white rounded-lg border border-purple-200">
+                  <h3 className="font-semibold text-purple-900 mb-2">How to use:</h3>
+                  <ol className="text-sm text-gray-700 space-y-1">
+                    <li>1. Click "Create Presentation in Gamma" (copies content automatically)</li>
+                    <li>2. In Gamma.app, click "Create New" → "Paste in text"</li>
+                    <li>3. Paste the content and let Gamma's AI create your presentation</li>
+                    <li>4. Customize design, colors, and layout as needed</li>
+                  </ol>
+                </div>
+
+                {/* Preview of Gamma-formatted content */}
+                <details className="mt-4">
+                  <summary className="cursor-pointer text-purple-700 font-medium hover:text-purple-900">
+                    Preview Gamma-formatted content
+                  </summary>
+                  <div className="mt-2 p-4 bg-white rounded-lg border border-gray-200 max-h-60 overflow-y-auto">
+                    <pre className="text-sm text-gray-800 whitespace-pre-wrap">{gammaFormattedResult}</pre>
+                  </div>
+                </details>
+              </div>
+            )}
           </div>
         )}
       </div>
