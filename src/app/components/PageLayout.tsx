@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import SidebarMenu from '../SidebarMenu';
 
 interface PageLayoutProps {
@@ -18,13 +18,13 @@ export default function PageLayout({
 }: PageLayoutProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // const scrollToBottom = () => {
-  //   messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  // };
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
-  // useEffect(() => {
-  //   scrollToBottom();
-  // });
+  useEffect(() => {
+    scrollToBottom();
+  });
 
   return (
     <div className="flex min-h-screen text-black">
@@ -48,7 +48,7 @@ export default function PageLayout({
               <h2 className="text-xl text-gray-600 mt-1">{taskName}</h2>
             </div>
           </div>
-          
+
           {/* Back Button */}
           <a
             href="https://sciencebranding.com"
@@ -56,17 +56,12 @@ export default function PageLayout({
             rel="noopener noreferrer"
             className="flex items-center px-4 py-2 bg-[#002F6C] text-white rounded-lg hover:bg-[#063471] transition-colors duration-200 font-medium"
           >
-            <svg 
-              className="w-4 h-4 mr-2" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M10 19l-7-7m0 0l7-7m-7 7h18" 
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
               />
             </svg>
             Back to Science Branding

@@ -41,15 +41,23 @@ Display the results in a **single table** with these exact row names:
 - Summary
 - Significance
 
+Format the output in the following manner:
+authors (period) tiltle (period) journal abbreviation (period) year (semicolon) volume number (colon) page range then new line and the significance.   
 User's input:
 ${query}
+
+Only output the resulting table. Do not include any instructions or questions in your response.
 `;
 
   try {
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
-        { role: 'system', content: 'You are a helpful assistant for scientific research.' },
+        {
+          role: 'system',
+          content:
+            'You are a helpful assistant for scientific research. Only output final answers in table form when prompted — do not repeat input questions.',
+        },
         { role: 'user', content: fullPrompt },
       ],
     });
