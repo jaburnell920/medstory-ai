@@ -13,7 +13,7 @@ function SidebarMenu() {
   const bullet = '•';
 
   return (
-    <aside className="w-72 bg-[#002F6C] text-white flex flex-col p-6">
+    <aside className="w-84 bg-[#002F6C] text-white flex flex-col -ml-2">
       <nav className="flex flex-col space-y-8 text-sm">
         <Section
           title="🔬"
@@ -110,7 +110,7 @@ function SidebarMenu() {
           <div className="text-2xl mr-3">{title}</div>
           <p className="font-bold text-white text-sm">{sectionName}</p>
         </div>
-        <ul className="ml-4 space-y-1 text-gray-200">
+        <ul className="ml-9 space-y-1 text-gray-200">
           {links.map((link) => (
             <li key={link.label}>
               {link.href ? (

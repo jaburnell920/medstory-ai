@@ -29,9 +29,9 @@ export default function PageLayout({
   return (
     <div className="flex h-screen text-black overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-72 bg-[#002F6C] text-white flex flex-col p-6 flex-shrink-0">
+      <aside className="w-84 bg-[#002F6C] text-white flex flex-col p-6 flex-shrink-0">
         <div className="mb-6">
-          <img src="/logo.svg" alt="MEDSTORYAI Logo" className="w-40 h-auto" />
+          <img src="/logo.svg" alt="MEDSTORYAI Logo" className="w-full h-auto max-w-full" />
         </div>
 
         <SidebarMenu />

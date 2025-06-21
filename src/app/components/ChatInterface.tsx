@@ -61,19 +61,19 @@ export default function ChatInterface({
           {messages.map((m, i) => (
             <div key={i} className="w-full">
               {m.role === 'assistant' ? (
-                <div className="bg-transparent">
-                  <div className="bg-[#002F6C] text-white font-bold px-4 py-2 rounded-t-md inline-block">
-                    <span className="text-[#35b4fc]">MEDSTORY</span>
-                    <span className="text-[#ff914d]">AI</span>
+                <div className="w-full bg-white rounded-md shadow-md overflow-hidden">
+                  <div className="bg-[#002F6C] text-white px-4 py-2">
+                    <span className="text-white">MEDSTORY</span>
+                    <span className="text-white font-bold">AI</span>
                   </div>
-                  <div className="bg-white px-4 py-3 rounded-b-md rounded-tr-md shadow-md whitespace-pre-wrap text-gray-800">
+                  <div className="px-4 py-3 whitespace-pre-wrap text-gray-800">
                     {formatContent(m.content)}
                   </div>
                 </div>
               ) : (
-                <div className="bg-gray-200 px-4 py-3 rounded-md text-black w-fit max-w-[90%]">
-                  <div className="text-sm font-semibold text-gray-700 mb-1">You</div>
-                  {m.content}
+                <div className="w-full bg-white rounded-md shadow-md overflow-hidden">
+                  <div className="bg-gray-400 text-white px-4 py-2">YOU</div>
+                  <div className="px-4 py-3 whitespace-pre-wrap text-gray-800">{m.content}</div>
                 </div>
               )}
             </div>
@@ -82,7 +82,7 @@ export default function ChatInterface({
         </div>
 
         <div className="flex-shrink-0 pt-4">
-          {onReset && (
+          {onReset && messages.length > 1 && (
             <div className="flex justify-end pb-2">
               <button
                 type="button"
