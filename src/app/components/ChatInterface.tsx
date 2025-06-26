@@ -82,36 +82,38 @@ export default function ChatInterface({
         </div>
 
         <div className="flex-shrink-0 pt-4">
-          {onReset && messages.length > 1 && (
-            <div className="flex justify-end pb-2">
-              <button
-                type="button"
-                onClick={onReset}
-                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 shadow-md text-sm"
-                disabled={loading}
-              >
-                Reset Conversation
-              </button>
-            </div>
-          )}
-
           {showInput && (
-            <form onSubmit={onSubmit} className="flex space-x-2">
-              <input
-                type="text"
-                className="flex-1 border rounded px-4 py-2 text-black shadow-md"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder={placeholder}
-              />
-              <button
-                type="submit"
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 shadow-md"
-                disabled={loading}
-              >
-                {loading ? '...' : 'Send'}
-              </button>
-            </form>
+            <>
+              <form onSubmit={onSubmit} className="flex space-x-2">
+                <input
+                  type="text"
+                  className="flex-1 border rounded px-4 py-2 text-black shadow-md"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder={placeholder}
+                />
+                <button
+                  type="submit"
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 shadow-md"
+                  disabled={loading}
+                >
+                  {loading ? '...' : 'Send'}
+                </button>
+              </form>
+
+              {onReset && messages.length > 1 && (
+                <div className="flex justify-start pt-2">
+                  <button
+                    type="button"
+                    onClick={onReset}
+                    className="text-sm text-gray-500 hover:text-gray-700 underline"
+                    disabled={loading}
+                  >
+                    START OVER
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
