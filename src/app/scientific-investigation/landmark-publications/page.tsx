@@ -57,8 +57,9 @@ export default function LandmarkPublicationsPage() {
 
   const formatLandmarkResult = (content: string) => {
     // Format the numbered response according to requirements
-    // Each number on new line, remove vertical bars and quotes
-    // Format: authors (period) title (period) journal abbreviation (period) year (semicolon) volume number (colon) page range then new line and significance
+    // Format: N. Authors. Title. Journal. Year;Volume:Pages.
+    // Impact Score (0-100): Score
+    // Description.
 
     let formatted = content;
 
@@ -66,8 +67,16 @@ export default function LandmarkPublicationsPage() {
     formatted = formatted.replace(/"/g, '');
     formatted = formatted.replace(/\|/g, '');
 
+    // Clean up any table formatting remnants
+    formatted = formatted.replace(/Study Number|Citation|Title|Impact of Study|Summary|Significance/g, '');
+    formatted = formatted.replace(/[-]{2,}/g, '');
+
     // Ensure each numbered item starts on a new line
     formatted = formatted.replace(/(\d+)\.\s*/g, '\n$1. ');
+
+    // Clean up extra whitespace and empty lines
+    formatted = formatted.replace(/\n\s*\n\s*\n/g, '\n\n');
+    formatted = formatted.trim();
 
     return formatted;
   };
