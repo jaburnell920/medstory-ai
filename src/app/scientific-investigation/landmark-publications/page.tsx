@@ -146,9 +146,9 @@ export default function LandmarkPublicationsPage() {
       sectionName="Scientific Investigation"
       taskName="Find landmark publications"
     >
-      <div className="flex flex-col lg:flex-row gap-12">
+      <div className="flex flex-col lg:flex-row gap-4">
         {/* Chat Interface - Left Side */}
-        <div className="w-full lg:w-1/2">
+        <div className="w-full lg:w-3/5">
           <ChatInterface
             messages={messages}
             input={input}

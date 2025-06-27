@@ -24,8 +24,8 @@ export default function Loading() {
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-12">
-          <div className="w-full lg:w-1/2">
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="w-full lg:w-3/5">
             <div className="bg-white border border-gray-300 shadow-md rounded-lg p-6 space-y-4">
               <div className="h-20 bg-gray-200 rounded animate-pulse"></div>
               <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
