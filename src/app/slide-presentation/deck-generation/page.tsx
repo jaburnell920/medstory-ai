@@ -79,7 +79,7 @@ export default function DeckGenerationPage() {
         {
           role: 'assistant' as const,
           content:
-            'Thanks for that info. Give me a moment and your presentation outline will be ready shortly...',
+            'Thanks for that info. Give me a moment and your presentation outline will be ready shortly',
         },
       ]);
       setShowFinalMessage(true);
