@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -17,6 +17,25 @@ interface ChatInterfaceProps {
   placeholder?: string;
   removeExpertPrefix?: boolean;
   onReset?: () => void;
+}
+
+// Loading dots animation component
+const LoadingDots = () => {
+  const [dots, setDots] = useState('.');
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDots(prevDots => {
+        if (prevDots === '.') return '..';
+        if (prevDots === '..') return '...';
+        return '.';
+      });
+    }, 500); // Change dots every 500ms
+    
+    return () => clearInterval(interval);
+  }, []);
+  
+  return <span>{dots}</span>;
 }
 
 export default function ChatInterface({
@@ -68,6 +87,7 @@ export default function ChatInterface({
                   </div>
                   <div className="px-4 py-3 whitespace-pre-wrap text-gray-800">
                     {formatContent(m.content)}
+                    {loading && i === messages.length - 1 && m.role === 'assistant' && <LoadingDots />}
                   </div>
                 </div>
               ) : (
@@ -97,7 +117,7 @@ export default function ChatInterface({
                   className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 shadow-md"
                   disabled={loading}
                 >
-                  {loading ? '...' : 'Send'}
+                  {loading ? <LoadingDots /> : 'Send'}
                 </button>
               </form>
 
