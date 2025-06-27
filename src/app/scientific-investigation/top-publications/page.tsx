@@ -103,9 +103,9 @@ export default function TopPublicationsPage() {
       sectionName="Stakeholder Interviews"
       taskName="Simulated thought leader interview"
     >
-      <div className="flex flex-col lg:flex-row gap-12">
+      <div className="flex flex-col lg:flex-row gap-4">
         {/* Chat Interface - Left Side */}
-        <div className="w-full lg:w-2/3">
+        <div className="w-full lg:w-3/5">
           <ChatInterface
             messages={messages}
             input={input}
