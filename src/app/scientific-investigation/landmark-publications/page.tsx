@@ -68,7 +68,10 @@ export default function LandmarkPublicationsPage() {
     formatted = formatted.replace(/\|/g, '');
 
     // Clean up any table formatting remnants
-    formatted = formatted.replace(/Study Number|Citation|Title|Impact of Study|Summary|Significance/g, '');
+    formatted = formatted.replace(
+      /Study Number|Citation|Title|Impact of Study|Summary|Significance/g,
+      ''
+    );
     formatted = formatted.replace(/[-]{2,}/g, '');
 
     // Ensure each numbered item starts on a new line
@@ -102,7 +105,7 @@ export default function LandmarkPublicationsPage() {
         ...newMessages,
         {
           role: 'assistant' as const,
-          content: 'Thanks, Please wait while I find landmark publications based on your answers.',
+          content: 'Thanks, Please wait while I find landmark publications based on your answers',
         },
       ]);
       setShowFinalMessage(true);
