@@ -120,7 +120,7 @@ export default function Dashboard() {
 
   return (
     <PageLayout
-      sectionIcon="🎯"
+      sectionIcon={<img src="/story_flow_map_chat.svg" alt="Story Flow Map" className="w-8 h-8" />}
       sectionName="Story Flow Map"
       taskName="Create tension-resolution points"
     >
