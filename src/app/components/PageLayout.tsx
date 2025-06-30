@@ -10,6 +10,15 @@ interface PageLayoutProps {
   children: React.ReactNode;
 }
 
+// Mapping of section names to their corresponding chat SVG icons
+const sectionIconMap: Record<string, string> = {
+  'Scientific Investigation': '/scientific_investigation_chat.svg',
+  'Stakeholder Interviews': '/stakeholder_interview_chat.svg',
+  'Core Story Concept': '/core_story_concept_chat.svg',
+  'Story Flow Map': '/story_flow_map_chat.svg',
+  'MEDSTORY Slide Deck': '/medstory_slide_deck_chat.svg',
+};
+
 export default function PageLayout({
   sectionIcon,
   sectionName,
@@ -42,7 +51,15 @@ export default function PageLayout({
         {/* Fixed Header with Section and Task */}
         <div className="flex items-center justify-between p-12 pb-6 flex-shrink-0 bg-gray-50">
           <div className="flex items-center">
-            <span className="text-4xl mr-4">{sectionIcon}</span>
+            {sectionIconMap[sectionName] ? (
+              <img 
+                src={sectionIconMap[sectionName]} 
+                alt={sectionName}
+                className="w-12 h-12 mr-4"
+              />
+            ) : (
+              <span className="text-4xl mr-4">{sectionIcon}</span>
+            )}
             <div>
               <h1 className="text-3xl font-extrabold text-[#063471]">{sectionName}</h1>
               <h2 className="text-xl text-gray-600 mt-1">{taskName}</h2>
