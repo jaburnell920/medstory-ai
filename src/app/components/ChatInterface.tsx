@@ -17,6 +17,7 @@ interface ChatInterfaceProps {
   placeholder?: string;
   removeExpertPrefix?: boolean;
   onReset?: () => void;
+  sectionIcon?: string; // Path to SVG icon for the chat section
 }
 
 // Loading dots animation component
@@ -48,6 +49,7 @@ export default function ChatInterface({
   placeholder = 'Type your response...',
   removeExpertPrefix = false,
   onReset,
+  sectionIcon,
 }: ChatInterfaceProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -84,7 +86,14 @@ export default function ChatInterface({
             <div key={i} className="w-full">
               {m.role === 'assistant' ? (
                 <div className="w-full bg-white rounded-md shadow-md overflow-hidden">
-                  <div className="bg-[#002F6C] text-white px-4 py-2">
+                  <div className="bg-[#002F6C] text-white px-4 py-2 flex items-center">
+                    {sectionIcon && (
+                      <img 
+                        src={sectionIcon} 
+                        alt="Section Icon" 
+                        className="w-6 h-6 mr-3 filter brightness-0 invert"
+                      />
+                    )}
                     <span className="text-white">MEDSTORY</span>
                     <span className="text-white font-bold">AI</span>
                   </div>

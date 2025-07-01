@@ -119,6 +119,7 @@ export default function TopPublicationsPage() {
             }
             removeExpertPrefix={true}
             onReset={handleReset}
+            sectionIcon="/stakeholder_interviews_chat.svg"
           />
         </div>
       </div>

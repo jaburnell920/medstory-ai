@@ -136,6 +136,7 @@ export default function Dashboard() {
             showInput={step <= questions.length - 1}
             placeholder="Type your response..."
             onReset={handleReset}
+            sectionIcon="/story_flow_map_chat.svg"
           />
         </div>
 

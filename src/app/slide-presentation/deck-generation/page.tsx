@@ -167,6 +167,7 @@ Generate the entire outline without stopping for user input.
             showInput={!showFinalMessage}
             placeholder="Type your response..."
             onReset={handleReset}
+            sectionIcon="/medstory_slide_deck_chat.svg"
           />
         </div>
 

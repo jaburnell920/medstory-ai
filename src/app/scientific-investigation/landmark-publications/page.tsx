@@ -158,6 +158,7 @@ export default function LandmarkPublicationsPage() {
             showInput={!showFinalMessage}
             placeholder="Type your response..."
             onReset={handleReset}
+            sectionIcon="/scientific_investigation_chat.svg"
           />
         </div>
 
