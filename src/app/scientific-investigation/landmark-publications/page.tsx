@@ -142,7 +142,9 @@ export default function LandmarkPublicationsPage() {
 
   return (
     <PageLayout
-      sectionIcon="🔬"
+      sectionIcon={
+        <img src="/scientific_investigation_chat.png" alt="Core Story Chat" className="w-6 h-6" />
+      }
       sectionName="Scientific Investigation"
       taskName="Find landmark publications"
     >

@@ -18,7 +18,7 @@ function SidebarMenu() {
         <Section
           title={
             <img
-              src="/scientific_investigation_menu.svg"
+              src="/scientific_investigation_menu.png"
               alt="Scientific Investigation"
               className="w-6 h-6"
             />
@@ -43,7 +43,7 @@ function SidebarMenu() {
         <Section
           title={
             <img
-              src="/stakeholder_interview_menu.svg"
+              src="/stakeholder_interviews_menu.png"
               alt="Stakeholder Interviews"
               className="w-6 h-6"
             />
@@ -67,7 +67,7 @@ function SidebarMenu() {
 
         <Section
           title={
-            <img src="/core_story_concept_menu.svg" alt="Core Story Concept" className="w-6 h-6" />
+            <img src="/core_story_concept_menu.png" alt="Core Story Concept" className="w-6 h-6" />
           }
           sectionName="Core Story Concept"
           links={[
@@ -78,7 +78,7 @@ function SidebarMenu() {
         />
 
         <Section
-          title={<img src="/story_flow_map_menu.svg" alt="Story Flow Map" className="w-6 h-6" />}
+          title={<img src="/story_flow_map_menu.png" alt="Story Flow Map" className="w-6 h-6" />}
           sectionName="Story Flow Map"
           links={[
             {
@@ -99,7 +99,7 @@ function SidebarMenu() {
         <Section
           title={
             <img
-              src="/medstory_slide_deck_menu.svg"
+              src="/medstory_slide_deck_menu.png"
               alt="MEDSTORY Slide Deck"
               className="w-6 h-6"
             />
