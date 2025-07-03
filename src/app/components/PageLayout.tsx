@@ -63,7 +63,7 @@ export default function PageLayout({
                 d="M10 19l-7-7m0 0l7-7m-7 7h18"
               />
             </svg>
-            Back to Science Branding
+            Exit MEDSTORY<strong>AI</strong>
           </a>
         </div>
 

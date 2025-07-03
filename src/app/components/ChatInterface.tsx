@@ -22,21 +22,21 @@ interface ChatInterfaceProps {
 // Loading dots animation component
 const LoadingDots = () => {
   const [dots, setDots] = useState('.');
-  
+
   useEffect(() => {
     const interval = setInterval(() => {
-      setDots(prevDots => {
+      setDots((prevDots) => {
         if (prevDots === '.') return '..';
         if (prevDots === '..') return '...';
         return '.';
       });
     }, 500); // Change dots every 500ms
-    
+
     return () => clearInterval(interval);
   }, []);
-  
+
   return <span>{dots}</span>;
-}
+};
 
 export default function ChatInterface({
   messages,
@@ -90,7 +90,9 @@ export default function ChatInterface({
                   </div>
                   <div className="px-4 py-3 whitespace-pre-wrap text-gray-800">
                     {formatContent(m.content)}
-                    {loading && i === messages.length - 1 && m.role === 'assistant' && <LoadingDots />}
+                    {loading && i === messages.length - 1 && m.role === 'assistant' && (
+                      <LoadingDots />
+                    )}
                   </div>
                 </div>
               ) : (
@@ -129,7 +131,7 @@ export default function ChatInterface({
                   <button
                     type="button"
                     onClick={onReset}
-                    className="text-sm text-gray-500 hover:text-gray-700 underline"
+                    className="flex items-center px-4 py-2 bg-[#002F6C] text-white rounded-lg hover:bg-[#063471] transition-colors duration-200 font-medium"
                     disabled={loading}
                   >
                     START OVER
