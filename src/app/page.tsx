@@ -205,5 +205,5 @@
 import { redirect } from 'next/navigation';
 
 export default function Home() {
-  redirect('/scientific-investigation/landmark-publications');
+  redirect('/enter');
 }
