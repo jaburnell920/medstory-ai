@@ -10,7 +10,7 @@ export default function TopPublicationsPage() {
     {
       role: 'assistant',
       content:
-        'Who would you like to simulate an interview with:\n\nA specific person...Please provide the full name and their affiliation\nA scientific expert...Please provide the scientific area of expertise',
+        'Greetings! I will simulate an interview with {name of whoever the user selects}.\n\nA specific person...Please provide the full name and their affiliation\nA scientific expert...Please provide the scientific area of expertise',
     },
   ]);
   const [loading, setLoading] = useState(false);
@@ -23,7 +23,7 @@ export default function TopPublicationsPage() {
       {
         role: 'assistant',
         content:
-          'Who would you like to simulate an interview with:\n\nA specific person...Please provide the full name and their affiliation\nA scientific expert...Please provide the scientific area of expertise',
+          'Greetings! I will simulate an interview with {name of whoever the user selects}.\n\nA specific person...Please provide the full name and their affiliation\nA scientific expert...Please provide the scientific area of expertise',
       },
     ]);
     setLoading(false);
