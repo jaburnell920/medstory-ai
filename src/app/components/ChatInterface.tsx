@@ -84,7 +84,7 @@ export default function ChatInterface({
             <div key={i} className="w-full">
               {m.role === 'assistant' ? (
                 <div className="w-full bg-white rounded-md shadow-md overflow-hidden">
-                  <div className="bg-[#002F6C] text-white px-4 py-2">
+                  <div className="bg-[#fab31c] text-white px-4 py-2">
                     <span className="text-white">MEDSTORY</span>
                     <span className="text-white font-bold">AI</span>
                   </div>
@@ -97,7 +97,7 @@ export default function ChatInterface({
                 </div>
               ) : (
                 <div className="w-full bg-white rounded-md shadow-md overflow-hidden">
-                  <div className="bg-gray-400 text-white px-4 py-2">YOU</div>
+                  <div className="bg-[#115dae] text-white px-4 py-2">YOU</div>
                   <div className="px-4 py-3 whitespace-pre-wrap text-gray-800">{m.content}</div>
                 </div>
               )}
@@ -131,7 +131,7 @@ export default function ChatInterface({
                   <button
                     type="button"
                     onClick={onReset}
-                    className="flex items-center px-4 py-2 bg-[#002F6C] text-white rounded-lg hover:bg-[#063471] transition-colors duration-200 font-medium"
+                    className="flex items-center px-4 py-2 bg-[#d3875f] text-white rounded-lg hover:bg-[#773f21] transition-colors duration-200 font-medium"
                     disabled={loading}
                   >
                     START OVER

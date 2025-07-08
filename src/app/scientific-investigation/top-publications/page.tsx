@@ -100,7 +100,7 @@ export default function TopPublicationsPage() {
   return (
     <PageLayout
       sectionIcon={
-        <img src="/stakeholder_interviews_chat.png" alt="Core Story Chat" className="w-12 h-12" />
+        <img src="/stakeholder_interviews_chat.png" alt="Core Story Chat" className="w-18 h-18" />
       }
       sectionName="Stakeholder Interviews"
       taskName="Simulated thought leader interview"
