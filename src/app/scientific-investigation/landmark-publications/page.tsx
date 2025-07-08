@@ -63,62 +63,71 @@ export default function LandmarkPublicationsPage() {
     // 4. Put "Impact Score(0-100):" on a new line and make it bold (score not bold)
     // 5. Start article description on a new line
 
-    // Clean up the content first
-    let formatted = content
+    // First, let's fix any line breaks in the page numbers
+    let formatted = content;
+    
+    // Fix line breaks in page numbers by joining lines that end with a hyphen
+    formatted = formatted.replace(/(\d+)-\s*\n\s*(\d+)/g, '$1-$2');
+    
+    // Fix any numbers that might have been split across lines
+    formatted = formatted.replace(/(\d+)\.\s*\n\s*(\d+)/g, '$1.$2');
+    
+    // Now clean up the content
+    formatted = formatted
       .replace(/"/g, '')                // Remove quotes
       .replace(/\|/g, '')               // Remove vertical bars
       .replace(/Study Number|Citation|Title|Impact of Study|Summary|Significance/g, '') // Remove table headers
       .replace(/[-]{2,}/g, '')          // Remove table separators
       .replace(/(\d+)\.\s*/g, '\n$1. '); // Ensure each numbered item starts on a new line
 
-    // Split the content into individual entries
+    // Process each entry
     const entries = formatted.split(/\n(?=\d+\.\s+)/).filter(entry => entry.trim());
     
-    // Process each entry with the required formatting
     const processedEntries = entries.map(entry => {
-      // Split the entry into lines for processing
-      const lines = entry.split('\n').filter(line => line.trim());
-      if (lines.length < 2) return entry;
+      // First, find and extract the reference number
+      const refMatch = entry.match(/^(\d+)\./);
+      if (!refMatch) return entry;
       
-      // Process the citation line (first line)
-      const citationLine = lines[0];
+      // Extract the citation line (first line up to Impact Score)
+      const impactScoreIndex = entry.indexOf('Impact Score');
+      if (impactScoreIndex === -1) return entry;
       
-      // Extract reference number
-      const refNumberMatch = citationLine.match(/^(\d+)\./);
-      if (!refNumberMatch) return entry;
-      const refNumber = refNumberMatch[1];
+      const citationLine = entry.substring(0, impactScoreIndex).trim();
       
-      // Extract author part (everything up to the first period after the reference number)
+      // Extract the author part (everything after the number and before the first period)
       const authorMatch = citationLine.match(/^\d+\.\s+([^\.]+)(?=\.)/);
       if (!authorMatch) return entry;
+      
+      // Get the rest of the citation (everything after the author's name)
       const authorText = authorMatch[1];
+      const authorEndIndex = citationLine.indexOf(authorText) + authorText.length;
+      const restOfCitation = citationLine.substring(authorEndIndex);
       
-      // Get the rest of the citation (everything after the author)
-      const authorEndPos = citationLine.indexOf(authorText) + authorText.length;
-      const citationText = citationLine.substring(authorEndPos);
+      // Extract the Impact Score part
+      const impactScoreEndIndex = entry.indexOf('\n', impactScoreIndex);
+      const impactScoreLine = impactScoreEndIndex !== -1 
+        ? entry.substring(impactScoreIndex, impactScoreEndIndex) 
+        : entry.substring(impactScoreIndex);
       
-      // Find the Impact Score line
-      const impactScoreLine = lines.find(line => line.includes('Impact Score'));
-      if (!impactScoreLine) return entry;
-      
-      // Extract the score
+      // Extract the score value
       const scoreMatch = impactScoreLine.match(/Impact Score \(0-100\):\s*(\d+)/);
       if (!scoreMatch) return entry;
       const score = scoreMatch[1];
       
-      // Get the description (all remaining lines after the Impact Score line)
-      const impactScoreIndex = lines.indexOf(impactScoreLine);
-      const descriptionLines = lines.slice(impactScoreIndex + 1);
-      const description = descriptionLines.join(' ').trim();
+      // Extract the description (everything after the Impact Score line)
+      const description = impactScoreEndIndex !== -1 
+        ? entry.substring(impactScoreEndIndex).trim() 
+        : '';
       
-      // Format the entry with proper HTML
-      return `<p><strong>${refNumber}.</strong> <strong>${authorText}</strong>${citationText}</p>
-<p><strong>Impact Score(0-100):</strong> ${score}</p>
-<p>${description}</p>`;
+      // Format with proper HTML
+      return `<div class="mb-4">
+  <p><strong>${refMatch[1]}.</strong> <strong>${authorText}</strong>${restOfCitation}</p>
+  <p><strong>Impact Score(0-100):</strong> ${score}</p>
+  <p>${description}</p>
+</div>`;
     });
     
-    // Join all processed entries
-    return processedEntries.join('\n\n');
+    return processedEntries.join('\n');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -206,7 +215,7 @@ export default function LandmarkPublicationsPage() {
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md">
               <h2 className="text-xl font-bold text-blue-900 mb-4">Landmark Publications</h2>
               <div
-                className="text-gray-800 whitespace-pre-wrap"
+                className="text-gray-800"
                 dangerouslySetInnerHTML={{ __html: result }}
               />
             </div>
