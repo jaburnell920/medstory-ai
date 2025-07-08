@@ -56,31 +56,76 @@ export default function LandmarkPublicationsPage() {
   };
 
   const formatLandmarkResult = (content: string) => {
-    // Format the numbered response according to requirements
-    // Format: N. Authors. Title. Journal. Year;Volume:Pages.
-    // Impact Score (0-100): Score
-    // Description.
+    // This function formats landmark publications with the following requirements:
+    // 1. Number the references in bold
+    // 2. Bold the authors
+    // 3. Do not prematurely break lines on page numbers (use full width)
+    // 4. Put "Impact Score(0-100):" on a new line and make it bold (score not bold)
+    // 5. Start article description on a new line
 
-    let formatted = content;
+    // Clean up the content first
+    let formatted = content
+      .replace(/"/g, '')                // Remove quotes
+      .replace(/\|/g, '')               // Remove vertical bars
+      .replace(/Study Number|Citation|Title|Impact of Study|Summary|Significance/g, '') // Remove table headers
+      .replace(/[-]{2,}/g, '')          // Remove table separators
+      .replace(/(\d+)\.\s*/g, '\n$1. '); // Ensure each numbered item starts on a new line
 
-    // Remove quotes and vertical bars
-    formatted = formatted.replace(/"/g, '');
-    formatted = formatted.replace(/\|/g, '');
-
-    // Clean up any table formatting remnants
+    // Use a simple regex-based approach for more reliable formatting
     formatted = formatted.replace(
-      /Study Number|Citation|Title|Impact of Study|Summary|Significance/g,
-      ''
+      /(\d+)\.\s+([^\.]+)(\.[^\n]+)Impact Score \(0-100\):\s*(\d+)\s*([\s\S]*?)(?=\n\d+\.|$)/g,
+      (match, number, authors, citation, score, description) => {
+        return `<strong>${number}.</strong> <strong>${authors}</strong>${citation}<br/><strong>Impact Score(0-100):</strong> ${score}<br/>${description.trim()}`;
+      }
     );
-    formatted = formatted.replace(/[-]{2,}/g, '');
 
-    // Ensure each numbered item starts on a new line
-    formatted = formatted.replace(/(\d+)\.\s*/g, '\n$1. ');
-
-    // Clean up extra whitespace and empty lines
-    formatted = formatted.replace(/\n\s*\n\s*\n/g, '\n\n');
-    formatted = formatted.trim();
-
+    // If the regex approach failed, try a manual approach
+    if (!formatted.includes('<strong>')) {
+      // Split the content into individual entries
+      const entries = formatted.split(/\n(?=\d+\.\s+)/).filter(entry => entry.trim());
+      
+      // Process each entry manually
+      const processedEntries = entries.map(entry => {
+        // Extract the parts using string operations
+        const lines = entry.split('\n').filter(line => line.trim());
+        if (lines.length < 2) return entry;
+        
+        // First line contains the citation
+        const firstLine = lines[0];
+        const numberMatch = firstLine.match(/^(\d+)\./);
+        if (!numberMatch) return entry;
+        
+        // Extract the reference number
+        const refNumber = numberMatch[1];
+        
+        // Extract the author part
+        const authorStartPos = firstLine.indexOf('. ') + 2;
+        const authorEndPos = firstLine.indexOf('.', authorStartPos);
+        if (authorEndPos === -1) return entry;
+        
+        const authorText = firstLine.substring(authorStartPos, authorEndPos);
+        const citationText = firstLine.substring(authorEndPos);
+        
+        // Find the Impact Score line
+        const impactScoreLine = lines.find(line => line.includes('Impact Score'));
+        if (!impactScoreLine) return entry;
+        
+        const scoreMatch = impactScoreLine.match(/Impact Score \(0-100\):\s*(\d+)/);
+        if (!scoreMatch) return entry;
+        
+        const score = scoreMatch[1];
+        
+        // Get the description (all remaining lines)
+        const descriptionLines = lines.slice(lines.indexOf(impactScoreLine) + 1);
+        const description = descriptionLines.join(' ').trim();
+        
+        // Combine with proper formatting
+        return `<strong>${refNumber}.</strong> <strong>${authorText}</strong>${citationText}<br/><strong>Impact Score(0-100):</strong> ${score}<br/>${description}`;
+      });
+      
+      formatted = processedEntries.join('<br/><br/>');
+    }
+    
     return formatted;
   };
 
