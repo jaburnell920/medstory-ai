@@ -57,8 +57,8 @@ export default function LandmarkPublicationsPage() {
 
   const formatLandmarkResult = (content: string) => {
     // Format the numbered response according to requirements
-    // Format: N. Authors. Title. Journal. Year;Volume:Pages.
-    // Impact Score (0-100): Score
+    // Format: N. **Authors.** Title. Journal. Year;Volume:Pages.
+    // **Impact Score (0-100):** Score
     // Description.
 
     let formatted = content;
@@ -74,14 +74,48 @@ export default function LandmarkPublicationsPage() {
     );
     formatted = formatted.replace(/[-]{2,}/g, '');
 
-    // Ensure each numbered item starts on a new line
-    formatted = formatted.replace(/(\d+)\.\s*/g, '\n$1. ');
+    // Split into individual studies
+    const studies = formatted.split(/(?=\d+\.\s)/);
+    
+    const formattedStudies = studies.map(study => {
+      if (!study.trim()) return '';
+      
+      // Extract components using regex
+      const studyMatch = study.match(/^(\d+)\.\s*(.+?)(?=Impact Score|$)/s);
+      const impactMatch = study.match(/Impact Score \(0-100\):\s*(\d+)/);
+      const descriptionMatch = study.match(/Impact Score \(0-100\):\s*\d+\s*(.+?)$/s);
+      
+      if (!studyMatch) return study;
+      
+      const number = studyMatch[1];
+      const citation = studyMatch[2].trim();
+      const impactScore = impactMatch ? impactMatch[1] : '';
+      const description = descriptionMatch ? descriptionMatch[1].trim() : '';
+      
+      // Format the citation to bold the authors (everything before the first period after "et al.")
+      let formattedCitation = citation;
+      const authorMatch = citation.match(/^(.+?(?:et al\.)?)\s*(.+)$/);
+      if (authorMatch) {
+        const authors = authorMatch[1];
+        const rest = authorMatch[2];
+        formattedCitation = `**${authors}** ${rest}`;
+      }
+      
+      // Build the formatted study
+      let formattedStudy = `**${number}.** ${formattedCitation}`;
+      
+      if (impactScore) {
+        formattedStudy += `\n**Impact Score (0-100):** ${impactScore}`;
+      }
+      
+      if (description) {
+        formattedStudy += `\n${description}`;
+      }
+      
+      return formattedStudy;
+    }).filter(study => study.trim());
 
-    // Clean up extra whitespace and empty lines
-    formatted = formatted.replace(/\n\s*\n\s*\n/g, '\n\n');
-    formatted = formatted.trim();
-
-    return formatted;
+    return formattedStudies.join('\n\n');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -168,10 +202,23 @@ export default function LandmarkPublicationsPage() {
           <div className="flex-1 space-y-6" ref={resultRef}>
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md">
               <h2 className="text-xl font-bold text-blue-900 mb-4">Landmark Publications</h2>
-              <div
-                className="text-gray-800 whitespace-pre-wrap"
-                dangerouslySetInnerHTML={{ __html: result }}
-              />
+              <div className="text-gray-800 leading-relaxed max-w-none">
+                {result.split('\n\n').map((study, index) => (
+                  <div key={index} className="mb-6 last:mb-0">
+                    {study.split('\n').map((line, lineIndex) => {
+                      // Handle bold formatting
+                      const formattedLine = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                      return (
+                        <div
+                          key={lineIndex}
+                          className={`${lineIndex > 0 ? 'mt-2' : ''}`}
+                          dangerouslySetInnerHTML={{ __html: formattedLine }}
+                        />
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
