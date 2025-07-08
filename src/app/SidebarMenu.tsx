@@ -82,7 +82,7 @@ function SidebarMenu() {
           sectionName="Story Flow Map"
           links={[
             {
-              href: '/dashboard',
+              href: '',
               label: 'Create tension-resolution points',
             },
             {
