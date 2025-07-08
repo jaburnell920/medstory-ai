@@ -71,7 +71,7 @@ function SidebarMenu() {
           }
           sectionName="Core Story Concept"
           links={[
-            { href: '', label: 'Create Core Story Concept options' },
+            { href: '/core-story-concept', label: 'Create Core Story Concept options' },
             { href: '', label: 'Optimize Core Story Concept' },
             { href: '', label: 'Evaluate Core Story Concept' },
           ]}
@@ -82,7 +82,7 @@ function SidebarMenu() {
           sectionName="Story Flow Map"
           links={[
             {
-              href: '/dashboard',
+              href: '',
               label: 'Create tension-resolution points',
             },
             {
