@@ -56,32 +56,78 @@ export default function LandmarkPublicationsPage() {
   };
 
   const formatLandmarkResult = (content: string) => {
-    // Format the numbered response according to requirements
-    // Format: N. Authors. Title. Journal. Year;Volume:Pages.
-    // Impact Score (0-100): Score
-    // Description.
+    // This function formats landmark publications with the following requirements:
+    // 1. Number the references in bold
+    // 2. Bold the authors
+    // 3. Do not prematurely break lines on page numbers (use full width)
+    // 4. Put "Impact Score(0-100):" on a new line and make it bold (score not bold)
+    // 5. Start article description on a new line
 
-    let formatted = content;
+    // First, let's fix any line breaks in the page numbers by joining lines that end with a hyphen
+    let formatted = content.replace(/(\d+)-\s*\n\s*(\d+)/g, '$1-$2');
+    
+    // Fix any numbers that might have been split across lines
+    formatted = formatted.replace(/(\d+)\.\s*\n\s*(\d+)/g, '$1.$2');
+    
+    // Fix any other line breaks in the middle of sentences
+    formatted = formatted.replace(/(\w)\s*\n\s*(\w)/g, '$1 $2');
+    
+    // Now clean up the content
+    formatted = formatted
+      .replace(/"/g, '')                // Remove quotes
+      .replace(/\|/g, '')               // Remove vertical bars
+      .replace(/Study Number|Citation|Title|Impact of Study|Summary|Significance/g, '') // Remove table headers
+      .replace(/[-]{2,}/g, '')          // Remove table separators
+      .replace(/(\d+)\.\s*/g, '\n$1. '); // Ensure each numbered item starts on a new line
 
-    // Remove quotes and vertical bars
-    formatted = formatted.replace(/"/g, '');
-    formatted = formatted.replace(/\|/g, '');
-
-    // Clean up any table formatting remnants
-    formatted = formatted.replace(
-      /Study Number|Citation|Title|Impact of Study|Summary|Significance/g,
-      ''
-    );
-    formatted = formatted.replace(/[-]{2,}/g, '');
-
-    // Ensure each numbered item starts on a new line
-    formatted = formatted.replace(/(\d+)\.\s*/g, '\n$1. ');
-
-    // Clean up extra whitespace and empty lines
-    formatted = formatted.replace(/\n\s*\n\s*\n/g, '\n\n');
-    formatted = formatted.trim();
-
-    return formatted;
+    // Split the content into individual entries
+    const entries = formatted.split(/\n(?=\d+\.\s+)/).filter(entry => entry.trim());
+    
+    // Process each entry
+    const processedEntries = entries.map(entry => {
+      const lines = entry.split('\n').filter(line => line.trim());
+      if (lines.length < 2) return entry;
+      
+      // Extract the first line which contains the citation
+      const citationLine = lines[0];
+      
+      // Extract the reference number
+      const refMatch = citationLine.match(/^(\d+)\./);
+      if (!refMatch) return entry;
+      const refNumber = refMatch[1];
+      
+      // Extract the author part
+      const authorMatch = citationLine.match(/^\d+\.\s+([^\.]+)(?=\.)/);
+      if (!authorMatch) return entry;
+      const authorText = authorMatch[1];
+      
+      // Get the rest of the citation
+      const authorEndIndex = citationLine.indexOf(authorText) + authorText.length;
+      const restOfCitation = citationLine.substring(authorEndIndex);
+      
+      // Find the Impact Score line
+      const impactScoreLine = lines.find(line => line.includes('Impact Score'));
+      if (!impactScoreLine) return entry;
+      
+      // Extract the score
+      const scoreMatch = impactScoreLine.match(/Impact Score \(0-100\):\s*(\d+)/);
+      if (!scoreMatch) return entry;
+      const score = scoreMatch[1];
+      
+      // Get the description (all remaining lines after the Impact Score line)
+      const impactScoreIndex = lines.indexOf(impactScoreLine);
+      const descriptionLines = lines.slice(impactScoreIndex + 1);
+      const description = descriptionLines.join(' ').trim();
+      
+      // Format with proper HTML
+      return `<div class="mb-6">
+  <p class="mb-2"><strong>${refNumber}.</strong> <strong>${authorText}</strong>${restOfCitation}</p>
+  <p class="mb-2"><strong>Impact Score(0-100):</strong> ${score}</p>
+  <p>${description}</p>
+</div>`;
+    });
+    
+    return processedEntries.join('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -169,7 +215,7 @@ export default function LandmarkPublicationsPage() {
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md">
               <h2 className="text-xl font-bold text-blue-900 mb-4">Landmark Publications</h2>
               <div
-                className="text-gray-800 whitespace-pre-wrap"
+                className="text-gray-800"
                 dangerouslySetInnerHTML={{ __html: result }}
               />
             </div>
