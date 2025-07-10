@@ -6,7 +6,7 @@ import SidebarMenu from '../SidebarMenu';
 interface PageLayoutProps {
   sectionIcon: React.ReactNode;
   sectionName: string;
-  taskName: string;
+  taskName: string | React.ReactNode;
   children: React.ReactNode;
 }
 
