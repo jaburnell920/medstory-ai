@@ -5,6 +5,15 @@ import toast from 'react-hot-toast';
 import PageLayout from '@/app/components/PageLayout';
 import ChatInterface from '@/app/components/ChatInterface';
 
+interface Study {
+  id: string;
+  number: string;
+  citation: string;
+  impactScore: string;
+  description: string;
+  fullText: string;
+}
+
 const questions = [
   'What is your topic? (Please be specific)',
   'For studies published after what year? (year)',
@@ -29,6 +38,8 @@ export default function LandmarkPublicationsPage() {
   ]);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState('');
+  const [studies, setStudies] = useState<Study[]>([]);
+  const [selectedStudies, setSelectedStudies] = useState<Set<string>>(new Set());
   const [showFinalMessage, setShowFinalMessage] = useState(false);
   const resultRef = useRef<HTMLDivElement | null>(null);
 
@@ -37,6 +48,65 @@ export default function LandmarkPublicationsPage() {
       resultRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [result]);
+
+  // Load selected studies from session storage on component mount
+  useEffect(() => {
+    const savedSelected = sessionStorage.getItem('selectedLandmarkStudies');
+    if (savedSelected) {
+      setSelectedStudies(new Set(JSON.parse(savedSelected)));
+    }
+  }, []);
+
+  // Parse studies from result text
+  const parseStudies = (text: string): Study[] => {
+    const studyBlocks = text.split(/\n\s*\n/).filter(block => block.trim());
+    return studyBlocks.map((block, index) => {
+      const lines = block.trim().split('\n');
+      const citationLine = lines[0] || '';
+      const impactLine = lines.find(line => line.includes('Impact Score')) || '';
+      const descriptionLines = lines.filter(line => 
+        !line.match(/^\d+\./) && !line.includes('Impact Score')
+      );
+      
+      const numberMatch = citationLine.match(/^(\d+)\./);
+      const number = numberMatch ? numberMatch[1] : String(index + 1);
+      const citation = citationLine.replace(/^\d+\.\s*/, '');
+      const impactScore = impactLine.replace('Impact Score (0-100):', '').trim();
+      const description = descriptionLines.join(' ').trim();
+      
+      return {
+        id: `study-${number}-${Date.now()}-${index}`,
+        number,
+        citation,
+        impactScore,
+        description,
+        fullText: block
+      };
+    });
+  };
+
+  // Handle checkbox changes
+  const handleStudySelection = (studyId: string, isSelected: boolean) => {
+    const newSelected = new Set(selectedStudies);
+    if (isSelected) {
+      newSelected.add(studyId);
+    } else {
+      newSelected.delete(studyId);
+    }
+    setSelectedStudies(newSelected);
+    
+    // Save to session storage
+    sessionStorage.setItem('selectedLandmarkStudies', JSON.stringify(Array.from(newSelected)));
+    
+    // Also save the actual study data
+    const selectedStudyData = studies.filter(study => newSelected.has(study.id));
+    sessionStorage.setItem('selectedLandmarkStudiesData', JSON.stringify(selectedStudyData));
+  };
+
+  // Handle clicking on title to access hidden page
+  const handleTitleClick = () => {
+    window.location.href = '/scientific-investigation/landmark-publications/saved';
+  };
 
   const handleReset = () => {
     setStep(0);
@@ -52,6 +122,7 @@ export default function LandmarkPublicationsPage() {
     ]);
     setLoading(false);
     setResult('');
+    setStudies([]);
     setShowFinalMessage(false);
   };
 
@@ -127,7 +198,9 @@ export default function LandmarkPublicationsPage() {
           body: JSON.stringify({ query }),
         });
         const data = await res.json();
-        setResult(formatLandmarkResult(data.result));
+        const formattedResult = formatLandmarkResult(data.result);
+        setResult(formattedResult);
+        setStudies(parseStudies(formattedResult));
         setTimeout(() => {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 100);
@@ -146,7 +219,15 @@ export default function LandmarkPublicationsPage() {
         <img src="/scientific_investigation_chat.png" alt="Core Story Chat" className="w-18 h-18" />
       }
       sectionName="Scientific Investigation"
-      taskName="Find landmark publications"
+      taskName={
+        <span 
+          onClick={handleTitleClick} 
+          className="cursor-pointer hover:text-blue-600 transition-colors"
+          title="Click to view saved studies"
+        >
+          Find landmark publications
+        </span>
+      }
     >
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Chat Interface - Left Side */}
@@ -164,14 +245,52 @@ export default function LandmarkPublicationsPage() {
         </div>
 
         {/* Result Section - Right Side */}
-        {result && (
+        {studies.length > 0 && (
           <div className="flex-1 space-y-6" ref={resultRef}>
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md">
-              <h2 className="text-xl font-bold text-blue-900 mb-4">Landmark Publications</h2>
-              <div
-                className="text-gray-800 whitespace-pre-wrap"
-                dangerouslySetInnerHTML={{ __html: result }}
-              />
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-blue-900">Landmark Publications</h2>
+                <span className="text-sm text-gray-600">
+                  {selectedStudies.size} selected
+                </span>
+              </div>
+              <div className="space-y-6">
+                {studies.map((study) => (
+                  <div key={study.id} className="border-b border-gray-200 pb-4 last:border-b-0">
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        id={study.id}
+                        checked={selectedStudies.has(study.id)}
+                        onChange={(e) => handleStudySelection(study.id, e.target.checked)}
+                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <div className="flex-1">
+                        <label htmlFor={study.id} className="cursor-pointer">
+                          <div className="font-medium text-gray-900 mb-2">
+                            {study.number}. {study.citation}
+                          </div>
+                          {study.impactScore && (
+                            <div className="text-sm font-semibold text-blue-600 mb-2">
+                              Impact Score (0-100): {study.impactScore}
+                            </div>
+                          )}
+                          <div className="text-gray-700 text-sm leading-relaxed">
+                            {study.description}
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {selectedStudies.size > 0 && (
+                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    💡 Tip: Click on &quot;Find landmark publications&quot; in the header to view your saved studies
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         )}
