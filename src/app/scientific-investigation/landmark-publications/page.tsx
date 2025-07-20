@@ -42,13 +42,16 @@ export default function LandmarkPublicationsPage() {
   const [studies, setStudies] = useState<Study[]>([]);
   const [selectedStudies, setSelectedStudies] = useState<Set<string>>(new Set());
   const [showFinalMessage, setShowFinalMessage] = useState(false);
+  const [initialResultsLoaded, setInitialResultsLoaded] = useState(false);
   const resultRef = useRef<HTMLDivElement | null>(null);
 
+  // Only scroll to results when they are first generated, not on checkbox changes
   useEffect(() => {
-    if (resultRef.current) {
+    if (resultRef.current && result && studies.length > 0 && !initialResultsLoaded) {
       resultRef.current.scrollIntoView({ behavior: 'smooth' });
+      setInitialResultsLoaded(true);
     }
-  }, [result]);
+  }, [result, studies, initialResultsLoaded]);
 
   // Load selected studies from session storage on component mount
   useEffect(() => {
@@ -131,6 +134,7 @@ export default function LandmarkPublicationsPage() {
     setResult('');
     setStudies([]);
     setShowFinalMessage(false);
+    setInitialResultsLoaded(false);
   };
 
   const formatLandmarkResult = (content: string) => {

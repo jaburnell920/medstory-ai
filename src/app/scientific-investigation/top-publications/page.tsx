@@ -26,13 +26,16 @@ export default function TopPublicationsPage() {
   const [interviewEnded, setInterviewEnded] = useState(false);
   const [keyPoints, setKeyPoints] = useState<KeyPoint[]>([]);
   const [selectedKeyPoints, setSelectedKeyPoints] = useState<Set<string>>(new Set());
+  const [initialKeyPointsLoaded, setInitialKeyPointsLoaded] = useState(false);
   const keyPointsRef = useRef<HTMLDivElement | null>(null);
 
+  // Only scroll to key points when they are first generated, not on checkbox changes
   useEffect(() => {
-    if (keyPointsRef.current && interviewEnded) {
+    if (keyPointsRef.current && interviewEnded && keyPoints.length > 0 && !initialKeyPointsLoaded) {
       keyPointsRef.current.scrollIntoView({ behavior: 'smooth' });
+      setInitialKeyPointsLoaded(true);
     }
-  }, [interviewEnded, keyPoints]);
+  }, [interviewEnded, keyPoints, initialKeyPointsLoaded]);
 
   // Handle clicking on title to access saved page
   const handleTitleClick = () => {
@@ -54,6 +57,7 @@ export default function TopPublicationsPage() {
     setExpertInfo('');
     setKeyPoints([]);
     setSelectedKeyPoints(new Set());
+    setInitialKeyPointsLoaded(false);
   };
 
   const handleEndInterview = async () => {
