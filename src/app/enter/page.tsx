@@ -27,7 +27,6 @@ export default function EnterPage() {
             />
           </div>
         </div>
-
         {/* Menu section with blue background */}
         <div className="bg-[#002F6C] text-white flex-1 px-6 pb-6 overflow-y-auto">
           <SidebarMenu />
@@ -51,9 +50,9 @@ export default function EnterPage() {
               <Image
                 src="/smart-speedy-simple.png"
                 alt="Smart Speedy Simple"
-                width={240}
+                width={100}
                 height={24}
-                className="h-6 w-60 opacity-70 border-0 outline-0"
+                className="h-6 w-45 opacity-70 border-0 outline-0"
               />
             </div>
           </div>
@@ -70,8 +69,8 @@ export default function EnterPage() {
             <div>
               <p className="text-lg text-black leading-relaxed">
                 <strong>MEDSTORYAI</strong> gives you a smart, speedy, and simple way to build
-                polished slide decks. By combining state-of-the-art generative AI with SBC&apos;s proven
-                storytelling framework—honed over 15 years—we help you craft narratives that
+                polished slide decks. By combining state-of-the-art generative AI with SBC&apos;s
+                proven storytelling framework—honed over 15 years—we help you craft narratives that
                 educate, engage, and persuade.
               </p>
             </div>
