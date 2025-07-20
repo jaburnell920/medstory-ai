@@ -49,16 +49,14 @@ export default function TopPublicationsPage() {
     setKeyPoints([]);
     setSelectedKeyPoints(new Set());
   };
-  
+
   const handleEndInterview = async () => {
     setLoading(true);
-    
+
     try {
       // Extract key points from the conversation
-      const conversationText = messages
-        .map(msg => msg.content)
-        .join('\n\n');
-      
+      const conversationText = messages.map((msg) => msg.content).join('\n\n');
+
       // Call OpenAI to extract key points
       const res = await fetch('/api/openai', {
         method: 'POST',
@@ -74,22 +72,24 @@ export default function TopPublicationsPage() {
           max_tokens: 1000,
         }),
       });
-      
+
       const data = await res.json();
-      
+
       // Parse the key points
       const pointsText = data.result || '';
-      const pointsList = pointsText
+      const pointsList: string[] = pointsText
         .split(/\d+\./)
-        .filter(point => point.trim().length > 0)
-        .map(point => point.trim());
-      
+        .filter((point: string) => point.trim().length > 0)
+        .map((point: string) => point.trim());
+
       // Create key points with IDs
-      const formattedKeyPoints = pointsList.map((content, index) => ({
-        id: `keypoint-${Date.now()}-${index}`,
-        content
-      }));
-      
+      const formattedKeyPoints: KeyPoint[] = pointsList.map(
+        (content: string, index: number): KeyPoint => ({
+          id: `keypoint-${Date.now()}-${index}`,
+          content,
+        })
+      );
+
       setKeyPoints(formattedKeyPoints);
       setInterviewEnded(true);
     } catch (err) {
@@ -98,7 +98,7 @@ export default function TopPublicationsPage() {
       setLoading(false);
     }
   };
-  
+
   // Handle checkbox changes for key points
   const handleKeyPointSelection = (pointId: string, isSelected: boolean) => {
     const newSelected = new Set(selectedKeyPoints);
@@ -108,12 +108,12 @@ export default function TopPublicationsPage() {
       newSelected.delete(pointId);
     }
     setSelectedKeyPoints(newSelected);
-    
+
     // Save to session storage
     sessionStorage.setItem('selectedInterviewKeyPoints', JSON.stringify(Array.from(newSelected)));
-    
+
     // Also save the actual key point data
-    const selectedPointsData = keyPoints.filter(point => newSelected.has(point.id));
+    const selectedPointsData = keyPoints.filter((point) => newSelected.has(point.id));
     sessionStorage.setItem('selectedInterviewKeyPointsData', JSON.stringify(selectedPointsData));
   };
 
@@ -186,7 +186,13 @@ export default function TopPublicationsPage() {
   return (
     <PageLayout
       sectionIcon={
-        <Image src="/stakeholder_interviews_chat.png" alt="Core Story Chat" width={72} height={72} className="w-18 h-18" />
+        <Image
+          src="/stakeholder_interviews_chat.png"
+          alt="Core Story Chat"
+          width={72}
+          height={72}
+          className="w-18 h-18"
+        />
       }
       sectionName="Stakeholder Interviews"
       taskName="Simulated thought leader interview"
@@ -211,16 +217,14 @@ export default function TopPublicationsPage() {
             interviewEnded={interviewEnded}
           />
         </div>
-        
+
         {/* Key Points Section - Right Side */}
         {interviewEnded && keyPoints.length > 0 && (
           <div className="flex-1 space-y-6" ref={keyPointsRef}>
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-blue-900">Key Points from Interview</h2>
-                <span className="text-sm text-gray-600">
-                  {selectedKeyPoints.size} selected
-                </span>
+                <span className="text-sm text-gray-600">{selectedKeyPoints.size} selected</span>
               </div>
               <div className="space-y-6">
                 {keyPoints.map((point) => (
