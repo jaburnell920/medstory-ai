@@ -127,7 +127,7 @@ export default function ChatInterface({
               </form>
 
               {onReset && messages.length > 1 && (
-                <div className="flex justify-start pt-2">
+                <div className="flex justify-start pt-24">
                   <button
                     type="button"
                     onClick={onReset}
