@@ -28,9 +28,9 @@ export default function PageLayout({
   });
 
   return (
-    <div className="flex h-screen text-black overflow-hidden">
+    <div className="flex min-h-screen text-black">
       {/* Sidebar with white background extending full height */}
-      <aside className="w-72 bg-white flex flex-col flex-shrink-0 h-screen fixed">
+      <aside className="w-80 bg-white flex flex-col flex-shrink-0 h-screen fixed">
         {/* Logo section with white background */}
         <div className="bg-white p-6 pb-4 flex-col">
           <Image
@@ -50,13 +50,11 @@ export default function PageLayout({
             />
           </div>
         </div>
-
         {/* Menu section with blue background */}
-        <div className="bg-[#002F6C] text-white flex-1 px-4 pb-4 overflow-y-auto flex flex-col">
+        <div className="bg-[#002F6C] text-white flex-1 px-6 pb-6 overflow-y-auto">
           <SidebarMenu />
         </div>
       </aside>
-
       {/* Main Content */}
       <main className="flex-1 bg-gray-50 flex flex-col overflow-hidden ml-72">
         {/* Fixed Header with Section and Task */}
