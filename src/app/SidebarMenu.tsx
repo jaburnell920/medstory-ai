@@ -94,7 +94,6 @@ function SidebarMenu() {
                       className={clsx(
                         baseLinkClass,
                         pathname === link.href && selectedLinkClass,
-                        link.extraClass,
                         'flex items-start'
                       )}
                       href={link.href}
