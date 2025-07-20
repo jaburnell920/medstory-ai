@@ -63,6 +63,13 @@ export default function ChatInterface({
     scrollToBottom();
   }, [messages]);
 
+  // Clear input when loading state changes to true
+  useEffect(() => {
+    if (loading) {
+      setInput('');
+    }
+  }, [loading, setInput]);
+
   // Dynamic placeholder based on loading state
   const getPlaceholder = () => {
     if (loading) {
@@ -127,9 +134,23 @@ export default function ChatInterface({
                     type="text"
                     className="w-full border rounded px-4 py-2 text-black shadow-md"
                     value={input}
-                    onChange={(e) => setInput(e.target.value)}
+                    onChange={(e) => {
+                      // If AI is thinking and user starts typing, clear the input first
+                      if (loading && input === '') {
+                        // This ensures the first character typed replaces the empty input
+                        setInput(e.target.value);
+                      } else {
+                        setInput(e.target.value);
+                      }
+                    }}
+                    onFocus={() => {
+                      // Clear input when user focuses on the input field while AI is thinking
+                      if (loading) {
+                        setInput('');
+                      }
+                    }}
                     placeholder={getPlaceholder()}
-                    disabled={loading || interviewEnded}
+                    disabled={interviewEnded}
                   />
                   {loading && (
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
@@ -141,7 +162,7 @@ export default function ChatInterface({
                 <button
                   type="submit"
                   className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed"
-                  disabled={loading || interviewEnded}
+                  disabled={loading || interviewEnded || !input.trim()}
                 >
                   Send
                 </button>
