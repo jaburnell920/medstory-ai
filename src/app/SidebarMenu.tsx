@@ -14,15 +14,15 @@ function SidebarMenu() {
   const bullet = '•';
 
   return (
-    <nav className="flex flex-col space-y-8 text-sm pt-4 h-full">
+    <nav className="flex flex-col space-y-4 text-xs pt-2 h-full">
         <Section
           title={
             <Image
               src="/scientific_investigation_menu.png"
               alt="Scientific Investigation"
-              width={24}
-              height={24}
-              className="w-6 h-6"
+              width={20}
+              height={20}
+              className="w-5 h-5"
             />
           }
           sectionName="Scientific Investigation"
@@ -47,9 +47,9 @@ function SidebarMenu() {
             <Image
               src="/stakeholder_interviews_menu.png"
               alt="Stakeholder Interviews"
-              width={24}
-              height={24}
-              className="w-6 h-6"
+              width={20}
+              height={20}
+              className="w-5 h-5"
             />
           }
           sectionName="Stakeholder Interviews"
@@ -71,7 +71,7 @@ function SidebarMenu() {
 
         <Section
           title={
-            <Image src="/core_story_concept_menu.png" alt="Core Story Concept" width={24} height={24} className="w-6 h-6" />
+            <Image src="/core_story_concept_menu.png" alt="Core Story Concept" width={20} height={20} className="w-5 h-5" />
           }
           sectionName="Core Story Concept"
           links={[
@@ -82,7 +82,7 @@ function SidebarMenu() {
         />
 
         <Section
-          title={<Image src="/story_flow_map_menu.png" alt="Story Flow Map" width={24} height={24} className="w-6 h-6" />}
+          title={<Image src="/story_flow_map_menu.png" alt="Story Flow Map" width={20} height={20} className="w-5 h-5" />}
           sectionName="Story Flow Map"
           links={[
             {
@@ -105,9 +105,9 @@ function SidebarMenu() {
             <Image
               src="/medstory_slide_deck_menu.png"
               alt="MEDSTORY Slide Deck"
-              width={24}
-              height={24}
-              className="w-6 h-6"
+              width={20}
+              height={20}
+              className="w-5 h-5"
             />
           }
           sectionName="MEDSTORY Slide Deck"
@@ -150,13 +150,13 @@ function SidebarMenu() {
   }) {
     return (
       <div>
-        <div className="flex items-center mb-2">
-          <div className="text-6xl mr-3">{title}</div>
-          <p className="font-bold text-white text-sm">{sectionName}</p>
+        <div className="flex items-center mb-1">
+          <div className="text-4xl mr-2">{title}</div>
+          <p className="font-bold text-white text-xs">{sectionName}</p>
         </div>
-        <ul className="ml-9 space-y-1 text-gray-200">
+        <ul className="ml-7 space-y-0.5 text-gray-200">
           {links.map((link) => (
-            <li key={link.label}>
+            <li key={link.label} className="leading-tight">
               {link.href ? (
                 <Link
                   className={clsx(
