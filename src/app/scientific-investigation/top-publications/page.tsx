@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
+import toast from 'react-hot-toast';
 import PageLayout from '@/app/components/PageLayout';
 import ChatInterface from '@/app/components/ChatInterface';
 
@@ -32,6 +33,11 @@ export default function TopPublicationsPage() {
       keyPointsRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [interviewEnded, keyPoints]);
+
+  // Handle clicking on title to access saved page
+  const handleTitleClick = () => {
+    window.location.href = '/scientific-investigation/top-publications/saved';
+  };
 
   const handleReset = () => {
     setInput('');
@@ -108,13 +114,19 @@ export default function TopPublicationsPage() {
       newSelected.delete(pointId);
     }
     setSelectedKeyPoints(newSelected);
+  };
 
+  // Handle saving selected key points to session storage
+  const handleSaveSelected = () => {
     // Save to session storage
-    sessionStorage.setItem('selectedInterviewKeyPoints', JSON.stringify(Array.from(newSelected)));
+    sessionStorage.setItem('selectedInterviewKeyPoints', JSON.stringify(Array.from(selectedKeyPoints)));
 
     // Also save the actual key point data
-    const selectedPointsData = keyPoints.filter((point) => newSelected.has(point.id));
+    const selectedPointsData = keyPoints.filter((point) => selectedKeyPoints.has(point.id));
     sessionStorage.setItem('selectedInterviewKeyPointsData', JSON.stringify(selectedPointsData));
+    
+    // Show success message
+    toast.success(`${selectedKeyPoints.size} key points saved successfully!`);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -195,7 +207,15 @@ export default function TopPublicationsPage() {
         />
       }
       sectionName="Stakeholder Interviews"
-      taskName="Simulated thought leader interview"
+      taskName={
+        <span 
+          onClick={handleTitleClick} 
+          className="cursor-pointer hover:text-blue-600 transition-colors"
+          title="Click to view saved key points"
+        >
+          Simulated thought leader interview
+        </span>
+      }
     >
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Chat Interface - Left Side */}
@@ -224,7 +244,17 @@ export default function TopPublicationsPage() {
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-blue-900">Key Points from Interview</h2>
-                <span className="text-sm text-gray-600">{selectedKeyPoints.size} selected</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-600">{selectedKeyPoints.size} selected</span>
+                  {selectedKeyPoints.size > 0 && (
+                    <button
+                      onClick={handleSaveSelected}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                    >
+                      Save Selected
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="space-y-6">
                 {keyPoints.map((point) => (
@@ -251,7 +281,7 @@ export default function TopPublicationsPage() {
               {selectedKeyPoints.size > 0 && (
                 <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                   <p className="text-sm text-blue-800">
-                    💡 Tip: Selected key points are saved for your reference
+                    💡 Tip: Click &quot;Save Selected&quot; to save your chosen key points, then click &quot;Simulated thought leader interview&quot; in the header to view them
                   </p>
                 </div>
               )}

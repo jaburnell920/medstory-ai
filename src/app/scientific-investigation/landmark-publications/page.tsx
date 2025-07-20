@@ -95,13 +95,19 @@ export default function LandmarkPublicationsPage() {
       newSelected.delete(studyId);
     }
     setSelectedStudies(newSelected);
-    
+  };
+
+  // Handle saving selected studies to session storage
+  const handleSaveSelected = () => {
     // Save to session storage
-    sessionStorage.setItem('selectedLandmarkStudies', JSON.stringify(Array.from(newSelected)));
+    sessionStorage.setItem('selectedLandmarkStudies', JSON.stringify(Array.from(selectedStudies)));
     
     // Also save the actual study data
-    const selectedStudyData = studies.filter(study => newSelected.has(study.id));
+    const selectedStudyData = studies.filter(study => selectedStudies.has(study.id));
     sessionStorage.setItem('selectedLandmarkStudiesData', JSON.stringify(selectedStudyData));
+    
+    // Show success message
+    toast.success(`${selectedStudies.size} studies saved successfully!`);
   };
 
   // Handle clicking on title to access hidden page
@@ -251,9 +257,19 @@ export default function LandmarkPublicationsPage() {
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-blue-900">Landmark Publications</h2>
-                <span className="text-sm text-gray-600">
-                  {selectedStudies.size} selected
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-600">
+                    {selectedStudies.size} selected
+                  </span>
+                  {selectedStudies.size > 0 && (
+                    <button
+                      onClick={handleSaveSelected}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                    >
+                      Save Selected
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="space-y-6">
                 {studies.map((study) => (
@@ -288,7 +304,7 @@ export default function LandmarkPublicationsPage() {
               {selectedStudies.size > 0 && (
                 <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                   <p className="text-sm text-blue-800">
-                    💡 Tip: Click on &quot;Find landmark publications&quot; in the header to view your saved studies
+                    💡 Tip: Click &quot;Save Selected&quot; to save your chosen studies, then click &quot;Find landmark publications&quot; in the header to view them
                   </p>
                 </div>
               )}
