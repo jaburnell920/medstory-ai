@@ -30,35 +30,35 @@ export default function PageLayout({
   return (
     <div className="flex h-screen text-black overflow-hidden">
       {/* Sidebar with white background extending full height */}
-      <aside className="w-80 bg-white flex flex-col flex-shrink-0 h-screen fixed">
+      <aside className="w-72 bg-white flex flex-col flex-shrink-0 h-screen fixed">
         {/* Logo section with white background */}
-        <div className="bg-white p-6 pb-4 flex-col">
+        <div className="bg-white p-4 pb-2 flex-col">
           <Image
             src="/medstory_logo_wo_sss.png"
             alt="MEDSTORYAI Logo"
-            width={200}
-            height={64}
-            className="h-16 w-auto border-0 outline-0"
+            width={180}
+            height={58}
+            className="h-14 w-auto border-0 outline-0"
           />
-          <div className="flex justify-end pr-10">
+          <div className="flex justify-end pr-8">
             <Image
               src="/smart-speedy-simple.png"
               alt="Smart Speedy Simple"
-              width={150}
-              height={24}
-              className="mt-2 h-6 w-auto opacity-70 border-0 outline-0"
+              width={130}
+              height={20}
+              className="mt-1 h-5 w-auto opacity-70 border-0 outline-0"
             />
           </div>
         </div>
 
         {/* Menu section with blue background */}
-        <div className="bg-[#002F6C] text-white flex-1 px-6 pb-6 overflow-y-auto">
+        <div className="bg-[#002F6C] text-white flex-1 px-4 pb-4 overflow-y-auto flex flex-col">
           <SidebarMenu />
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 bg-gray-50 flex flex-col overflow-hidden ml-80">
+      <main className="flex-1 bg-gray-50 flex flex-col overflow-hidden ml-72">
         {/* Fixed Header with Section and Task */}
         <div className="flex items-center justify-between p-12 pb-6 flex-shrink-0 bg-gray-50">
           <div className="flex items-center">
@@ -68,23 +68,6 @@ export default function PageLayout({
               <h2 className="text-xl text-gray-600 mt-1">{taskName}</h2>
             </div>
           </div>
-
-          {/* Back Button */}
-          <a
-            href="https://sciencebranding.com"
-            rel="noopener noreferrer"
-            className="flex items-center px-4 py-2 bg-[#002F6C] text-white rounded-lg hover:bg-[#063471] transition-colors duration-200 font-medium"
-          >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-            Exit MEDSTORY<strong>AI</strong>
-          </a>
         </div>
 
         {/* Scrollable Content Area */}
