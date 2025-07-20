@@ -133,6 +133,7 @@ export default function ChatInterface({
                   />
                   {loading && (
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                      Thinking
                       <LoadingDots />
                     </div>
                   )}
@@ -152,11 +153,11 @@ export default function ChatInterface({
                     type="button"
                     onClick={onReset}
                     className="flex items-center px-4 py-2 bg-[#d3875f] text-white rounded-lg hover:bg-[#773f21] transition-colors duration-200 font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
-                    disabled={loading || interviewEnded}
+                    disabled={interviewEnded}
                   >
                     START OVER
                   </button>
-                  
+
                   {onEndInterview && !interviewEnded && (
                     <button
                       type="button"
