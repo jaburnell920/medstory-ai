@@ -1,9 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import PageLayout from '@/app/components/PageLayout';
 import ChatInterface from '@/app/components/ChatInterface';
+
+interface KeyPoint {
+  id: string;
+  content: string;
+}
 
 export default function TopPublicationsPage() {
   const [input, setInput] = useState('');
@@ -17,6 +22,16 @@ export default function TopPublicationsPage() {
   const [loading, setLoading] = useState(false);
   const [interviewStarted, setInterviewStarted] = useState(false);
   const [expertInfo, setExpertInfo] = useState('');
+  const [interviewEnded, setInterviewEnded] = useState(false);
+  const [keyPoints, setKeyPoints] = useState<KeyPoint[]>([]);
+  const [selectedKeyPoints, setSelectedKeyPoints] = useState<Set<string>>(new Set());
+  const keyPointsRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (keyPointsRef.current && interviewEnded) {
+      keyPointsRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [interviewEnded, keyPoints]);
 
   const handleReset = () => {
     setInput('');
@@ -29,7 +44,77 @@ export default function TopPublicationsPage() {
     ]);
     setLoading(false);
     setInterviewStarted(false);
+    setInterviewEnded(false);
     setExpertInfo('');
+    setKeyPoints([]);
+    setSelectedKeyPoints(new Set());
+  };
+
+  const handleEndInterview = async () => {
+    setLoading(true);
+
+    try {
+      // Extract key points from the conversation
+      const conversationText = messages.map((msg) => msg.content).join('\n\n');
+
+      // Call OpenAI to extract key points
+      const res = await fetch('/api/openai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: `Extract 5-10 key points from this interview with ${expertInfo}. 
+          Format each point as a clear, concise statement that captures an important insight or piece of information.
+          
+          INTERVIEW TRANSCRIPT:
+          ${conversationText}
+          
+          KEY POINTS:`,
+          max_tokens: 1000,
+        }),
+      });
+
+      const data = await res.json();
+
+      // Parse the key points
+      const pointsText = data.result || '';
+      const pointsList: string[] = pointsText
+        .split(/\d+\./)
+        .filter((point: string) => point.trim().length > 0)
+        .map((point: string) => point.trim());
+
+      // Create key points with IDs
+      const formattedKeyPoints: KeyPoint[] = pointsList.map(
+        (content: string, index: number): KeyPoint => ({
+          id: `keypoint-${Date.now()}-${index}`,
+          content,
+        })
+      );
+
+      setKeyPoints(formattedKeyPoints);
+      setInterviewEnded(true);
+    } catch (err) {
+      console.error('Error extracting key points:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle checkbox changes for key points
+  const handleKeyPointSelection = (pointId: string, isSelected: boolean) => {
+    const newSelected = new Set(selectedKeyPoints);
+    if (isSelected) {
+      newSelected.add(pointId);
+    } else {
+      newSelected.delete(pointId);
+    }
+    setSelectedKeyPoints(newSelected);
+
+    // Save to session storage
+    sessionStorage.setItem('selectedInterviewKeyPoints', JSON.stringify(Array.from(newSelected)));
+
+    // Also save the actual key point data
+    const selectedPointsData = keyPoints.filter((point) => newSelected.has(point.id));
+    sessionStorage.setItem('selectedInterviewKeyPointsData', JSON.stringify(selectedPointsData));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -101,7 +186,13 @@ export default function TopPublicationsPage() {
   return (
     <PageLayout
       sectionIcon={
-        <Image src="/stakeholder_interviews_chat.png" alt="Core Story Chat" width={72} height={72} className="w-18 h-18" />
+        <Image
+          src="/stakeholder_interviews_chat.png"
+          alt="Core Story Chat"
+          width={72}
+          height={72}
+          className="w-18 h-18"
+        />
       }
       sectionName="Stakeholder Interviews"
       taskName="Simulated thought leader interview"
@@ -122,8 +213,51 @@ export default function TopPublicationsPage() {
             }
             removeExpertPrefix={true}
             onReset={handleReset}
+            onEndInterview={handleEndInterview}
+            interviewEnded={interviewEnded}
           />
         </div>
+
+        {/* Key Points Section - Right Side */}
+        {interviewEnded && keyPoints.length > 0 && (
+          <div className="flex-1 space-y-6" ref={keyPointsRef}>
+            <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-blue-900">Key Points from Interview</h2>
+                <span className="text-sm text-gray-600">{selectedKeyPoints.size} selected</span>
+              </div>
+              <div className="space-y-6">
+                {keyPoints.map((point) => (
+                  <div key={point.id} className="border-b border-gray-200 pb-4 last:border-b-0">
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        id={point.id}
+                        checked={selectedKeyPoints.has(point.id)}
+                        onChange={(e) => handleKeyPointSelection(point.id, e.target.checked)}
+                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <div className="flex-1">
+                        <label htmlFor={point.id} className="cursor-pointer">
+                          <div className="text-gray-700 text-sm leading-relaxed">
+                            {point.content}
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {selectedKeyPoints.size > 0 && (
+                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    💡 Tip: Selected key points are saved for your reference
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </PageLayout>
   );

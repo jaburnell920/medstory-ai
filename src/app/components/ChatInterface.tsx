@@ -17,6 +17,8 @@ interface ChatInterfaceProps {
   placeholder?: string;
   removeExpertPrefix?: boolean;
   onReset?: () => void;
+  onEndInterview?: () => void;
+  interviewEnded?: boolean;
 }
 
 // Loading dots animation component
@@ -48,6 +50,8 @@ export default function ChatInterface({
   placeholder = 'Type your response...',
   removeExpertPrefix = false,
   onReset,
+  onEndInterview,
+  interviewEnded = false,
 }: ChatInterfaceProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -127,7 +131,7 @@ export default function ChatInterface({
               </form>
 
               {onReset && messages.length > 1 && (
-                <div className="flex justify-start pt-24">
+                <div className="flex justify-start pt-24 space-x-4">
                   <button
                     type="button"
                     onClick={onReset}
@@ -136,6 +140,17 @@ export default function ChatInterface({
                   >
                     START OVER
                   </button>
+                  
+                  {onEndInterview && !interviewEnded && (
+                    <button
+                      type="button"
+                      onClick={onEndInterview}
+                      className="flex items-center px-4 py-2 bg-[#115dae] text-white rounded-lg hover:bg-[#0a3b7a] transition-colors duration-200 font-medium"
+                      disabled={loading}
+                    >
+                      END INTERVIEW
+                    </button>
+                  )}
                 </div>
               )}
             </>

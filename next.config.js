@@ -29,6 +29,11 @@ const nextConfig = {
   publicRuntimeConfig: {
     staticFolder: '/static',
   },
+  // Add server configuration to allow external connections
+  server: {
+    host: '0.0.0.0',
+    port: 12000,
+  },
 };
 
 module.exports = nextConfig;
