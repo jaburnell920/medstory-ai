@@ -14,7 +14,7 @@ function SidebarMenu() {
   const bullet = '•';
 
   return (
-    <nav className="flex flex-col space-y-8 text-sm pt-4">
+    <nav className="flex flex-col space-y-8 text-sm pt-4 h-full">
         <Section
           title={
             <Image
@@ -117,6 +117,25 @@ function SidebarMenu() {
             { href: '', label: 'Evaluate MEDSTORY deck' },
           ]}
         />
+        
+        {/* Exit MEDSTORYAI button at the bottom */}
+        <div className="mt-auto pt-4">
+          <a
+            href="https://sciencebranding.com"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center px-4 py-2 bg-[#286580] text-white rounded-lg hover:bg-[#1e4e63] transition-colors duration-200 font-medium border border-white"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
+            </svg>
+            Exit MEDSTORY<strong>AI</strong>
+          </a>
+        </div>
       </nav>
   );
 

@@ -1,9 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
   experimental: {
-    serverActions: true,
+    serverActions: {
+      allowedOrigins: ['*'],
+    },
   },
   async headers() {
     return [
@@ -27,10 +28,6 @@ const nextConfig = {
   },
   publicRuntimeConfig: {
     staticFolder: '/static',
-  },
-  server: {
-    host: '0.0.0.0',
-    allowedHosts: true,
   },
 };
 
