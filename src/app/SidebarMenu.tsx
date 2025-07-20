@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
 import { memo } from 'react';
@@ -15,15 +14,16 @@ function SidebarMenu() {
 
   return (
     <nav className="flex flex-col space-y-4 text-xs pt-2 h-full">
+        {/* START HERE header */}
+        <div className="mb-4">
+          <h2 className="text-[#38b8ff] font-bold text-sm tracking-wide">START HERE</h2>
+        </div>
+
         <Section
           title={
-            <Image
-              src="/scientific_investigation_menu.png"
-              alt="Scientific Investigation"
-              width={20}
-              height={20}
-              className="w-5 h-5"
-            />
+            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-[#002F6C] font-bold text-sm">
+              1
+            </div>
           }
           sectionName="Scientific Investigation"
           links={[
@@ -42,15 +42,18 @@ function SidebarMenu() {
           ]}
         />
 
+        {/* Arrow pointing down */}
+        <div className="flex justify-center">
+          <svg className="w-6 h-6 text-[#38b8ff]" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 16l-6-6h12l-6 6z"/>
+          </svg>
+        </div>
+
         <Section
           title={
-            <Image
-              src="/stakeholder_interviews_menu.png"
-              alt="Stakeholder Interviews"
-              width={20}
-              height={20}
-              className="w-5 h-5"
-            />
+            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-[#002F6C] font-bold text-sm">
+              2
+            </div>
           }
           sectionName="Stakeholder Interviews"
           links={[
@@ -69,9 +72,18 @@ function SidebarMenu() {
           ]}
         />
 
+        {/* Arrow pointing down */}
+        <div className="flex justify-center">
+          <svg className="w-6 h-6 text-[#38b8ff]" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 16l-6-6h12l-6 6z"/>
+          </svg>
+        </div>
+
         <Section
           title={
-            <Image src="/core_story_concept_menu.png" alt="Core Story Concept" width={20} height={20} className="w-5 h-5" />
+            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-[#002F6C] font-bold text-sm">
+              3
+            </div>
           }
           sectionName="Core Story Concept"
           links={[
@@ -81,36 +93,50 @@ function SidebarMenu() {
           ]}
         />
 
+        {/* Arrow pointing down */}
+        <div className="flex justify-center">
+          <svg className="w-6 h-6 text-[#38b8ff]" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 16l-6-6h12l-6 6z"/>
+          </svg>
+        </div>
+
         <Section
-          title={<Image src="/story_flow_map_menu.png" alt="Story Flow Map" width={20} height={20} className="w-5 h-5" />}
-          sectionName="Story Flow Map"
+          title={
+            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-[#002F6C] font-bold text-sm">
+              4
+            </div>
+          }
+          sectionName="Story Flow"
           links={[
             {
               href: '/story-flow-map/tension-resolution',
-              label: 'Create tension-resolution points',
-            },
-            {
-              href: '',
-              label: 'Evaluate tension-resolution points',
+              label: 'Create story flow outline',
             },
             {
               href: '',
               label: 'Create story flow map',
             },
+            {
+              href: '',
+              label: 'Evaluate story flow',
+            },
           ]}
         />
 
+        {/* Arrow pointing down */}
+        <div className="flex justify-center">
+          <svg className="w-6 h-6 text-[#38b8ff]" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 16l-6-6h12l-6 6z"/>
+          </svg>
+        </div>
+
         <Section
           title={
-            <Image
-              src="/medstory_slide_deck_menu.png"
-              alt="MEDSTORY Slide Deck"
-              width={20}
-              height={20}
-              className="w-5 h-5"
-            />
+            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-[#002F6C] font-bold text-sm">
+              5
+            </div>
           }
-          sectionName="MEDSTORY Slide Deck"
+          sectionName="MEDSTORY® Slide Deck"
           links={[
             { href: '/slide-presentation/deck-generation', label: 'Create MEDSTORY deck' },
             { href: '', label: 'Optimize MEDSTORY deck' },
@@ -118,22 +144,14 @@ function SidebarMenu() {
           ]}
         />
         
-        {/* Exit MEDSTORYAI button at the bottom */}
+        {/* Exit button at the bottom */}
         <div className="mt-auto pt-4">
           <a
             href="https://sciencebranding.com"
             rel="noopener noreferrer"
-            className="flex items-center justify-center px-4 py-2 bg-[#286580] text-white rounded-lg hover:bg-[#1e4e63] transition-colors duration-200 font-medium border border-white"
+            className="flex items-center justify-center px-4 py-2 bg-white text-[#002F6C] rounded-lg hover:bg-gray-100 transition-colors duration-200 font-medium border border-gray-300"
           >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-            Exit MEDSTORY<strong>AI</strong>
+            Exit
           </a>
         </div>
       </nav>
@@ -150,11 +168,11 @@ function SidebarMenu() {
   }) {
     return (
       <div>
-        <div className="flex items-center mb-1">
-          <div className="text-4xl mr-2">{title}</div>
-          <p className="font-bold text-white text-xs">{sectionName}</p>
+        <div className="flex items-center mb-2">
+          <div className="mr-3">{title}</div>
+          <p className="font-bold text-white text-sm">{sectionName}</p>
         </div>
-        <ul className="ml-7 space-y-0.5 text-gray-200">
+        <ul className="ml-11 space-y-1 text-gray-200">
           {links.map((link) => (
             <li key={link.label} className="leading-tight">
               {link.href ? (
