@@ -31,8 +31,19 @@ export default function PageLayout({
       {/* Sidebar with white background extending full height */}
       <aside className="w-80 bg-white flex flex-col flex-shrink-0 h-screen fixed">
         {/* Logo section with white background */}
-        <div className="bg-white p-6 pb-4">
-          <img src="/logo.svg" alt="MEDSTORYAI Logo" className="w-full h-auto max-w-full border-0 outline-0" />
+        <div className="bg-white p-6 pb-4 flex-col">
+          <img
+            src="/medstory_logo_wo_sss.png"
+            alt="MEDSTORYAI Logo"
+            className="h-16 w-auto border-0 outline-0"
+          />
+          <div className="flex justify-end pr-10">
+            <img
+              src="/smart-speedy-simple.png"
+              alt="Smart Speedy Simple"
+              className="mt-2 h-6 w-auto opacity-70 border-0 outline-0"
+            />
+          </div>
         </div>
 
         {/* Menu section with blue background */}

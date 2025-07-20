@@ -8,8 +8,19 @@ export default function EnterPage() {
       {/* Sidebar with white background extending full height */}
       <aside className="w-80 bg-white flex flex-col flex-shrink-0 h-screen fixed">
         {/* Logo section with white background */}
-        <div className="bg-white p-6 pb-4">
-          <img src="/logo.svg" alt="MEDSTORYAI Logo" className="w-full h-auto max-w-full border-0 outline-0" style={{border: 'none', outline: 'none'}} />
+        <div className="bg-white p-6 pb-4 flex-col">
+          <img
+            src="/medstory_logo_wo_sss.png"
+            alt="MEDSTORYAI Logo"
+            className="h-16 w-auto border-0 outline-0"
+          />
+          <div className="flex justify-end pr-10">
+            <img
+              src="/smart-speedy-simple.png"
+              alt="Smart Speedy Simple"
+              className="mt-2 h-6 w-auto opacity-70 border-0 outline-0"
+            />
+          </div>
         </div>
 
         {/* Menu section with blue background */}
@@ -23,11 +34,18 @@ export default function EnterPage() {
         <div className="max-w-4xl">
           {/* Header with logo */}
           <div className="flex justify-between items-start mb-8">
-            <h1 className="text-4xl font-normal text-gray-600">
-              Welcome!
-            </h1>
-            <div className="flex items-center">
-              <img src="/logo.svg" alt="MEDSTORYAI Logo" className="h-16 w-auto border-0 outline-0" style={{border: 'none', outline: 'none'}} />
+            <h1 className="text-4xl font-normal text-gray-600 pt-14">Welcome!</h1>
+            <div className="flex flex-col items-center md:items-end space-y-1">
+              <img
+                src="/medstory_logo_wo_sss.png"
+                alt="MEDSTORYAI Logo"
+                className="h-20 w-auto border-0 outline-0"
+              />
+              <img
+                src="/smart-speedy-simple.png"
+                alt="Smart Speedy Simple"
+                className="h-6 w-60 opacity-70 border-0 outline-0"
+              />
             </div>
           </div>
 
@@ -35,37 +53,47 @@ export default function EnterPage() {
           <div className="space-y-8">
             <div>
               <p className="text-xl text-black font-semibold leading-relaxed">
-                <strong>MEDSTORYAI</strong> is your AI-powered partner for turning complex data into clear, high-impact scientific stories.
+                <strong>MEDSTORYAI</strong> is your AI-powered partner for turning complex data into
+                clear, high-impact scientific stories.
               </p>
             </div>
 
             <div>
               <p className="text-lg text-black leading-relaxed">
-                <strong>MEDSTORYAI</strong> gives you a smart, speedy, and simple way to build polished slide decks. By combining state-of-the-art generative AI with SBC's proven storytelling framework—honed over 15 years—we help you craft narratives that educate, engage, and persuade.
+                <strong>MEDSTORYAI</strong> gives you a smart, speedy, and simple way to build
+                polished slide decks. By combining state-of-the-art generative AI with SBC's proven
+                storytelling framework—honed over 15 years—we help you craft narratives that
+                educate, engage, and persuade.
               </p>
             </div>
 
             <div className="space-y-6">
               <h2 className="text-2xl font-semibold text-black">How It Works</h2>
-              
+
               <div className="space-y-4">
                 <p className="text-lg text-black">
-                  <strong>Start at the top.</strong> Use the <strong>Scientific Investigation</strong> prompt to feed MEDSTORYAI your key data and insights.
+                  <strong>Start at the top.</strong> Use the{' '}
+                  <strong>Scientific Investigation</strong> prompt to feed MEDSTORYAI your key data
+                  and insights.
                 </p>
-                
+
                 <p className="text-lg text-black">
-                  <strong>Follow the flow.</strong> Work down each section in order; every step refines the narrative, so the final <strong>MEDSTORY Slide Deck</strong> is coherent and compelling.
+                  <strong>Follow the flow.</strong> Work down each section in order; every step
+                  refines the narrative, so the final <strong>MEDSTORY Slide Deck</strong> is
+                  coherent and compelling.
                 </p>
-                
+
                 <p className="text-lg text-black">
-                  <strong>Review and refine.</strong> The app delivers a deck ready for your finishing touches—saving you hours while elevating quality.
+                  <strong>Review and refine.</strong> The app delivers a deck ready for your
+                  finishing touches—saving you hours while elevating quality.
                 </p>
               </div>
             </div>
 
             <div className="mt-12 pt-8 border-t border-gray-300">
               <p className="text-base text-black">
-                Need a human touch? Email Bernie Coccia (bcoccia@sciencebranding.com) to schedule a personal walkthrough and ensure your story shines.
+                Need a human touch? Email Bernie Coccia (bcoccia@sciencebranding.com) to schedule a
+                personal walkthrough and ensure your story shines.
               </p>
             </div>
           </div>
