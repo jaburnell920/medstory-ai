@@ -29,10 +29,10 @@ export default function TopPublicationsPage() {
   const keyPointsRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (keyPointsRef.current && interviewEnded) {
+    if (keyPointsRef.current && interviewEnded && keyPoints.length > 0) {
       keyPointsRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [interviewEnded, keyPoints]);
+  }, [interviewEnded]); // Only scroll when interview ends, not when keyPoints change
 
   // Handle clicking on title to access saved page
   const handleTitleClick = () => {
