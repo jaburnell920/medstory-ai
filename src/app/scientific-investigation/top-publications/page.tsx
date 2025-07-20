@@ -65,11 +65,11 @@ export default function TopPublicationsPage() {
 
       // For demonstration purposes, create mock key points when API is not available
       const mockKeyPoints = [
-        "The expert emphasized the importance of personalized medicine in cancer treatment",
-        "Current research focuses on immunotherapy and targeted therapies",
-        "Patient outcomes have improved significantly over the past decade",
-        "Collaboration between researchers and clinicians is crucial for advancement",
-        "Future directions include AI-assisted diagnosis and treatment planning"
+        'The expert emphasized the importance of personalized medicine in cancer treatment',
+        'Current research focuses on immunotherapy and targeted therapies',
+        'Patient outcomes have improved significantly over the past decade',
+        'Collaboration between researchers and clinicians is crucial for advancement',
+        'Future directions include AI-assisted diagnosis and treatment planning',
       ];
 
       // Try to call OpenAI to extract key points, but fall back to mock data
@@ -112,7 +112,7 @@ export default function TopPublicationsPage() {
           throw new Error('No result from API');
         }
       } catch (apiError) {
-        console.log('API not available, using mock key points for demonstration');
+        console.log('API not available, using mock key points for demonstration', apiError);
         // Use mock key points when API is not available
         const formattedKeyPoints: KeyPoint[] = mockKeyPoints.map(
           (content: string, index: number): KeyPoint => ({
@@ -145,12 +145,15 @@ export default function TopPublicationsPage() {
   // Handle saving selected key points to session storage
   const handleSaveSelected = () => {
     // Save to session storage
-    sessionStorage.setItem('selectedInterviewKeyPoints', JSON.stringify(Array.from(selectedKeyPoints)));
+    sessionStorage.setItem(
+      'selectedInterviewKeyPoints',
+      JSON.stringify(Array.from(selectedKeyPoints))
+    );
 
     // Also save the actual key point data
     const selectedPointsData = keyPoints.filter((point) => selectedKeyPoints.has(point.id));
     sessionStorage.setItem('selectedInterviewKeyPointsData', JSON.stringify(selectedPointsData));
-    
+
     // Show success message
     toast.success(`${selectedKeyPoints.size} key points saved successfully!`);
   };
@@ -235,8 +238,8 @@ export default function TopPublicationsPage() {
       }
       sectionName="Stakeholder Interviews"
       taskName={
-        <span 
-          onClick={handleTitleClick} 
+        <span
+          onClick={handleTitleClick}
           className="cursor-pointer hover:text-blue-600 transition-colors"
           title="Click to view saved key points"
         >
@@ -308,7 +311,8 @@ export default function TopPublicationsPage() {
               {selectedKeyPoints.size > 0 && (
                 <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                   <p className="text-sm text-blue-800">
-                    💡 Tip: Click &quot;Save Selected&quot; to save your chosen key points, then click &quot;Simulated thought leader interview&quot; in the header to view them
+                    💡 Tip: Click &quot;Save Selected&quot; to save your chosen key points, then
+                    click &quot;Simulated thought leader interview&quot; in the header to view them
                   </p>
                 </div>
               )}
