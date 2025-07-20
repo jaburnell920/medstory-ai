@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import SidebarMenu from '../SidebarMenu';
 
 export default function EnterPage() {
@@ -9,15 +10,19 @@ export default function EnterPage() {
       <aside className="w-80 bg-white flex flex-col flex-shrink-0 h-screen fixed">
         {/* Logo section with white background */}
         <div className="bg-white p-6 pb-4 flex-col">
-          <img
+          <Image
             src="/medstory_logo_wo_sss.png"
             alt="MEDSTORYAI Logo"
+            width={200}
+            height={64}
             className="h-16 w-auto border-0 outline-0"
           />
           <div className="flex justify-end pr-10">
-            <img
+            <Image
               src="/smart-speedy-simple.png"
               alt="Smart Speedy Simple"
+              width={150}
+              height={24}
               className="mt-2 h-6 w-auto opacity-70 border-0 outline-0"
             />
           </div>
@@ -36,14 +41,18 @@ export default function EnterPage() {
           <div className="flex justify-between items-start mb-8">
             <h1 className="text-4xl font-normal text-gray-600 pt-14">Welcome!</h1>
             <div className="flex flex-col items-center md:items-end space-y-1">
-              <img
+              <Image
                 src="/medstory_logo_wo_sss.png"
                 alt="MEDSTORYAI Logo"
+                width={250}
+                height={80}
                 className="h-20 w-auto border-0 outline-0"
               />
-              <img
+              <Image
                 src="/smart-speedy-simple.png"
                 alt="Smart Speedy Simple"
+                width={240}
+                height={24}
                 className="h-6 w-60 opacity-70 border-0 outline-0"
               />
             </div>
@@ -61,7 +70,7 @@ export default function EnterPage() {
             <div>
               <p className="text-lg text-black leading-relaxed">
                 <strong>MEDSTORYAI</strong> gives you a smart, speedy, and simple way to build
-                polished slide decks. By combining state-of-the-art generative AI with SBC's proven
+                polished slide decks. By combining state-of-the-art generative AI with SBC&apos;s proven
                 storytelling framework—honed over 15 years—we help you craft narratives that
                 educate, engage, and persuade.
               </p>

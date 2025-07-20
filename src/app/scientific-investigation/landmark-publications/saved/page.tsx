@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import PageLayout from '@/app/components/PageLayout';
 
 interface Study {
@@ -75,7 +76,7 @@ export default function SavedLandmarkPublicationsPage() {
     return (
       <PageLayout
         sectionIcon={
-          <img src="/scientific_investigation_chat.png" alt="Core Story Chat" className="w-18 h-18" />
+          <Image src="/scientific_investigation_chat.png" alt="Core Story Chat" width={72} height={72} className="w-18 h-18" />
         }
         sectionName="Scientific Investigation"
         taskName="Saved Landmark Publications"
@@ -93,7 +94,7 @@ export default function SavedLandmarkPublicationsPage() {
   return (
     <PageLayout
       sectionIcon={
-        <img src="/scientific_investigation_chat.png" alt="Core Story Chat" className="w-18 h-18" />
+        <Image src="/scientific_investigation_chat.png" alt="Core Story Chat" width={72} height={72} className="w-18 h-18" />
       }
       sectionName="Scientific Investigation"
       taskName="Saved Landmark Publications"

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
 import { memo } from 'react';
@@ -16,9 +17,11 @@ function SidebarMenu() {
     <nav className="flex flex-col space-y-8 text-sm pt-4">
         <Section
           title={
-            <img
+            <Image
               src="/scientific_investigation_menu.png"
               alt="Scientific Investigation"
+              width={24}
+              height={24}
               className="w-6 h-6"
             />
           }
@@ -41,9 +44,11 @@ function SidebarMenu() {
 
         <Section
           title={
-            <img
+            <Image
               src="/stakeholder_interviews_menu.png"
               alt="Stakeholder Interviews"
+              width={24}
+              height={24}
               className="w-6 h-6"
             />
           }
@@ -66,7 +71,7 @@ function SidebarMenu() {
 
         <Section
           title={
-            <img src="/core_story_concept_menu.png" alt="Core Story Concept" className="w-6 h-6" />
+            <Image src="/core_story_concept_menu.png" alt="Core Story Concept" width={24} height={24} className="w-6 h-6" />
           }
           sectionName="Core Story Concept"
           links={[
@@ -77,7 +82,7 @@ function SidebarMenu() {
         />
 
         <Section
-          title={<img src="/story_flow_map_menu.png" alt="Story Flow Map" className="w-6 h-6" />}
+          title={<Image src="/story_flow_map_menu.png" alt="Story Flow Map" width={24} height={24} className="w-6 h-6" />}
           sectionName="Story Flow Map"
           links={[
             {
@@ -97,9 +102,11 @@ function SidebarMenu() {
 
         <Section
           title={
-            <img
+            <Image
               src="/medstory_slide_deck_menu.png"
               alt="MEDSTORY Slide Deck"
+              width={24}
+              height={24}
               className="w-6 h-6"
             />
           }

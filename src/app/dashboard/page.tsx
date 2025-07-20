@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import PageLayout from '@/app/components/PageLayout';
 import ChatInterface from '@/app/components/ChatInterface';
@@ -121,7 +122,7 @@ export default function Dashboard() {
   return (
     <PageLayout
       sectionIcon={
-        <img src="/story_flow_map_chat.png" alt="Core Story Chat" className="w-18 h-18" />
+        <Image src="/story_flow_map_chat.png" alt="Core Story Chat" width={72} height={72} className="w-18 h-18" />
       }
       sectionName="Story Flow Map"
       taskName="Create tension-resolution points"
