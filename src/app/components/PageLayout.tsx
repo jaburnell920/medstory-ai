@@ -32,7 +32,7 @@ export default function PageLayout({
       <aside className="w-80 bg-white flex flex-col flex-shrink-0 h-screen fixed">
         {/* Logo section with white background */}
         <div className="bg-white p-6 pb-4">
-          <img src="/logo.svg" alt="MEDSTORYAI Logo" className="w-full h-auto max-w-full" />
+          <img src="/logo.svg" alt="MEDSTORYAI Logo" className="w-full h-auto max-w-full border-0" style={{border: 'none', outline: 'none'}} />
         </div>
 
         {/* Menu section with blue background */}
