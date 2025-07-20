@@ -73,7 +73,7 @@ export default function ChatInterface({
   // Dynamic placeholder based on loading state
   const getPlaceholder = () => {
     if (loading) {
-      return 'Thinking';
+      return '                                                Thinking';
     }
     return placeholder;
   };
