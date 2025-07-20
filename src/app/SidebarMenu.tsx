@@ -13,8 +13,7 @@ function SidebarMenu() {
   const bullet = '•';
 
   return (
-    <aside className="w-84 bg-[#002F6C] text-white flex flex-col -ml-2">
-      <nav className="flex flex-col space-y-8 text-sm">
+    <nav className="flex flex-col space-y-8 text-sm pt-4">
         <Section
           title={
             <img
@@ -112,7 +111,6 @@ function SidebarMenu() {
           ]}
         />
       </nav>
-    </aside>
   );
 
   function Section({
