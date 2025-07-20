@@ -7,6 +7,35 @@ const openai = new OpenAI({
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
+  
+  // Check if this is a key points extraction request
+  if (body.prompt) {
+    const { prompt, max_tokens } = body;
+    
+    try {
+      const chatCompletion = await openai.chat.completions.create({
+        model: 'gpt-4',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a helpful assistant for extracting key points from interviews.',
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        max_tokens: max_tokens || 1000,
+      });
+
+      return NextResponse.json({ result: chatCompletion.choices[0].message.content });
+    } catch (error) {
+      console.error('OpenAI Error:', error);
+      return NextResponse.json({ error: 'Failed to extract key points' }, { status: 500 });
+    }
+  }
+  
+  // Original core story concept functionality
   const { drug, disease, audience, intensity } = body;
 
   const prompt = `
