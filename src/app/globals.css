@@ -24,3 +24,10 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Remove borders from logo images */
+img[alt*="Logo"], img[alt*="MEDSTORYAI"] {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
+import Image from 'next/image';
 import toast from 'react-hot-toast';
 import PageLayout from '@/app/components/PageLayout';
 import ChatInterface from '@/app/components/ChatInterface';
@@ -216,7 +217,7 @@ export default function LandmarkPublicationsPage() {
   return (
     <PageLayout
       sectionIcon={
-        <img src="/scientific_investigation_chat.png" alt="Core Story Chat" className="w-18 h-18" />
+        <Image src="/scientific_investigation_chat.png" alt="Core Story Chat" width={72} height={72} className="w-18 h-18" />
       }
       sectionName="Scientific Investigation"
       taskName={

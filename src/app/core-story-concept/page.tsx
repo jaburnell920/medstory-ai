@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import PageLayout from '@/app/components/PageLayout';
 import ChatInterface from '@/app/components/ChatInterface';
@@ -125,7 +126,7 @@ export default function CoreStoryConcept() {
   return (
     <PageLayout
       sectionIcon={
-        <img src="/core_story_chat.png" alt="Core Story Chat" className="w-18 h-18" />
+        <Image src="/core_story_chat.png" alt="Core Story Chat" width={72} height={72} className="w-18 h-18" />
       }
       sectionName="Core Story Concept"
       taskName="Create Core Story Concept options"
