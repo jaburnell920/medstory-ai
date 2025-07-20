@@ -63,6 +63,14 @@ export default function ChatInterface({
     scrollToBottom();
   }, [messages]);
 
+  // Dynamic placeholder based on loading state
+  const getPlaceholder = () => {
+    if (loading) {
+      return 'thinking...';
+    }
+    return placeholder;
+  };
+
   const formatContent = (content: string) => {
     if (removeExpertPrefix) {
       content = content.replace(/^Expert:\s*/gm, '');
@@ -114,17 +122,25 @@ export default function ChatInterface({
           {showInput && (
             <>
               <form onSubmit={onSubmit} className="flex space-x-2">
-                <input
-                  type="text"
-                  className="flex-1 border rounded px-4 py-2 text-black shadow-md"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder={placeholder}
-                />
+                <div className="flex-1 relative">
+                  <input
+                    type="text"
+                    className="w-full border rounded px-4 py-2 text-black shadow-md"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder={getPlaceholder()}
+                    disabled={loading || interviewEnded}
+                  />
+                  {loading && (
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                      <LoadingDots />
+                    </div>
+                  )}
+                </div>
                 <button
                   type="submit"
-                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 shadow-md"
-                  disabled={loading}
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  disabled={loading || interviewEnded}
                 >
                   Send
                 </button>
@@ -135,8 +151,8 @@ export default function ChatInterface({
                   <button
                     type="button"
                     onClick={onReset}
-                    className="flex items-center px-4 py-2 bg-[#d3875f] text-white rounded-lg hover:bg-[#773f21] transition-colors duration-200 font-medium"
-                    disabled={loading}
+                    className="flex items-center px-4 py-2 bg-[#d3875f] text-white rounded-lg hover:bg-[#773f21] transition-colors duration-200 font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    disabled={loading || interviewEnded}
                   >
                     START OVER
                   </button>
@@ -145,7 +161,7 @@ export default function ChatInterface({
                     <button
                       type="button"
                       onClick={onEndInterview}
-                      className="flex items-center px-4 py-2 bg-[#115dae] text-white rounded-lg hover:bg-[#0a3b7a] transition-colors duration-200 font-medium"
+                      className="flex items-center px-4 py-2 bg-[#115dae] text-white rounded-lg hover:bg-[#0a3b7a] transition-colors duration-200 font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
                       disabled={loading}
                     >
                       END INTERVIEW
