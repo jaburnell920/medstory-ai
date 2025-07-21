@@ -63,28 +63,28 @@ export default function LandmarkPublicationsPage() {
 
   // Parse studies from result text
   const parseStudies = (text: string): Study[] => {
-    const studyBlocks = text.split(/\n\s*\n/).filter(block => block.trim());
+    const studyBlocks = text.split(/\n\s*\n/).filter((block) => block.trim());
     return studyBlocks.map((block, index) => {
       const lines = block.trim().split('\n');
       const citationLine = lines[0] || '';
-      const impactLine = lines.find(line => line.includes('Impact Score')) || '';
-      const descriptionLines = lines.filter(line => 
-        !line.match(/^\d+\./) && !line.includes('Impact Score')
+      const impactLine = lines.find((line) => line.includes('Impact Score')) || '';
+      const descriptionLines = lines.filter(
+        (line) => !line.match(/^\d+\./) && !line.includes('Impact Score')
       );
-      
+
       const numberMatch = citationLine.match(/^(\d+)\./);
       const number = numberMatch ? numberMatch[1] : String(index + 1);
       const citation = citationLine.replace(/^\d+\.\s*/, '');
       const impactScore = impactLine.replace('Impact Score (0-100):', '').trim();
       const description = descriptionLines.join(' ').trim();
-      
+
       return {
         id: `study-${number}-${Date.now()}-${index}`,
         number,
         citation,
         impactScore,
         description,
-        fullText: block
+        fullText: block,
       };
     });
   };
@@ -104,11 +104,11 @@ export default function LandmarkPublicationsPage() {
   const handleSaveSelected = () => {
     // Save to session storage
     sessionStorage.setItem('selectedLandmarkStudies', JSON.stringify(Array.from(selectedStudies)));
-    
+
     // Also save the actual study data
-    const selectedStudyData = studies.filter(study => selectedStudies.has(study.id));
+    const selectedStudyData = studies.filter((study) => selectedStudies.has(study.id));
     sessionStorage.setItem('selectedLandmarkStudiesData', JSON.stringify(selectedStudyData));
-    
+
     // Show success message
     toast.success(`${selectedStudies.size} studies saved successfully!`);
   };
@@ -226,13 +226,20 @@ export default function LandmarkPublicationsPage() {
 
   return (
     <PageLayout
+      initialResultsLoaded={initialResultsLoaded}
       sectionIcon={
-        <Image src="/scientific_investigation_chat.png" alt="Core Story Chat" width={72} height={72} className="w-18 h-18" />
+        <Image
+          src="/scientific_investigation_chat.png"
+          alt="Core Story Chat"
+          width={72}
+          height={72}
+          className="w-18 h-18"
+        />
       }
       sectionName="Scientific Investigation"
       taskName={
-        <span 
-          onClick={handleTitleClick} 
+        <span
+          onClick={handleTitleClick}
           className="cursor-pointer hover:text-blue-600 transition-colors"
           title="Click to view saved studies"
         >
@@ -262,9 +269,7 @@ export default function LandmarkPublicationsPage() {
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-blue-900">Landmark Publications</h2>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-600">
-                    {selectedStudies.size} selected
-                  </span>
+                  <span className="text-sm text-gray-600">{selectedStudies.size} selected</span>
                   {selectedStudies.size > 0 && (
                     <button
                       onClick={handleSaveSelected}
@@ -308,7 +313,8 @@ export default function LandmarkPublicationsPage() {
               {selectedStudies.size > 0 && (
                 <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                   <p className="text-sm text-blue-800">
-                    💡 Tip: Click &quot;Save Selected&quot; to save your chosen studies, then click &quot;Find landmark publications&quot; in the header to view them
+                    💡 Tip: Click &quot;Save Selected&quot; to save your chosen studies, then click
+                    &quot;Find landmark publications&quot; in the header to view them
                   </p>
                 </div>
               )}

@@ -231,6 +231,7 @@ export default function TopPublicationsPage() {
 
   return (
     <PageLayout
+      initialResultsLoaded={initialKeyPointsLoaded}
       sectionIcon={
         <Image
           src="/stakeholder_interviews_chat.png"
