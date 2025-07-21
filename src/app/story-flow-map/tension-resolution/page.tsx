@@ -21,7 +21,8 @@ export default function TensionResolution() {
   const [messages, setMessages] = useState<{ role: 'assistant' | 'user'; content: string }[]>([
     {
       role: 'assistant',
-      content: 'What is your Core Story Concept? (The big scientific idea that is driving the story flow as a whole and that the audience must remember, believe in, be persuaded by and that the entire story flow leads up to)',
+      content:
+        'What is your Core Story Concept? (The big scientific idea that is driving the story flow as a whole and that the audience must remember, believe in, be persuaded by and that the entire story flow leads up to)',
     },
   ]);
 
@@ -39,7 +40,8 @@ export default function TensionResolution() {
     setMessages([
       {
         role: 'assistant',
-        content: 'What is your Core Story Concept? (The big scientific idea that is driving the story flow as a whole and that the audience must remember, believe in, be persuaded by and that the entire story flow leads up to)',
+        content:
+          'What is your Core Story Concept? (The big scientific idea that is driving the story flow as a whole and that the audience must remember, believe in, be persuaded by and that the entire story flow leads up to)',
       },
     ]);
   };
@@ -68,7 +70,13 @@ export default function TensionResolution() {
 
     if (step === 3) {
       setContext((prev) => ({ ...prev, diseaseCondition: trimmed }));
-      setMessages([...newMessages, { role: 'assistant', content: 'Creating your Attack Point and Tension-Resolution narrative...' }]);
+      setMessages([
+        ...newMessages,
+        {
+          role: 'assistant',
+          content: 'Creating your Story Flow Outline…',
+        },
+      ]);
       setLoading(true);
 
       try {
@@ -111,10 +119,16 @@ export default function TensionResolution() {
   return (
     <PageLayout
       sectionIcon={
-        <Image src="/story_flow_map_chat.png" alt="Story Flow Map" width={72} height={72} className="w-18 h-18" />
+        <Image
+          src="/story_flow_map_chat.png"
+          alt="Story Flow Map"
+          width={72}
+          height={72}
+          className="w-18 h-18"
+        />
       }
       sectionName="Story Flow Map"
-      taskName="Create tension-resolution points"
+      taskName="Create story flow outline"
     >
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Chat Interface - Left Side */}
@@ -135,7 +149,9 @@ export default function TensionResolution() {
         {result && (
           <div className="flex-1 space-y-6">
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md space-y-6">
-              <h2 className="text-xl font-bold text-blue-900">Attack Point & Tension-Resolution Points</h2>
+              <h2 className="text-xl font-bold text-blue-900">
+                Attack Point & Tension-Resolution Points
+              </h2>
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                 <pre className="text-gray-800 whitespace-pre-wrap font-sans">{result}</pre>
               </div>

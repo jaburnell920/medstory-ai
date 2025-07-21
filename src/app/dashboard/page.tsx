@@ -122,10 +122,16 @@ export default function Dashboard() {
   return (
     <PageLayout
       sectionIcon={
-        <Image src="/story_flow_map_chat.png" alt="Core Story Chat" width={72} height={72} className="w-18 h-18" />
+        <Image
+          src="/story_flow_map_chat.png"
+          alt="Core Story Chat"
+          width={72}
+          height={72}
+          className="w-18 h-18"
+        />
       }
       sectionName="Story Flow Map"
-      taskName="Create tension-resolution points"
+      taskName="Create story flow outline"
     >
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Chat Interface - Left Side */}

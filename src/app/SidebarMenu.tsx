@@ -47,7 +47,7 @@ function SidebarMenu() {
       number: '4',
       name: 'Story Flow Map',
       links: [
-        { href: '/story-flow-map/tension-resolution', label: 'Create tension-resolution points' },
+        { href: '/story-flow-map/tension-resolution', label: 'Create story flow outline' },
         { href: '', label: 'Evaluate tension-resolution points' },
         { href: '', label: 'Create story flow map' },
       ],
