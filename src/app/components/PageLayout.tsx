@@ -7,6 +7,7 @@ import SidebarMenu from '../SidebarMenu';
 interface PageLayoutProps {
   sectionIcon: React.ReactNode;
   sectionName: string;
+  initialResultsLoaded?: boolean;
   taskName: string | React.ReactNode;
   children: React.ReactNode;
 }
@@ -15,12 +16,15 @@ export default function PageLayout({
   sectionIcon,
   sectionName,
   taskName,
+  initialResultsLoaded,
   children,
 }: PageLayoutProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (!initialResultsLoaded) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   useEffect(() => {
