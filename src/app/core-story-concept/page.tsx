@@ -26,7 +26,7 @@ export default function CoreStoryConcept() {
     audience: '',
     length: '',
   });
-  
+
   // State for managing multiple core story concepts
   const [concepts, setConcepts] = useState<CoreStoryConcept[]>([]);
   const [currentConceptIndex, setCurrentConceptIndex] = useState(0);
@@ -38,7 +38,7 @@ export default function CoreStoryConcept() {
     if (savedSelected) {
       setSelectedConcepts(new Set(JSON.parse(savedSelected)));
     }
-    
+
     const savedConcepts = sessionStorage.getItem('coreStoryConceptsData');
     if (savedConcepts) {
       setConcepts(JSON.parse(savedConcepts));
@@ -72,39 +72,39 @@ export default function CoreStoryConcept() {
     // Don't reset concepts or selected concepts to preserve user selections
     setCurrentConceptIndex(0);
   };
-  
+
   // Function to handle selecting a concept
   const handleSelectConcept = (conceptId: string) => {
     const newSelected = new Set(selectedConcepts);
-    
+
     if (newSelected.has(conceptId)) {
       newSelected.delete(conceptId);
     } else {
       newSelected.add(conceptId);
     }
-    
+
     setSelectedConcepts(newSelected);
-    
+
     // Save to session storage
     sessionStorage.setItem('selectedCoreStoryConcepts', JSON.stringify(Array.from(newSelected)));
-    
-    toast.success(newSelected.has(conceptId) 
-      ? 'Core Story Concept selected!' 
-      : 'Core Story Concept unselected');
+
+    toast.success(
+      newSelected.has(conceptId) ? 'Core Story Concept selected!' : 'Core Story Concept unselected'
+    );
   };
-  
+
   // Navigation functions for concepts
   const goToNextConcept = () => {
     if (concepts.length > 0) {
-      setCurrentConceptIndex((prevIndex) => 
+      setCurrentConceptIndex((prevIndex) =>
         prevIndex === concepts.length - 1 ? 0 : prevIndex + 1
       );
     }
   };
-  
+
   const goToPreviousConcept = () => {
     if (concepts.length > 0) {
-      setCurrentConceptIndex((prevIndex) => 
+      setCurrentConceptIndex((prevIndex) =>
         prevIndex === 0 ? concepts.length - 1 : prevIndex - 1
       );
     }
@@ -129,19 +129,26 @@ export default function CoreStoryConcept() {
     const trimmed = input.trim();
 
     // Check if we're in the post-generation phase
-    if (result && messages.length > 0 && messages[messages.length - 1].content === 'Would you like to modify this Core Story Concept or create a new one?') {
+    if (
+      result &&
+      messages.length > 0 &&
+      messages[messages.length - 1].content ===
+        'Would you like to modify this Core Story Concept or create a new one?'
+    ) {
       setLoading(true);
-      
+
       if (trimmed.toLowerCase().includes('modify')) {
         // Ask for modifications
-        setMessages([...newMessages, { 
-          role: 'assistant', 
-          content: 'What modifications would you like to make?' 
-        }]);
+        setMessages([
+          ...newMessages,
+          {
+            role: 'assistant',
+            content: 'What modifications would you like to make?',
+          },
+        ]);
         setLoading(false);
         return;
-      } 
-      else if (trimmed.toLowerCase().includes('new')) {
+      } else if (trimmed.toLowerCase().includes('new')) {
         // Generate a new concept
         try {
           const res = await fetch('/api/openai', {
@@ -168,7 +175,7 @@ export default function CoreStoryConcept() {
 
           const data = await res.json();
           setResult(data.result);
-          
+
           // Create a new concept
           const newConcept: CoreStoryConcept = {
             id: `concept-${Date.now()}`,
@@ -176,23 +183,27 @@ export default function CoreStoryConcept() {
             disease: context.disease,
             drug: context.drug,
             audience: context.audience,
-            length: context.length
+            length: context.length,
           };
-          
-          setConcepts(prevConcepts => {
+
+          setConcepts((prevConcepts) => {
             const updatedConcepts = [...prevConcepts, newConcept];
             // Save to session storage
             sessionStorage.setItem('coreStoryConceptsData', JSON.stringify(updatedConcepts));
             return updatedConcepts;
           });
-          
+
           // Set the current index to the new concept
           setCurrentConceptIndex(concepts.length);
-          
-          setMessages([...newMessages, { 
-            role: 'assistant', 
-            content: 'I\'ve created a new Core Story Concept. Would you like to modify this Core Story Concept or create a new one?' 
-          }]);
+
+          setMessages([
+            ...newMessages,
+            {
+              role: 'assistant',
+              content:
+                "I've created a new Core Story Concept. Would you like to modify this Core Story Concept or create a new one?",
+            },
+          ]);
         } catch (err) {
           toast.error('Something went wrong.');
           console.error(err);
@@ -200,33 +211,48 @@ export default function CoreStoryConcept() {
           setLoading(false);
         }
         return;
-      }
-      else if (trimmed.toLowerCase().includes('no')) {
-        setMessages([...newMessages, { 
-          role: 'assistant', 
-          content: 'Got it. Would you like to see a table with all the Core Story Concept Candidates?' 
-        }]);
+      } else if (trimmed.toLowerCase().includes('no')) {
+        setMessages([
+          ...newMessages,
+          {
+            role: 'assistant',
+            content:
+              'Got it. Would you like to see a table with all the Core Story Concept Candidates?',
+          },
+        ]);
         setLoading(false);
         return;
       }
       return;
     }
-    
+
     // Check if we're in the table request phase
-    if (result && messages.length > 0 && messages[messages.length - 1].content === 'Got it. Would you like to see a table with all the Core Story Concept Candidates?') {
+    if (
+      result &&
+      messages.length > 0 &&
+      messages[messages.length - 1].content ===
+        'Got it. Would you like to see a table with all the Core Story Concept Candidates?'
+    ) {
       if (trimmed.toLowerCase().includes('yes')) {
         // Here we would normally create a table, but for now we'll just acknowledge
-        setMessages([...newMessages, { 
-          role: 'assistant', 
-          content: 'Here is a table with all the Core Story Concept Candidates.' 
-        }]);
+        setMessages([
+          ...newMessages,
+          {
+            role: 'assistant',
+            content: 'Here is a table with all the Core Story Concept Candidates.',
+          },
+        ]);
       }
       setLoading(false);
       return;
     }
-    
+
     // Check if we're in the modification phase
-    if (result && messages.length > 0 && messages[messages.length - 1].content === 'What modifications would you like to make?') {
+    if (
+      result &&
+      messages.length > 0 &&
+      messages[messages.length - 1].content === 'What modifications would you like to make?'
+    ) {
       setLoading(true);
       try {
         const res = await fetch('/api/openai', {
@@ -257,7 +283,7 @@ export default function CoreStoryConcept() {
 
         const data = await res.json();
         setResult(data.result);
-        
+
         // Create a new concept for the modification
         const newConcept: CoreStoryConcept = {
           id: `concept-${Date.now()}`,
@@ -265,23 +291,27 @@ export default function CoreStoryConcept() {
           disease: context.disease,
           drug: context.drug,
           audience: context.audience,
-          length: context.length
+          length: context.length,
         };
-        
-        setConcepts(prevConcepts => {
+
+        setConcepts((prevConcepts) => {
           const updatedConcepts = [...prevConcepts, newConcept];
           // Save to session storage
           sessionStorage.setItem('coreStoryConceptsData', JSON.stringify(updatedConcepts));
           return updatedConcepts;
         });
-        
+
         // Set the current index to the new concept
         setCurrentConceptIndex(concepts.length);
-        
-        setMessages([...newMessages, { 
-          role: 'assistant', 
-          content: 'I\'ve modified the Core Story Concept. Would you like to modify this Core Story Concept or create a new one?' 
-        }]);
+
+        setMessages([
+          ...newMessages,
+          {
+            role: 'assistant',
+            content:
+              "I've modified the Core Story Concept. Would you like to modify this Core Story Concept or create a new one?",
+          },
+        ]);
       } catch (err) {
         toast.error('Something went wrong.');
         console.error(err);
@@ -302,7 +332,7 @@ export default function CoreStoryConcept() {
     }
 
     if (step === 3) {
-      setMessages([...newMessages, { role: 'assistant', content: 'Ok, here we go...' }]);
+      setMessages([...newMessages, { role: 'assistant', content: 'Ok, here we go' }]);
       setLoading(true);
 
       try {
@@ -330,7 +360,7 @@ export default function CoreStoryConcept() {
 
         const data = await res.json();
         setResult(data.result);
-        
+
         // Create a new concept and add it to the concepts array
         const newConcept: CoreStoryConcept = {
           id: `concept-${Date.now()}`,
@@ -338,16 +368,16 @@ export default function CoreStoryConcept() {
           disease: context.disease,
           drug: context.drug,
           audience: context.audience,
-          length: context.length
+          length: context.length,
         };
-        
-        setConcepts(prevConcepts => {
+
+        setConcepts((prevConcepts) => {
           const updatedConcepts = [...prevConcepts, newConcept];
           // Save to session storage
           sessionStorage.setItem('coreStoryConceptsData', JSON.stringify(updatedConcepts));
           return updatedConcepts;
         });
-        
+
         // Set the current index to the new concept
         setCurrentConceptIndex(concepts.length);
       } catch (err) {
@@ -376,7 +406,13 @@ export default function CoreStoryConcept() {
   return (
     <PageLayout
       sectionIcon={
-        <Image src="/core_story_chat.png" alt="Core Story Chat" width={72} height={72} className="w-18 h-18" />
+        <Image
+          src="/core_story_chat.png"
+          alt="Core Story Chat"
+          width={72}
+          height={72}
+          className="w-18 h-18"
+        />
       }
       sectionName="Core Story Concept"
       taskName="Create Core Story Concept options"
@@ -403,16 +439,16 @@ export default function CoreStoryConcept() {
               <h2 className="text-xl font-bold text-blue-600 bg-blue-50 p-2 rounded">
                 Core Story Concept Candidate #{concepts.length > 0 ? currentConceptIndex + 1 : 1}
               </h2>
-              
+
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                 <p className="text-gray-800 whitespace-pre-wrap">
                   {concepts.length > 0 ? concepts[currentConceptIndex]?.content : result}
                 </p>
               </div>
-              
+
               <div className="mt-4 flex flex-col gap-3">
                 {/* Select button */}
-                <button 
+                <button
                   onClick={() => {
                     if (concepts.length > 0) {
                       handleSelectConcept(concepts[currentConceptIndex].id);
@@ -424,51 +460,55 @@ export default function CoreStoryConcept() {
                         disease: context.disease,
                         drug: context.drug,
                         audience: context.audience,
-                        length: context.length
+                        length: context.length,
                       };
-                      
-                      setConcepts(prevConcepts => {
+
+                      setConcepts((prevConcepts) => {
                         const updatedConcepts = [...prevConcepts, newConcept];
-                        sessionStorage.setItem('coreStoryConceptsData', JSON.stringify(updatedConcepts));
+                        sessionStorage.setItem(
+                          'coreStoryConceptsData',
+                          JSON.stringify(updatedConcepts)
+                        );
                         return updatedConcepts;
                       });
-                      
+
                       handleSelectConcept(newConcept.id);
                     }
                   }}
                   className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
                 >
-                  {concepts.length > 0 && selectedConcepts.has(concepts[currentConceptIndex]?.id) 
-                    ? "Unselect This Core Story Concept" 
-                    : "Select This Core Story Concept"}
+                  {concepts.length > 0 && selectedConcepts.has(concepts[currentConceptIndex]?.id)
+                    ? 'Unselect This Core Story Concept'
+                    : 'Select This Core Story Concept'}
                 </button>
-                
+
                 {/* Continue button */}
-                <button 
+                <button
                   onClick={() => {
                     setMessages([
-                      ...messages, 
-                      { 
-                        role: 'assistant', 
-                        content: 'Would you like to modify this Core Story Concept or create a new one?' 
-                      }
+                      ...messages,
+                      {
+                        role: 'assistant',
+                        content:
+                          'Would you like to modify this Core Story Concept or create a new one?',
+                      },
                     ]);
                   }}
                   className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
                 >
                   Continue
                 </button>
-                
+
                 {/* Navigation buttons */}
                 {concepts.length > 1 && (
                   <div className="flex justify-between mt-4">
-                    <button 
+                    <button
                       onClick={goToPreviousConcept}
                       className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition-colors"
                     >
                       Previous Core Story Concept
                     </button>
-                    <button 
+                    <button
                       onClick={goToNextConcept}
                       className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition-colors"
                     >
