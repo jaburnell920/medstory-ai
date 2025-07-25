@@ -78,7 +78,7 @@ export default function TensionResolution() {
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
-      
+
       // Check if this line contains a question
       let isQuestion = false;
       for (const pattern of questionPatterns) {
@@ -89,7 +89,7 @@ export default function TensionResolution() {
           break;
         }
       }
-      
+
       // If we haven't found a question yet, or this isn't a question line, add to content
       if (!isQuestion && !foundQuestion) {
         contentLines.push(lines[i]);
@@ -136,7 +136,7 @@ export default function TensionResolution() {
           ...newMessages,
           {
             role: 'assistant',
-            content: 'Creating your Story Flow Outline…',
+            content: 'Creating your Story Flow Outline',
           },
         ]);
         setLoading(true);
@@ -156,11 +156,11 @@ export default function TensionResolution() {
 
           const data = await res.json();
           const { content, question } = parseAIResponse(data.result);
-          
+
           if (content) {
             setResult(content);
           }
-          
+
           if (question) {
             setMessages((msgs) => [
               ...msgs.slice(0, -1), // Remove "Creating..." message
@@ -170,7 +170,7 @@ export default function TensionResolution() {
               },
             ]);
           }
-          
+
           setConversationStarted(true);
         } catch (err) {
           toast.error('Something went wrong.');
@@ -196,7 +196,7 @@ export default function TensionResolution() {
     } else {
       // Handle ongoing conversation
       setLoading(true);
-      
+
       try {
         const res = await fetch('/api/tension-resolution', {
           method: 'POST',
@@ -214,12 +214,12 @@ export default function TensionResolution() {
 
         const data = await res.json();
         const { content, question } = parseAIResponse(data.result);
-        
+
         // Update result if there's substantial content
         if (content && content.length > 50) {
           setResult(content);
         }
-        
+
         // Add AI response to chat
         const responseContent = question || data.result;
         setMessages((msgs) => [
@@ -229,7 +229,6 @@ export default function TensionResolution() {
             content: responseContent,
           },
         ]);
-        
       } catch (err) {
         toast.error('Something went wrong.');
         console.error(err);
