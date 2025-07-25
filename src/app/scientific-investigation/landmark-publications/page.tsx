@@ -70,29 +70,36 @@ export default function LandmarkPublicationsPage() {
       // Split the block into lines
       const lines = block.trim().split('\n');
       
-      // The expected format is:
-      // Line 1: N. Citation text
-      // Line 2: Impact Score (0-100): XX
-      // Line 3+: Description
-      
-      const citationLine = lines[0] || '';
-      const impactLine = lines.find(line => line.trim().startsWith('Impact Score (0-100):')) || '';
-      
-      // Find the index where the impact score line is
+      // Find the impact score line
       const impactLineIndex = lines.findIndex(line => line.trim().startsWith('Impact Score (0-100):'));
       
-      // Description starts after the impact score line
-      const descriptionStartIndex = impactLineIndex >= 0 ? impactLineIndex + 1 : 1;
-      const descriptionLines = lines.slice(descriptionStartIndex);
+      // Reconstruct the citation by joining lines before the impact score
+      let citationLines: string[] = [];
+      let descriptionLines: string[] = [];
+      
+      if (impactLineIndex >= 0) {
+        // Citation is everything before the impact score line
+        citationLines = lines.slice(0, impactLineIndex);
+        // Description is everything after the impact score line
+        descriptionLines = lines.slice(impactLineIndex + 1);
+      } else {
+        // If no impact score found, first line is citation, rest is description
+        citationLines = [lines[0] || ''];
+        descriptionLines = lines.slice(1);
+      }
+      
+      // Join citation lines and clean up any line breaks at hyphens
+      const fullCitation = citationLines.join(' ').replace(/\s+/g, ' ').trim();
       
       // Extract the study number
-      const numberMatch = citationLine.match(/^(\d+)\./);
+      const numberMatch = fullCitation.match(/^(\d+)\./);
       const number = numberMatch ? numberMatch[1] : String(index + 1);
       
       // Extract the citation text (everything after the number)
-      const citation = citationLine.replace(/^\d+\.\s*/, '');
+      const citation = fullCitation.replace(/^\d+\.\s*/, '');
       
       // Extract the impact score
+      const impactLine = lines[impactLineIndex] || '';
       const impactScore = impactLine.replace('Impact Score (0-100):', '').trim();
       
       // Join description lines
