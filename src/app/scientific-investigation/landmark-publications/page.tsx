@@ -65,21 +65,21 @@ export default function LandmarkPublicationsPage() {
   const parseStudies = (text: string): Study[] => {
     // Split the text into study blocks (separated by double newlines)
     const studyBlocks = text.split(/\n\s*\n/).filter((block) => block.trim());
-    
+
     return studyBlocks.map((block, index) => {
       // Split the block into lines
-      let lines = block.trim().split('\n');
-      
+      const lines = block.trim().split('\n');
+
       // First, handle the case where a line contains both page number completion and impact score
       // Look for lines that match pattern: "number. Impact Score (0-100): score"
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
         const impactMatch = line.match(/^(\d+)\.\s*Impact Score \(0-100\):\s*(\d+)/);
-        
+
         if (impactMatch && i > 0) {
           const pageNumber = impactMatch[1];
           const score = impactMatch[2];
-          
+
           // Check if the previous line ends with a hyphen (indicating split page range)
           const prevLine = lines[i - 1].trim();
           if (prevLine.endsWith('-')) {
@@ -90,14 +90,16 @@ export default function LandmarkPublicationsPage() {
           }
         }
       }
-      
+
       // Find the impact score line
-      const impactLineIndex = lines.findIndex(line => line.trim().startsWith('Impact Score (0-100):'));
-      
+      const impactLineIndex = lines.findIndex((line) =>
+        line.trim().startsWith('Impact Score (0-100):')
+      );
+
       // Reconstruct the citation by joining lines before the impact score
       let citationLines: string[] = [];
       let descriptionLines: string[] = [];
-      
+
       if (impactLineIndex >= 0) {
         // Citation is everything before the impact score line
         citationLines = lines.slice(0, impactLineIndex);
@@ -108,24 +110,24 @@ export default function LandmarkPublicationsPage() {
         citationLines = [lines[0] || ''];
         descriptionLines = lines.slice(1);
       }
-      
+
       // Join citation lines with spaces
       const fullCitation = citationLines.join(' ').replace(/\s+/g, ' ').trim();
-      
+
       // Extract the study number
       const numberMatch = fullCitation.match(/^(\d+)\./);
       const number = numberMatch ? numberMatch[1] : String(index + 1);
-      
+
       // Extract the citation text (everything after the number)
       const citation = fullCitation.replace(/^\d+\.\s*/, '');
-      
+
       // Extract the impact score
       const impactLine = lines[impactLineIndex] || '';
       const impactScore = impactLine.replace('Impact Score (0-100):', '').trim();
-      
+
       // Join description lines
       const description = descriptionLines.join(' ').trim();
-      
+
       return {
         id: `study-${number}-${Date.now()}-${index}`,
         number,
