@@ -21,24 +21,7 @@ interface ChatInterfaceProps {
   interviewEnded?: boolean;
 }
 
-// Loading dots animation component
-const LoadingDots = () => {
-  const [dots, setDots] = useState('.');
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setDots((prevDots) => {
-        if (prevDots === '.') return '..';
-        if (prevDots === '..') return '...';
-        return '.';
-      });
-    }, 500); // Change dots every 500ms
-
-    return () => clearInterval(interval);
-  }, []);
-
-  return <span>{dots}</span>;
-};
+// Loading dots animation is now handled directly in the ChatInterface component
 
 export default function ChatInterface({
   messages,
@@ -54,6 +37,22 @@ export default function ChatInterface({
   interviewEnded = false,
 }: ChatInterfaceProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [dots, setDots] = useState('.');
+
+  // Loading dots animation
+  useEffect(() => {
+    if (loading) {
+      const interval = setInterval(() => {
+        setDots((prevDots) => {
+          if (prevDots === '.') return '..';
+          if (prevDots === '..') return '...';
+          return '.';
+        });
+      }, 500); // Change dots every 500ms
+
+      return () => clearInterval(interval);
+    }
+  }, [loading]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -73,7 +72,7 @@ export default function ChatInterface({
   // Dynamic placeholder based on loading state
   const getPlaceholder = () => {
     if (loading) {
-      return '                                                Thinking';
+      return `Thinking${dots}`;
     }
     return placeholder;
   };
@@ -110,7 +109,7 @@ export default function ChatInterface({
                   <div className="px-4 py-3 whitespace-pre-wrap text-gray-800">
                     {formatContent(m.content)}
                     {loading && i === messages.length - 1 && m.role === 'assistant' && (
-                      <LoadingDots />
+                      <span>{dots}</span>
                     )}
                   </div>
                 </div>
@@ -152,11 +151,6 @@ export default function ChatInterface({
                     placeholder={getPlaceholder()}
                     disabled={interviewEnded}
                   />
-                  {loading && (
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                      <LoadingDots />
-                    </div>
-                  )}
                 </div>
                 <button
                   type="submit"
