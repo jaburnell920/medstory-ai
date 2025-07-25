@@ -63,19 +63,69 @@ export default function LandmarkPublicationsPage() {
 
   // Parse studies from result text
   const parseStudies = (text: string): Study[] => {
+    // Split the text into study blocks (separated by double newlines)
     const studyBlocks = text.split(/\n\s*\n/).filter((block) => block.trim());
+
     return studyBlocks.map((block, index) => {
+      // Split the block into lines
       const lines = block.trim().split('\n');
-      const citationLine = lines[0] || '';
-      const impactLine = lines.find((line) => line.includes('Impact Score')) || '';
-      const descriptionLines = lines.filter(
-        (line) => !line.match(/^\d+\./) && !line.includes('Impact Score')
+
+      // First, handle the case where a line contains both page number completion and impact score
+      // Look for lines that match pattern: "number. Impact Score (0-100): score"
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        const impactMatch = line.match(/^(\d+)\.\s*Impact Score \(0-100\):\s*(\d+)/);
+
+        if (impactMatch && i > 0) {
+          const pageNumber = impactMatch[1];
+          const score = impactMatch[2];
+
+          // Check if the previous line ends with a hyphen (indicating split page range)
+          const prevLine = lines[i - 1].trim();
+          if (prevLine.endsWith('-')) {
+            // Complete the page range in the previous line
+            lines[i - 1] = prevLine + pageNumber + '.';
+            // Replace current line with just the impact score
+            lines[i] = `Impact Score (0-100): ${score}`;
+          }
+        }
+      }
+
+      // Find the impact score line
+      const impactLineIndex = lines.findIndex((line) =>
+        line.trim().startsWith('Impact Score (0-100):')
       );
 
-      const numberMatch = citationLine.match(/^(\d+)\./);
+      // Reconstruct the citation by joining lines before the impact score
+      let citationLines: string[] = [];
+      let descriptionLines: string[] = [];
+
+      if (impactLineIndex >= 0) {
+        // Citation is everything before the impact score line
+        citationLines = lines.slice(0, impactLineIndex);
+        // Description is everything after the impact score line
+        descriptionLines = lines.slice(impactLineIndex + 1);
+      } else {
+        // If no impact score found, first line is citation, rest is description
+        citationLines = [lines[0] || ''];
+        descriptionLines = lines.slice(1);
+      }
+
+      // Join citation lines with spaces
+      const fullCitation = citationLines.join(' ').replace(/\s+/g, ' ').trim();
+
+      // Extract the study number
+      const numberMatch = fullCitation.match(/^(\d+)\./);
       const number = numberMatch ? numberMatch[1] : String(index + 1);
-      const citation = citationLine.replace(/^\d+\.\s*/, '');
+
+      // Extract the citation text (everything after the number)
+      const citation = fullCitation.replace(/^\d+\.\s*/, '');
+
+      // Extract the impact score
+      const impactLine = lines[impactLineIndex] || '';
       const impactScore = impactLine.replace('Impact Score (0-100):', '').trim();
+
+      // Join description lines
       const description = descriptionLines.join(' ').trim();
 
       return {
