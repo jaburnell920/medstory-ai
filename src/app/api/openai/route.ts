@@ -35,27 +35,30 @@ export async function POST(req: NextRequest) {
     }
   }
   
-  // Original core story concept functionality
-  const { drug, disease, audience, intensity } = body;
+  // Core story concept functionality with new prompt
+  const { disease, drug, audience, length } = body;
 
   const prompt = `
-      You are helping create a Core Story Concept for a medical communication tool.
+# Core Story Concept
+You are a multidisciplinary medical storyteller hired to create a Core Story Concept for ${drug} in ${disease} for the target audience ${audience}.
 
-      Please generate a concept candidate based on:
+A Core Story Concept is a sticky scientific insight that:
 
-      - Drug: ${drug}
-      - Disease or condition: ${disease}
-      - Audience: ${audience}
-      - Intensity of emotion/creativity: ${intensity}
+1. Surprises clinicians – it is new, overlooked, or counterintuitive to the target audience.
 
-      Structure your response with the following headings:
-      Tension:
-      [One paragraph]
+2. Maps directly to ${drug}'s value – mechanistic or clinical.
 
-      Resolution:
-      [One paragraph]
+3. Sticks in the mind – it can be quoted in a hallway six months later.
 
-      Only return the content, no commentary or intro.
+4. Is bullet-proof – every claim is defensible with peer-reviewed data.
+
+Use the following to find an optimal Core Story Concept: 
+1. Mine for novelty – scan the mechanism of action, pivotal trials, and unmet needs to surface little-known truths that ${drug} makes actionable. Write for busy specialists—active voice, vivid verbs, zero fluff. Avoid clichés and marketing jargon.
+
+2. Use the following title: "Core Story Concept Candidate #1" then add a blank line after this. 
+3. Following the title, distill each truth into a memorable mini-narrative that is structured in the form of a tension section which is ${length} number of words and a resolution section which is ${length} number of words. The resolution pays off the tension in hand-in-glove fashion that makes perfect sense. Do not display the number of words in the tension and resolution section – just use the words "TENSION" and "RESOLUTION".
+
+Return only the concepts in the template above.
         `;
 
   try {
