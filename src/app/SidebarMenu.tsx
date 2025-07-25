@@ -67,11 +67,13 @@ function SidebarMenu() {
     <nav className="flex flex-col space-y-4 text-xs pt-2 h-full">
       {/* START HERE header */}
       <div className="mb-4 w-16 pt-6">
-        <h2 className="text-[#38b8ff] font-bold text-sm tracking-wide">
-          START
-          <br />
-          <span className="pr-12">HERE</span>
-        </h2>
+        <Link href="/enter">
+          <h2 className="text-[#38b8ff] font-bold text-sm tracking-wide cursor-pointer">
+            START
+            <br />
+            <span className="pr-12">HERE</span>
+          </h2>
+        </Link>
       </div>
       {sections.map((section, index) => (
         <div key={section.number} className="flex flex-row">
