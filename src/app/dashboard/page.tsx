@@ -72,7 +72,7 @@ export default function Dashboard() {
 
     if (step === 4) {
       setContext((prev) => ({ ...prev, count: trimmed }));
-      setMessages([...newMessages, { role: 'assistant', content: 'Ok, here we go...' }]);
+      setMessages([...newMessages, { role: 'assistant', content: 'Ok, here we go' }]);
       setLoading(true);
 
       try {
