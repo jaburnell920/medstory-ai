@@ -63,22 +63,37 @@ export default function LandmarkPublicationsPage() {
 
   // Parse studies from result text
   const parseStudies = (text: string): Study[] => {
+    // Split the text into study blocks (separated by blank lines)
     const studyBlocks = text.split(/\n\s*\n/).filter((block) => block.trim());
+    
     return studyBlocks.map((block, index) => {
+      // Split the block into lines
       const lines = block.trim().split('\n');
+      
+      // The first line is always the citation line
       const citationLine = lines[0] || '';
-      // Specifically look for the line that starts with "Impact Score"
-      const impactLine = lines.find((line) => line.trim().startsWith('Impact Score')) || '';
-      const descriptionLines = lines.filter(
-        (line) => !line.match(/^\d+\./) && !line.trim().startsWith('Impact Score')
-      );
-
+      
+      // Extract the study number
       const numberMatch = citationLine.match(/^(\d+)\./);
       const number = numberMatch ? numberMatch[1] : String(index + 1);
+      
+      // Extract the citation text (everything after the number)
       const citation = citationLine.replace(/^\d+\.\s*/, '');
-      const impactScore = impactLine.replace('Impact Score (0-100):', '').trim();
+      
+      // Find the impact score line (it should be the second line if present)
+      let impactScore = '';
+      let descriptionStartIndex = 1; // Default to start from the second line
+      
+      // Check if the second line contains "Impact Score"
+      if (lines.length > 1 && lines[1].includes('Impact Score')) {
+        impactScore = lines[1].replace('Impact Score (0-100):', '').trim();
+        descriptionStartIndex = 2; // Description starts from the third line
+      }
+      
+      // Get all remaining lines as the description
+      const descriptionLines = lines.slice(descriptionStartIndex);
       const description = descriptionLines.join(' ').trim();
-
+      
       return {
         id: `study-${number}-${Date.now()}-${index}`,
         number,
