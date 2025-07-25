@@ -11,74 +11,207 @@ export async function POST(req: NextRequest) {
       result: `# MEDSTORY® Presentation Outline
 
 ## Presentation Overview
-**Target Audience:** Cardiologists  
-**Duration:** 20 minutes  
-**Maximum Slides:** 15  
-**Tone:** Academic and professional  
-**Visual Style:** Moderate visuals  
-**Speaker Notes:** Included  
+**Audience:** xxx  
+**Core Story Concept:** xxx  
+**Total Number of Slides:** XX  
+**Target Length:** XX minutes  
 
 ## Slide Structure
 
-### Slide 1: Title Slide
+### **SLIDE 1:** Title Slide
+TEXT
 **Content:** [Your Presentation Title]
-**Speaker Notes:** Welcome the audience and introduce yourself. Set the stage for the presentation.
 
-### Slide 2: Agenda
+VISUALS
+[Visual description]
+
+SPEAKER NOTES
+Welcome the audience and introduce yourself. Set the stage for the presentation.
+
+REFERENCES
+1. Smith E, et al. N Eng J Med. 2024;345:50-61
+
+### **SLIDE 2:** Agenda
+TEXT
 **Content:** Overview of key topics to be covered
-**Speaker Notes:** Briefly outline what the audience can expect to learn.
 
-### Slide 3: Problem Statement
+VISUALS
+[Visual description]
+
+SPEAKER NOTES
+Briefly outline what the audience can expect to learn.
+
+REFERENCES
+1. Johnson A, et al. JAMA. 2023;330:1245-1252
+
+### **SLIDE 3:** Problem Statement
+TEXT
 **Content:** Current challenges in cardiology practice
-**Speaker Notes:** Establish the tension - what problems are cardiologists facing today?
 
-### Slide 4: Clinical Evidence
+VISUALS
+[Visual description]
+
+SPEAKER NOTES
+Establish the tension - what problems are cardiologists facing today?
+
+REFERENCES
+1. Williams B, et al. Circulation. 2023;147:1123-1135
+
+### **SLIDE 4:** Clinical Evidence
+TEXT
 **Content:** Key research findings and data
-**Speaker Notes:** Present compelling evidence that supports your narrative.
 
-### Slide 5: Case Study Introduction
+VISUALS
+[Visual description]
+
+SPEAKER NOTES
+Present compelling evidence that supports your narrative.
+
+REFERENCES
+1. Chen H, et al. Lancet. 2024;403:789-801
+
+### **SLIDE 5:** Case Study Introduction
+TEXT
 **Content:** Real-world patient scenario
-**Speaker Notes:** Introduce a relatable case that resonates with your audience.
 
-### Slide 6: Current Treatment Approach
+VISUALS
+[Visual description]
+
+SPEAKER NOTES
+Introduce a relatable case that resonates with your audience.
+
+REFERENCES
+1. Garcia R, et al. J Am Coll Cardiol. 2023;81:1567-1579
+
+### **SLIDE 6:** Current Treatment Approach
+TEXT
 **Content:** Standard of care limitations
-**Speaker Notes:** Discuss current treatment limitations and unmet needs.
 
-### Slide 7: The Solution
+VISUALS
+[Visual description]
+
+SPEAKER NOTES
+Discuss current treatment limitations and unmet needs.
+
+REFERENCES
+1. Taylor D, et al. Eur Heart J. 2024;45:234-246
+
+### **SLIDE 7:** The Solution
+TEXT
 **Content:** Your proposed approach or intervention
-**Speaker Notes:** Present the resolution to the tension established earlier.
 
-### Slide 8: Mechanism of Action
+VISUALS
+[Visual description]
+
+SPEAKER NOTES
+Present the resolution to the tension established earlier.
+
+REFERENCES
+1. Kim J, et al. Nature Medicine. 2023;29:1890-1902
+
+### **SLIDE 8:** Mechanism of Action
+TEXT
 **Content:** How the solution works
-**Speaker Notes:** Explain the scientific rationale in terms cardiologists will appreciate.
 
-### Slide 9: Clinical Trial Results
+VISUALS
+[Visual description]
+
+SPEAKER NOTES
+Explain the scientific rationale in terms cardiologists will appreciate.
+
+REFERENCES
+1. Patel V, et al. Science. 2024;383:456-468
+
+### **SLIDE 9:** Clinical Trial Results
+TEXT
 **Content:** Efficacy and safety data
-**Speaker Notes:** Present key trial results with appropriate statistical context.
 
-### Slide 10: Patient Outcomes
+VISUALS
+[Visual description]
+
+SPEAKER NOTES
+Present key trial results with appropriate statistical context.
+
+REFERENCES
+1. Brown M, et al. N Engl J Med. 2023;389:1234-1246
+
+### **SLIDE 10:** Patient Outcomes
+TEXT
 **Content:** Real-world impact on patient care
-**Speaker Notes:** Connect the data to meaningful patient outcomes.
 
-### Slide 11: Implementation Considerations
+VISUALS
+[Visual description]
+
+SPEAKER NOTES
+Connect the data to meaningful patient outcomes.
+
+REFERENCES
+1. Wilson L, et al. JAMA Cardiol. 2024;9:345-357
+
+### **SLIDE 11:** Implementation Considerations
+TEXT
 **Content:** Practical aspects of adoption
-**Speaker Notes:** Address potential barriers and implementation strategies.
 
-### Slide 12: Case Study Resolution
+VISUALS
+[Visual description]
+
+SPEAKER NOTES
+Address potential barriers and implementation strategies.
+
+REFERENCES
+1. Thompson S, et al. Health Affairs. 2023;42:1567-1578
+
+### **SLIDE 12:** Case Study Resolution
+TEXT
 **Content:** How the solution helped the patient from Slide 5
-**Speaker Notes:** Complete the narrative arc with a successful outcome.
 
-### Slide 13: Future Directions
+VISUALS
+[Visual description]
+
+SPEAKER NOTES
+Complete the narrative arc with a successful outcome.
+
+REFERENCES
+1. Martinez A, et al. BMJ. 2024;380:123-135
+
+### **SLIDE 13:** Future Directions
+TEXT
 **Content:** What's next in this area
-**Speaker Notes:** Discuss ongoing research and future possibilities.
 
-### Slide 14: Key Takeaways
+VISUALS
+[Visual description]
+
+SPEAKER NOTES
+Discuss ongoing research and future possibilities.
+
+REFERENCES
+1. Lee K, et al. Trends Cardiovasc Med. 2024;34:78-89
+
+### **SLIDE 14:** Key Takeaways
+TEXT
 **Content:** 3-4 main points for the audience to remember
-**Speaker Notes:** Reinforce the most important messages.
 
-### Slide 15: Questions & Discussion
+VISUALS
+[Visual description]
+
+SPEAKER NOTES
+Reinforce the most important messages.
+
+REFERENCES
+1. Roberts P, et al. Circulation. 2023;148:2345-2356
+
+### **SLIDE 15:** Questions & Discussion
+TEXT
 **Content:** Contact information and discussion prompt
-**Speaker Notes:** Invite questions and facilitate discussion.
+
+VISUALS
+[Visual description]
+
+SPEAKER NOTES
+Invite questions and facilitate discussion.
+
+REFERENCES
+1. Anderson T, et al. J Med Ethics. 2023;49:567-578
 
 ## Design Recommendations
 - Use consistent color scheme throughout
@@ -110,7 +243,7 @@ export async function POST(req: NextRequest) {
         {
           role: 'system',
           content:
-            'You are a world-class expert in presentation design, medical storytelling, generative AI prompting, PowerPoint design, live presentation coaching, TED Talk-style speaking, narrative storytelling structure, cognitive and behavioral psychology, persuasive science/business communication, visual data storytelling and infographic design, and stoic philosophy for clarity, simplicity, and purpose.',
+            'You are a world-class expert in presentation design, medical storytelling, generative AI prompting, PowerPoint design, live presentation coaching, TED Talk-style speaking, narrative storytelling structure, cognitive and behavioral psychology, persuasive science/business communication, visual data storytelling and infographic design, and stoic philosophy for clarity, simplicity, and purpose. Format each slide with "### **SLIDE X:**" (with SLIDE in all caps and bold). Include sections for TEXT, VISUALS, SPEAKER NOTES, and REFERENCES with a blank line between each section. Ensure at least 1 reference per slide.',
         },
         {
           role: 'user',

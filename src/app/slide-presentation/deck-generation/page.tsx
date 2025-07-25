@@ -114,12 +114,19 @@ Based on the following answers, generate a complete, persuasive, memorable Power
 8. Speaker Notes: ${updatedAnswers[7]}
 9. Visual Style Reference: ${updatedAnswers[8]}
 
+Start with a MEDSTORY PRESENTATION OUTLINE header followed by:
+Audience: [audience from answers]
+Core Story Concept: [concept from answers]
+Total Number of Slides: [number from answers]
+Target Length: [length from answers] minutes
+
 Create a slide-by-slide outline using these guidelines:
-- Each slide should be formatted in sections separated by blank lines
-- First section: TEXT (bullets max 5, or floating text max 2)
-- Second section: VISUALS (detailed description)
-- Third section: SPEAKER NOTES (25-150 words, conversational)
-- Fourth section: REFERENCES (numbered, format: Smith E, et al. N Eng J Med. 2024;345:50-61)
+- Each slide should be formatted as "### **SLIDE X:** Title" (with SLIDE in all caps and bold)
+- Each slide should have these sections in this order, with a blank line between each section:
+  - TEXT (bullets max 5, or floating text max 2)
+  - VISUALS (detailed description)
+  - SPEAKER NOTES (25-150 words, conversational)
+  - REFERENCES (at least 1 reference per slide, numbered, format: Smith E, et al. N Eng J Med. 2024;345:50-61)
 - Slide titles should express main idea in less than 15 words
 - Design to grab attention in first 30 seconds
 - Use visual and emotional anchors for memory retention
@@ -182,7 +189,7 @@ Generate the entire outline without stopping for user input.
           <div className="flex-1 space-y-6" ref={resultRef}>
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md">
               <h2 className="text-xl font-bold text-blue-900 mb-4">
-                MEDSTORY Presentation Outline
+                MEDSTORY PRESENTATION OUTLINE
               </h2>
               <div className="text-gray-800 whitespace-pre-wrap">{result}</div>
             </div>
