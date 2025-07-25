@@ -29,11 +29,8 @@ const nextConfig = {
   publicRuntimeConfig: {
     staticFolder: '/static',
   },
-  // Add server configuration to allow external connections
-  server: {
-    host: '0.0.0.0',
-    port: 12000,
-  },
+  // Next.js doesn't use this configuration directly in next.config.js
+  // We'll set these values when starting the server
 };
 
 module.exports = nextConfig;
