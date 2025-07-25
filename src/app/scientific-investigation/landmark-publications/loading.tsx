@@ -15,7 +15,7 @@ export default function Loading() {
       </aside>
 
       {/* Main Content Skeleton */}
-      <main className="flex-1 bg-gray-50 p-12">
+      <main className="flex-1 bg-[#ededed] p-12">
         <div className="flex items-center mb-10">
           <span className="text-4xl mr-4">🔬</span>
           <div>

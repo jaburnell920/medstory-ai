@@ -60,9 +60,9 @@ export default function PageLayout({
         </div>
       </aside>
       {/* Main Content */}
-      <main className="flex-1 bg-gray-50 flex flex-col overflow-hidden ml-72">
+      <main className="flex-1 bg-[#ededed] flex flex-col overflow-hidden ml-72">
         {/* Fixed Header with Section and Task */}
-        <div className="flex items-center justify-between p-12 pb-6 flex-shrink-0 bg-gray-50">
+        <div className="flex items-center justify-between p-12 pb-6 flex-shrink-0 bg-[#ededed]">
           <div className="flex items-center">
             <span className="text-4xl mr-4">{sectionIcon}</span>
             <div>

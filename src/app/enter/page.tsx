@@ -34,7 +34,7 @@ export default function EnterPage() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 bg-gray-50 p-12 ml-80">
+      <main className="flex-1 bg-[#ededed] p-12 ml-80">
         <div className="max-w-4xl">
           {/* Header with logo */}
           <div className="flex justify-between items-start mb-8">
