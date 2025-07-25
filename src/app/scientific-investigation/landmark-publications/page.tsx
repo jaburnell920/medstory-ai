@@ -67,9 +67,10 @@ export default function LandmarkPublicationsPage() {
     return studyBlocks.map((block, index) => {
       const lines = block.trim().split('\n');
       const citationLine = lines[0] || '';
-      const impactLine = lines.find((line) => line.includes('Impact Score')) || '';
+      // Specifically look for the line that starts with "Impact Score"
+      const impactLine = lines.find((line) => line.trim().startsWith('Impact Score')) || '';
       const descriptionLines = lines.filter(
-        (line) => !line.match(/^\d+\./) && !line.includes('Impact Score')
+        (line) => !line.match(/^\d+\./) && !line.trim().startsWith('Impact Score')
       );
 
       const numberMatch = citationLine.match(/^(\d+)\./);
