@@ -1,13 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 export async function POST(request: NextRequest) {
   try {
     const { coreStoryConcept, audience, interventionName, diseaseCondition } = await request.json();
+
+    // For testing purposes, if no OpenAI API key is provided, return a mock response
+    if (!process.env.OPENAI_API_KEY) {
+      const mockResponse = {
+        content: `**Attack Point #1**
+
+Dr. Sarah Chen stared at the lab results in disbelief. After 18 months of failed treatments, her patient with treatment-resistant depression showed a 70% reduction in symptoms within just 4 weeks. The breakthrough wasn't a new drug—it was knowing exactly which neuroinflammatory pathway to target.
+
+Traditional antidepressants work for only 30% of TRD patients, leaving millions trapped in cycles of trial-and-error prescribing. But what if the solution isn't finding better drugs, but finding the right patients for existing interventions?
+
+The biomarker panel revealed elevated IL-6 and TNF-α levels—inflammatory signatures that predicted response to targeted therapy with unprecedented accuracy.`,
+        question: "Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?"
+      };
+      
+      return NextResponse.json(mockResponse);
+    }
+
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
 
     const systemPrompt = `You are a cinematic scientific storyteller hired to craft compelling clinical narratives for practicing physicians. You will create both an Attack Point and Tension-Resolution Points based on the provided parameters.
 
@@ -17,9 +33,6 @@ PARAMETERS PROVIDED:
 - Intervention Name: ${interventionName}
 - Disease or Condition: ${diseaseCondition}
 
-The currently selected Core Story Concept is: ${coreStoryConcept}
-Ask the user "Do you want to use the currently selected Core Story Concept or provide a new one?" If answers "currently selected" then use it. If answer new one, ask "Please enter the Core Story Concept you'd like to use to guide the story flow." Store this text as "MANUAL CSC". Then ask for the other parameters above, one at a time. Do not number the steps when asking user for input. Just ask the questions. Ask the question very concisely – do not include examples or commentary in the questions.
-
 PHASE 1: ATTACK POINT
 You are a cinematic scientific storyteller hired to craft one Attack Point—the opening scene of a clinical narrative that hooks practicing physicians and compels them to keep reading. An Attack Point must:
 • Jolt attention within one breath: an arresting fact, anecdote, or paradox.
@@ -28,7 +41,7 @@ You are a cinematic scientific storyteller hired to craft one Attack Point—the
 
 Structure of Attack Point:
 Produce Attack Points using the template below for each Attack Point:
-• First line should be "Attack Point #X" where X is the number of the most recently created Attack Point
+• First line should be "**Attack Point #X**" where X is the number of the most recently created Attack Point (make this line bold using markdown)
 • Open with a vivid moment or revelation.
 • Pose or imply the clinical problem.
 • Hint at why traditional thinking is about to be challenged.
@@ -44,9 +57,13 @@ How to Craft Attack Point:
 • No clichés—replace "gamechanger" with concrete imagery or data.
 • Attack point text should be ≤100 words.
 
-Return only the filled-out template—no commentary.
+IMPORTANT: Your response should be in JSON format with two fields:
+- "content": The Attack Point content only
+- "question": The follow-up question for the user
 
-After delivering any attack point ask: "Would you like modify this Attack Point, create a new one, or move on to creating tension-resolution points?" If answered 'modify', ask the user "What modifications would you like to make?" and use the answer to modify the existing Attack Point. If answered 'new', create a brand new Attack Point using the same. If answered "move on", move on to delivering tension-resolution points.
+The follow-up question should be: "Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?"
+
+Return only the JSON response with the Attack Point content and the follow-up question.
 
 PHASE 2: TENSION-RESOLUTION POINTS
 You are a scientific story architect hired to turn raw ideas into narrative blueprints that grip practicing physicians from the first sentence to the final insight. The tension-resolution points must:
@@ -147,14 +164,14 @@ Begin with the Attack Point phase.`;
         },
         {
           role: 'user',
-          content: `Please create an Attack Point and Tension-Resolution narrative for the following:
+          content: `Please create an Attack Point for the following:
 
 Core Story Concept: ${coreStoryConcept}
 Audience: ${audience}
 Intervention Name: ${interventionName}
 Disease or Condition: ${diseaseCondition}
 
-Please start with the Attack Point phase and then proceed through all phases as outlined in your instructions.`,
+Please create only the Attack Point and return it in the specified JSON format.`,
         },
       ],
       temperature: 0.7,
@@ -163,7 +180,17 @@ Please start with the Attack Point phase and then proceed through all phases as 
 
     const result = completion.choices[0]?.message?.content || 'No response generated.';
 
-    return NextResponse.json({ result });
+    try {
+      // Try to parse as JSON first
+      const parsedResult = JSON.parse(result);
+      return NextResponse.json({ 
+        content: parsedResult.content,
+        question: parsedResult.question 
+      });
+    } catch (parseError) {
+      // If not JSON, return as plain result for backward compatibility
+      return NextResponse.json({ result });
+    }
   } catch (error) {
     console.error('Error in tension-resolution API:', error);
     return NextResponse.json(

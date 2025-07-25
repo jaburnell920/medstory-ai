@@ -11,6 +11,7 @@ export default function TensionResolution() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState('');
+  const [attackPointGenerated, setAttackPointGenerated] = useState(false);
   const [context, setContext] = useState({
     coreStoryConcept: '',
     audience: '',
@@ -31,6 +32,7 @@ export default function TensionResolution() {
     setInput('');
     setLoading(false);
     setResult('');
+    setAttackPointGenerated(false);
     setContext({
       coreStoryConcept: '',
       audience: '',
@@ -64,6 +66,67 @@ export default function TensionResolution() {
 
     const trimmed = input.trim();
 
+    // Handle Attack Point interaction
+    if (attackPointGenerated) {
+      const response = trimmed.toLowerCase();
+      if (response.includes('modify')) {
+        setMessages(prevMessages => [
+          ...prevMessages,
+          {
+            role: 'assistant',
+            content: 'What modifications would you like to make to the Attack Point?'
+          }
+        ]);
+        return;
+      } else if (response.includes('new')) {
+        // Generate a new Attack Point
+        setMessages(prevMessages => [
+          ...prevMessages,
+          {
+            role: 'assistant',
+            content: 'Creating a new Attack Point...'
+          }
+        ]);
+        setLoading(true);
+        
+        try {
+          const res = await fetch('/api/tension-resolution', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(context),
+          });
+
+          const data = await res.json();
+          
+          if (data.content && data.question) {
+            setResult(data.content);
+            setMessages(prevMessages => [
+              ...prevMessages,
+              {
+                role: 'assistant',
+                content: data.question
+              }
+            ]);
+          }
+        } catch (err) {
+          toast.error('Something went wrong.');
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
+        return;
+      } else if (response.includes('move on')) {
+        setMessages(prevMessages => [
+          ...prevMessages,
+          {
+            role: 'assistant',
+            content: 'Great! Now let\'s create the tension-resolution points. Would you like a short narrative (3-5 tension-resolution points), full narrative (8-12 tension-resolution points), or would you like to specify the number of tension-resolution points?'
+          }
+        ]);
+        return;
+      }
+    }
+
     if (step === 0) setContext((prev) => ({ ...prev, coreStoryConcept: trimmed }));
     if (step === 1) setContext((prev) => ({ ...prev, audience: trimmed }));
     if (step === 2) setContext((prev) => ({ ...prev, interventionName: trimmed }));
@@ -92,7 +155,23 @@ export default function TensionResolution() {
         });
 
         const data = await res.json();
-        setResult(data.result);
+        
+        // Handle new structured response format
+        if (data.content && data.question) {
+          setResult(data.content);
+          setAttackPointGenerated(true);
+          // Add the question to the chat
+          setMessages(prevMessages => [
+            ...prevMessages,
+            {
+              role: 'assistant',
+              content: data.question
+            }
+          ]);
+        } else if (data.result) {
+          // Backward compatibility for old format
+          setResult(data.result);
+        }
       } catch (err) {
         toast.error('Something went wrong.');
         console.error(err);
@@ -139,7 +218,7 @@ export default function TensionResolution() {
             setInput={setInput}
             onSubmit={handleSubmit}
             loading={loading}
-            showInput={step <= questions.length - 1}
+            showInput={step <= questions.length - 1 || attackPointGenerated}
             placeholder="Type your response..."
             onReset={handleReset}
           />
@@ -153,7 +232,20 @@ export default function TensionResolution() {
                 Attack Point & Tension-Resolution Points
               </h2>
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <pre className="text-gray-800 whitespace-pre-wrap font-sans">{result}</pre>
+                <div className="text-gray-800 whitespace-pre-wrap font-sans">
+                  {result.split('\n').map((line, index) => {
+                    // Check if line contains markdown bold formatting for Attack Point
+                    if (line.includes('**Attack Point') && line.includes('**')) {
+                      const boldText = line.replace(/\*\*(.*?)\*\*/g, '$1');
+                      return (
+                        <div key={index}>
+                          <strong>{boldText}</strong>
+                        </div>
+                      );
+                    }
+                    return <div key={index}>{line}</div>;
+                  })}
+                </div>
               </div>
             </div>
           </div>
