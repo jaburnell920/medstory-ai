@@ -70,25 +70,20 @@ export default function LandmarkPublicationsPage() {
       // Split the block into lines
       const lines = block.trim().split('\n');
       
-      // Find the citation line (starts with number)
-      let citationLine = '';
-      let impactLine = '';
-      let descriptionLines: string[] = [];
+      // The expected format is:
+      // Line 1: N. Citation text
+      // Line 2: Impact Score (0-100): XX
+      // Line 3+: Description
       
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        
-        if (line.match(/^\d+\./)) {
-          // This is the citation line
-          citationLine = line;
-        } else if (line.startsWith('Impact Score (0-100):')) {
-          // This is the impact score line
-          impactLine = line;
-        } else if (citationLine && !line.startsWith('Impact Score')) {
-          // This is part of the description
-          descriptionLines.push(line);
-        }
-      }
+      const citationLine = lines[0] || '';
+      const impactLine = lines.find(line => line.trim().startsWith('Impact Score (0-100):')) || '';
+      
+      // Find the index where the impact score line is
+      const impactLineIndex = lines.findIndex(line => line.trim().startsWith('Impact Score (0-100):'));
+      
+      // Description starts after the impact score line
+      const descriptionStartIndex = impactLineIndex >= 0 ? impactLineIndex + 1 : 1;
+      const descriptionLines = lines.slice(descriptionStartIndex);
       
       // Extract the study number
       const numberMatch = citationLine.match(/^(\d+)\./);
