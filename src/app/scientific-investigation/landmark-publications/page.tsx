@@ -63,15 +63,32 @@ export default function LandmarkPublicationsPage() {
 
   // Parse studies from result text
   const parseStudies = (text: string): Study[] => {
-    // Split the text into study blocks (separated by blank lines)
+    // Split the text into study blocks (separated by double newlines)
     const studyBlocks = text.split(/\n\s*\n/).filter((block) => block.trim());
     
     return studyBlocks.map((block, index) => {
       // Split the block into lines
       const lines = block.trim().split('\n');
       
-      // The first line is always the citation line
-      const citationLine = lines[0] || '';
+      // Find the citation line (starts with number)
+      let citationLine = '';
+      let impactLine = '';
+      let descriptionLines: string[] = [];
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        
+        if (line.match(/^\d+\./)) {
+          // This is the citation line
+          citationLine = line;
+        } else if (line.startsWith('Impact Score (0-100):')) {
+          // This is the impact score line
+          impactLine = line;
+        } else if (citationLine && !line.startsWith('Impact Score')) {
+          // This is part of the description
+          descriptionLines.push(line);
+        }
+      }
       
       // Extract the study number
       const numberMatch = citationLine.match(/^(\d+)\./);
@@ -80,18 +97,10 @@ export default function LandmarkPublicationsPage() {
       // Extract the citation text (everything after the number)
       const citation = citationLine.replace(/^\d+\.\s*/, '');
       
-      // Find the impact score line (it should be the second line if present)
-      let impactScore = '';
-      let descriptionStartIndex = 1; // Default to start from the second line
+      // Extract the impact score
+      const impactScore = impactLine.replace('Impact Score (0-100):', '').trim();
       
-      // Check if the second line contains "Impact Score"
-      if (lines.length > 1 && lines[1].includes('Impact Score')) {
-        impactScore = lines[1].replace('Impact Score (0-100):', '').trim();
-        descriptionStartIndex = 2; // Description starts from the third line
-      }
-      
-      // Get all remaining lines as the description
-      const descriptionLines = lines.slice(descriptionStartIndex);
+      // Join description lines
       const description = descriptionLines.join(' ').trim();
       
       return {
