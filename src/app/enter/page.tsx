@@ -5,10 +5,8 @@ import SidebarMenu from '../SidebarMenu';
 
 export default function EnterPage() {
   return (
-    <div className="flex min-h-screen text-black">
-      {/* Sidebar with white background extending full height */}
-      <aside className="w-80 bg-white flex flex-col flex-shrink-0 h-screen fixed">
-        {/* Logo section with white background */}
+    <>
+      <aside className="w-80 bg-white flex flex-col flex-shrink-0 h-screen fixed font-sans">
         <div className="bg-white p-6 pb-4 flex-col">
           <Image
             src="/medstory_logo_wo_sss.png"
@@ -27,86 +25,63 @@ export default function EnterPage() {
             />
           </div>
         </div>
-        {/* Menu section with blue background */}
         <div className="bg-[#002F6C] text-white flex-1 px-6 pb-6 overflow-y-auto">
           <SidebarMenu />
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 bg-[#ededed] p-12 ml-80">
-        <div className="max-w-4xl">
-          {/* Header with logo */}
-          <div className="flex justify-between items-start mb-8">
-            <h1 className="text-4xl font-normal text-gray-600 pt-14">Welcome!</h1>
-            <div className="flex flex-col items-center md:items-end space-y-1">
-              <Image
-                src="/medstory_logo_wo_sss.png"
-                alt="MEDSTORYAI Logo"
-                width={250}
-                height={80}
-                className="h-20 w-auto border-0 outline-0"
-              />
-              <Image
-                src="/smart-speedy-simple.png"
-                alt="Smart Speedy Simple"
-                width={100}
-                height={24}
-                className="h-6 w-45 opacity-70 border-0 outline-0"
-              />
-            </div>
-          </div>
+      <div className="flex min-h-screen text-black font-[Lora]">
+        <main className="flex-1 bg-[#ededed] p-12 ml-80">
+          <div className="max-w-xl">
+            <h1 className="text-5xl font-bold text-[#04316f] mb-10">Welcome!</h1>
+            <p className="text-xl leading-normal">
+              <span className="font-bold text-[#04316f]">MEDSTORY</span>
+              <span className="text-[#fc9b5f] font-bold">AI</span> is your AI-powered partner for
+              turning complex data into a clear, high-impact scientific story.
+            </p>
+            <p className="text-base leading-normal text-[#111827] mt-6">
+              <span className="font-semibold text-[#04316f]">MEDSTORY</span>
+              <span className="text-[#fc9b5f] font-semibold">AI</span> gives you a smart, speedy,
+              and simple way to build polished slide decks. By combining state-of-the-art generative
+              AI with SBC’s proven storytelling framework—honed over 15 years—we help you craft
+              narratives that educate, engage, and persuade.
+            </p>
 
-          {/* Main content */}
-          <div className="space-y-8">
-            <div>
-              <p className="text-xl text-black font-semibold leading-relaxed">
-                <strong>MEDSTORYAI</strong> is your AI-powered partner for turning complex data into
-                clear, high-impact scientific stories.
+            <div className="mt-8">
+              <h2 className="text-2xl font-bold text-[#04316f] mb-4">How It Works</h2>
+
+              <p className="text-base leading-normal text-[#111827] mb-3">
+                <span className="text-[#1c437b] italic">Start at the top.</span> Use the Scientific
+                Investigation prompt to feed{' '}
+                <span className="font-semibold text-[#04316f]">MEDSTORY</span>
+                <span className="text-[#fc9b5f] font-semibold">AI</span> your key data and insights.
+              </p>
+
+              <p className="text-base leading-normal text-[#111827] mb-3">
+                <span className="text-[#1c437b] italic">Follow the flow.</span> Work down each
+                section in order; every step refines the narrative, so the final{' '}
+                <span className="font-semibold text-[#04316f]">MEDSTORY</span> Slide Deck is
+                coherent and compelling.
+              </p>
+
+              <p className="text-base leading-normal text-[#111827]">
+                <span className="text-[#1c437b] italic">Review and refine.</span> The app delivers a
+                deck ready for your finishing touches—saving you hours while elevating quality.
               </p>
             </div>
 
-            <div>
-              <p className="text-lg text-black leading-relaxed">
-                <strong>MEDSTORYAI</strong> gives you a smart, speedy, and simple way to build
-                polished slide decks. By combining state-of-the-art generative AI with SBC&apos;s
-                proven storytelling framework—honed over 15 years—we help you craft narratives that
-                educate, engage, and persuade.
-              </p>
-            </div>
-
-            <div className="space-y-6">
-              <h2 className="text-2xl font-semibold text-black">How It Works</h2>
-
-              <div className="space-y-4">
-                <p className="text-lg text-black">
-                  <strong>Start at the top.</strong> Use the{' '}
-                  <strong>Scientific Investigation</strong> prompt to feed MEDSTORYAI your key data
-                  and insights.
-                </p>
-
-                <p className="text-lg text-black">
-                  <strong>Follow the flow.</strong> Work down each section in order; every step
-                  refines the narrative, so the final <strong>MEDSTORY Slide Deck</strong> is
-                  coherent and compelling.
-                </p>
-
-                <p className="text-lg text-black">
-                  <strong>Review and refine.</strong> The app delivers a deck ready for your
-                  finishing touches—saving you hours while elevating quality.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-12 pt-8 border-t border-gray-300">
-              <p className="text-base text-black">
-                Need a human touch? Email Bernie Coccia (bcoccia@sciencebranding.com) to schedule a
-                personal walkthrough and ensure your story shines.
+            <div className="mt-10 pt-6">
+              <p className="text-sm mt-4 leading-normal">
+                Need a human touch? Email Bernie Coccia (
+                <a href="mailto:bcoccia@sciencebranding.com" className="underline text-[#04316f]">
+                  bcoccia@sciencebranding.com
+                </a>
+                ) to schedule a personal walkthrough and ensure your story shines.
               </p>
             </div>
           </div>
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </>
   );
 }
