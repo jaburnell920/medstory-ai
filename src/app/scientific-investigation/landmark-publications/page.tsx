@@ -68,7 +68,28 @@ export default function LandmarkPublicationsPage() {
     
     return studyBlocks.map((block, index) => {
       // Split the block into lines
-      const lines = block.trim().split('\n');
+      let lines = block.trim().split('\n');
+      
+      // First, handle the case where a line contains both page number completion and impact score
+      // Look for lines that match pattern: "number. Impact Score (0-100): score"
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        const impactMatch = line.match(/^(\d+)\.\s*Impact Score \(0-100\):\s*(\d+)/);
+        
+        if (impactMatch && i > 0) {
+          const pageNumber = impactMatch[1];
+          const score = impactMatch[2];
+          
+          // Check if the previous line ends with a hyphen (indicating split page range)
+          const prevLine = lines[i - 1].trim();
+          if (prevLine.endsWith('-')) {
+            // Complete the page range in the previous line
+            lines[i - 1] = prevLine + pageNumber + '.';
+            // Replace current line with just the impact score
+            lines[i] = `Impact Score (0-100): ${score}`;
+          }
+        }
+      }
       
       // Find the impact score line
       const impactLineIndex = lines.findIndex(line => line.trim().startsWith('Impact Score (0-100):'));
@@ -88,7 +109,7 @@ export default function LandmarkPublicationsPage() {
         descriptionLines = lines.slice(1);
       }
       
-      // Join citation lines and clean up any line breaks at hyphens
+      // Join citation lines with spaces
       const fullCitation = citationLines.join(' ').replace(/\s+/g, ' ').trim();
       
       // Extract the study number
