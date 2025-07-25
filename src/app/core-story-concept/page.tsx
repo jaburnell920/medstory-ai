@@ -12,17 +12,16 @@ export default function CoreStoryConcept() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState('');
   const [context, setContext] = useState({
-    drug: '',
     disease: '',
+    drug: '',
     audience: '',
-    intensity: '',
-    count: '',
+    length: '',
   });
 
   const [messages, setMessages] = useState<{ role: 'assistant' | 'user'; content: string }[]>([
     {
       role: 'assistant',
-      content: 'What drug or intervention are you exploring today?',
+      content: 'What is the disease state?',
     },
   ]);
 
@@ -32,26 +31,24 @@ export default function CoreStoryConcept() {
     setLoading(false);
     setResult('');
     setContext({
-      drug: '',
       disease: '',
+      drug: '',
       audience: '',
-      intensity: '',
-      count: '',
+      length: '',
     });
     setMessages([
       {
         role: 'assistant',
-        content: 'What drug or intervention are you exploring today?',
+        content: 'What is the disease state?',
       },
     ]);
   };
 
   const questions = [
-    'What drug or intervention are you exploring today?',
-    'What disease or condition is being treated?',
-    'Who is your target audience?',
-    'What is the desired intensity of emotion/creativity (low, medium, or high)?',
-    'How many Core Story Concept Candidates would you like me to generate?',
+    'What is the disease state?',
+    'What is the therapeutic intervention?',
+    'Who is the audience?',
+    'Would you like a concise or full-length Core Story Concept?',
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -65,13 +62,138 @@ export default function CoreStoryConcept() {
 
     const trimmed = input.trim();
 
-    if (step === 0) setContext((prev) => ({ ...prev, drug: trimmed }));
-    if (step === 1) setContext((prev) => ({ ...prev, disease: trimmed }));
-    if (step === 2) setContext((prev) => ({ ...prev, audience: trimmed }));
-    if (step === 3) setContext((prev) => ({ ...prev, intensity: trimmed }));
+    // Check if we're in the post-generation phase
+    if (result && messages.length > 0 && messages[messages.length - 1].content === 'Would you like to modify this Core Story Concept or create a new one?') {
+      setLoading(true);
+      
+      if (trimmed.toLowerCase().includes('modify')) {
+        // Ask for modifications
+        setMessages([...newMessages, { 
+          role: 'assistant', 
+          content: 'What modifications would you like to make?' 
+        }]);
+        setLoading(false);
+        return;
+      } 
+      else if (trimmed.toLowerCase().includes('new')) {
+        // Generate a new concept
+        try {
+          const res = await fetch('/api/openai', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              messages: [
+                {
+                  role: 'system',
+                  content:
+                    'You are a multidisciplinary medical storyteller hired to create a Core Story Concept.',
+                },
+                {
+                  role: 'user',
+                  content: `Create a new Core Story Concept for ${context.drug} in ${context.disease} for the target audience ${context.audience} with a length of ${context.length}.`,
+                },
+              ],
+              disease: context.disease,
+              drug: context.drug,
+              audience: context.audience,
+              length: context.length,
+            }),
+          });
 
-    if (step === 4) {
-      setContext((prev) => ({ ...prev, count: trimmed }));
+          const data = await res.json();
+          setResult(data.result);
+          setMessages([...newMessages, { 
+            role: 'assistant', 
+            content: 'I\'ve created a new Core Story Concept. Would you like to modify this Core Story Concept or create a new one?' 
+          }]);
+        } catch (err) {
+          toast.error('Something went wrong.');
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
+        return;
+      }
+      else if (trimmed.toLowerCase().includes('no')) {
+        setMessages([...newMessages, { 
+          role: 'assistant', 
+          content: 'Got it. Would you like to see a table with all the Core Story Concept Candidates?' 
+        }]);
+        setLoading(false);
+        return;
+      }
+      return;
+    }
+    
+    // Check if we're in the table request phase
+    if (result && messages.length > 0 && messages[messages.length - 1].content === 'Got it. Would you like to see a table with all the Core Story Concept Candidates?') {
+      if (trimmed.toLowerCase().includes('yes')) {
+        // Here we would normally create a table, but for now we'll just acknowledge
+        setMessages([...newMessages, { 
+          role: 'assistant', 
+          content: 'Here is a table with all the Core Story Concept Candidates.' 
+        }]);
+      }
+      setLoading(false);
+      return;
+    }
+    
+    // Check if we're in the modification phase
+    if (result && messages.length > 0 && messages[messages.length - 1].content === 'What modifications would you like to make?') {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/openai', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [
+              {
+                role: 'system',
+                content:
+                  'You are a multidisciplinary medical storyteller hired to create a Core Story Concept.',
+              },
+              {
+                role: 'user',
+                content: `Modify this Core Story Concept for ${context.drug} in ${context.disease} based on the following feedback: ${trimmed}. Keep the length at ${context.length}.`,
+              },
+              {
+                role: 'assistant',
+                content: result,
+              },
+            ],
+            disease: context.disease,
+            drug: context.drug,
+            audience: context.audience,
+            length: context.length,
+          }),
+        });
+
+        const data = await res.json();
+        setResult(data.result);
+        setMessages([...newMessages, { 
+          role: 'assistant', 
+          content: 'I\'ve modified the Core Story Concept. Would you like to modify this Core Story Concept or create a new one?' 
+        }]);
+      } catch (err) {
+        toast.error('Something went wrong.');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    // Initial questionnaire flow
+    if (step === 0) setContext((prev) => ({ ...prev, disease: trimmed }));
+    if (step === 1) setContext((prev) => ({ ...prev, drug: trimmed }));
+    if (step === 2) setContext((prev) => ({ ...prev, audience: trimmed }));
+    if (step === 3) {
+      // Process the length preference
+      const lengthValue = trimmed.toLowerCase().includes('concise') ? '<25 words' : '40-60 words';
+      setContext((prev) => ({ ...prev, length: lengthValue }));
+    }
+
+    if (step === 3) {
       setMessages([...newMessages, { role: 'assistant', content: 'Ok, here we go...' }]);
       setLoading(true);
 
@@ -84,17 +206,17 @@ export default function CoreStoryConcept() {
               {
                 role: 'system',
                 content:
-                  'You are a helpful assistant helping generate Core Story Concept Candidates.',
+                  'You are a multidisciplinary medical storyteller hired to create a Core Story Concept.',
               },
               {
                 role: 'user',
-                content: `Drug: ${context.drug}\nDisease: ${context.disease}\nAudience: ${context.audience}\nIntensity: ${context.intensity}\nGenerate ${trimmed} Core Story Concept Candidates.`,
+                content: `Create a Core Story Concept for ${context.drug} in ${context.disease} for the target audience ${context.audience} with a length of ${context.length}.`,
               },
             ],
-            drug: context.drug,
             disease: context.disease,
+            drug: context.drug,
             audience: context.audience,
-            intensity: context.intensity,
+            length: context.length,
           }),
         });
 
@@ -140,7 +262,7 @@ export default function CoreStoryConcept() {
             setInput={setInput}
             onSubmit={handleSubmit}
             loading={loading}
-            showInput={step <= questions.length - 1}
+            showInput={true}
             placeholder="Type your response..."
             onReset={handleReset}
           />
@@ -150,12 +272,26 @@ export default function CoreStoryConcept() {
         {result && (
           <div className="flex-1 space-y-6">
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md space-y-6">
-              <h2 className="text-xl font-bold text-blue-900">Core Story Concept Candidates</h2>
-              {result.split('\n\n').map((block, i) => (
-                <div key={i} className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                  <p className="text-gray-800 whitespace-pre-wrap">{block}</p>
-                </div>
-              ))}
+              <h2 className="text-xl font-bold text-blue-900">Core Story Concept</h2>
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <p className="text-gray-800 whitespace-pre-wrap">{result}</p>
+              </div>
+              <div className="mt-4">
+                <button 
+                  onClick={() => {
+                    setMessages([
+                      ...messages, 
+                      { 
+                        role: 'assistant', 
+                        content: 'Would you like to modify this Core Story Concept or create a new one?' 
+                      }
+                    ]);
+                  }}
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+                >
+                  Continue
+                </button>
+              </div>
             </div>
           </div>
         )}
