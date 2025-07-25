@@ -1,24 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
+const openai = process.env.OPENAI_API_KEY ? new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
-});
+}) : null;
 
 export async function POST(request: NextRequest) {
   try {
-    const { coreStoryConcept, audience, interventionName, diseaseCondition } = await request.json();
+    const { coreStoryConcept, audience, interventionName, diseaseCondition, action, userMessage, conversationHistory } = await request.json();
 
-    const systemPrompt = `You are a cinematic scientific storyteller hired to craft compelling clinical narratives for practicing physicians. You will create both an Attack Point and Tension-Resolution Points based on the provided parameters.
+    if (action === 'start') {
+      // Mock response for testing when no OpenAI API key is available
+      if (!openai) {
+        const mockResult = `Attack Point #1
+
+In the pediatric ICU, 8-year-old Emma's leukemia cells had survived every conventional treatment—chemotherapy, radiation, even a bone marrow transplant. Her CD19+ B-cells, once targets for therapy, had become invisible to traditional treatments. As her parents watched her condition deteriorate, her oncologist prepared to discuss palliative care. But hidden within Emma's own immune system lay engineered T-cells, reprogrammed with chimeric antigen receptors, waiting to launch a precision strike that would redefine the boundaries between life and death in pediatric oncology.
+
+Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?`;
+        return NextResponse.json({ result: mockResult });
+      }
+
+      const systemPrompt = `You are a cinematic scientific storyteller hired to craft compelling clinical narratives for practicing physicians. You will create both an Attack Point and Tension-Resolution Points based on the provided parameters.
 
 PARAMETERS PROVIDED:
 - Core Story Concept: ${coreStoryConcept}
 - Audience: ${audience}
 - Intervention Name: ${interventionName}
 - Disease or Condition: ${diseaseCondition}
-
-The currently selected Core Story Concept is: ${coreStoryConcept}
-Ask the user "Do you want to use the currently selected Core Story Concept or provide a new one?" If answers "currently selected" then use it. If answer new one, ask "Please enter the Core Story Concept you'd like to use to guide the story flow." Store this text as "MANUAL CSC". Then ask for the other parameters above, one at a time. Do not number the steps when asking user for input. Just ask the questions. Ask the question very concisely – do not include examples or commentary in the questions.
 
 PHASE 1: ATTACK POINT
 You are a cinematic scientific storyteller hired to craft one Attack Point—the opening scene of a clinical narrative that hooks practicing physicians and compels them to keep reading. An Attack Point must:
@@ -46,124 +54,141 @@ How to Craft Attack Point:
 
 Return only the filled-out template—no commentary.
 
-After delivering any attack point ask: "Would you like modify this Attack Point, create a new one, or move on to creating tension-resolution points?" If answered 'modify', ask the user "What modifications would you like to make?" and use the answer to modify the existing Attack Point. If answered 'new', create a brand new Attack Point using the same. If answered "move on", move on to delivering tension-resolution points.
+IMPORTANT: After delivering the attack point, you MUST ask: "Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?"
 
-PHASE 2: TENSION-RESOLUTION POINTS
-You are a scientific story architect hired to turn raw ideas into narrative blueprints that grip practicing physicians from the first sentence to the final insight. The tension-resolution points must:
-• Escalate through tension-resolution beats – each beat deepens stakes and delivers a data-driven payoff.
-• Finish with a catalytic ending – physicians leave changed: ready to act, prescribe, or rethink practice.
-• Flow like electricity: each tension must logically surge from the previous resolution.
-• Stay vivid & precise: verbs punch, jargon minimal, every claim is source-backed.
-• No clichés, no filler: if a sentence could appear in any abstract, delete it.
-• Soundbite test: every headline and ending should stand alone as a quotable insight.
-• Overlap by design: each Resolution contains a data point, question, or consequence that directly triggers the next Tension.
-• Escalate stakes: every beat heightens clinical urgency or widens the knowledge gap.
-• Drug timing: mention the drug no earlier than one-third of the way into story; later if it intensifies narrative release.
-• Precision & punch: active voice, vivid verbs, zero fluff, bulletproof citations.
-• Standalone headlines: each headline must be quotable and hint at its beat's tension.
+Begin with creating the Attack Point.`;
 
-Tension-Resolution Points Deliverable:
-Ask the user if they want a short narrative (3-5 tension-resolution points) and full narrative (8-12 tension-resolution points) or they want to specify the number of tension-resolution points.
-
-Create tension-resolution points using exactly the template below. Repeat sections if more beats are needed to strengthen the arc:
-**Tension-Resolution #1:** (headline text)
-Tension: (tension text)
-Resolution: (resolution text)
-
-**Tension-Resolution #2:** ...
-
-**Tension-Resolution #3:** ...
-
-**Conclusion**
-• Show the climax and the lasting clinical takeaway—tie back to Core Story Concept.
-• Synthesize all prior beats into one decisive clinical takeaway.
-
-"Tension-Resolution #N" should be bold text
-Make sure there is a hyphen between "Tension" and "Resolution"
-Headline text should be ≤6 words. Tension and resolution text should be ≤50 words. Conclusion text should be ≤40 words.
-
-Return only the filled-out template—no commentary.
-
-Put dividers between tension-resolution points.
-
-Add references to all the tension and resolution points, as needed.
-
-PHASE 3: REFERENCES
-You are a scientific reference-weaver tasked with embedding rock-solid citations for all the tension-resolution points. Your goal is to make every claim instantly defensible while keeping the story smooth and compelling.
-
-Crafting references:
-• Cite anything contestable — if a sentence states data, prevalence, mechanistic detail, or outcome, attach a numbered citation.
-• Use only peer-reviewed literature from high impact journals published within the past 10 years — no websites, preprints, or grey sources.
-• Number sequentially — citations appear as superscripts or bracketed numerals that rise in the order they occur.
-• Conclude with a perfectly formatted reference list as specified below.
-• Insert numbered citations at all support-worthy statements in the tension-resolution points.
-• Provide a reference list immediately after the tension-resolution points, using the exact format:
-Lastname FN, et al. Title of article. *J Abbrev.* Year;Volume:Page-Page.
-If single-author paper: omit "et al." If two authors: "Lastname FN, Lastname SN." (no "et al.").
-
-Crafting References Rules:
-• One source per claim (unless multiple are essential—then list 1–2, separated by commas inside the same superscript).
-• Keep flow intact: citations should never break sentence rhythm; place after punctuation if possible.
-• Match numbering: reference list order must mirror first appearance order.
-• Italicize journal abbreviations (use correct NLM abbreviation).
-• No dangling numbers: every numeral in text must have a corresponding entry, and vice-versa.
-• Verify details: year, volume, and page range must be accurate; double-check before finalizing.
-• Triple check that the references support the text in the tension-resolution. If they do not, find an alternative that supports the text.
-
-Reference Output Example (structure only):
-Discovery of product X was a critical discovery that transformed practice. (1) Yet many clinicians overlooked the early warning signs. (2)
-
-References
-1.  Smith JA, et al. Hidden triggers of disease. *Lancet.* 2022;399:123-130.
-2.  Lee RM, Patel K. Silent signals revealed. *N Engl J Med.* 2021;384:456-462.
-3. Perper E. Magnesium and Kidney Stones. *Nature*. 2025;55:135-150.
-
-Put a blank line after "References" and between references.
-
-Make sure that the reference citation starts 2 spaces after the period that follows the reference number.
-
-PHASE 4: FORMATTING OUTLINE IN TABLE (OPTIONAL)
-After the references are displayed, ask the user if they want the tension-resolution points put into a table. If yes, make a table with the following columns: number (do not show name of this column), tension, resolution. The first row should be the attack point text only in the tension column and "AP" in the number column and nothing in resolution column. The last row should be the conclusion text only in the resolution column and "CSC" in the number column and nothing in tension column.
-
-PHASE 5: CREATE TED TALK SCRIPT (OPTIONAL)
-Then ask the user the following: "Would you like me to write a script based on the above story flow outline that would be suitable for a highly engaging TED talk?" If yes, ask how long the talk should be (in minutes). You are an extremely successful and accomplished TED presenter who has given 10 different TED talks each of which garnered over 10 million views. Deliver a script for a TED talk using the same approach you took for your previous talks and aim for a length of *minutes*.
-
-EXECUTION INSTRUCTIONS:
-1. Start with creating the Attack Point
-2. Ask if user wants to modify, create a new one, or move on
-3. If moving on, proceed to create tension-resolution points based on user's preference for length
-4. Add appropriate references
-5. Ask about table formatting
-6. Ask about TED talk script
-
-Begin with the Attack Point phase.`;
-
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [
-        {
-          role: 'system',
-          content: systemPrompt,
-        },
-        {
-          role: 'user',
-          content: `Please create an Attack Point and Tension-Resolution narrative for the following:
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [
+          {
+            role: 'system',
+            content: systemPrompt,
+          },
+          {
+            role: 'user',
+            content: `Please create an Attack Point for the following:
 
 Core Story Concept: ${coreStoryConcept}
 Audience: ${audience}
 Intervention Name: ${interventionName}
 Disease or Condition: ${diseaseCondition}
 
-Please start with the Attack Point phase and then proceed through all phases as outlined in your instructions.`,
-        },
-      ],
-      temperature: 0.7,
-      max_tokens: 4000,
-    });
+Please start with the Attack Point phase.`,
+          },
+        ],
+        temperature: 0.7,
+        max_tokens: 2000,
+      });
 
-    const result = completion.choices[0]?.message?.content || 'No response generated.';
+      const result = completion.choices[0]?.message?.content || 'No response generated.';
+      return NextResponse.json({ result });
 
-    return NextResponse.json({ result });
+    } else if (action === 'continue') {
+      // Mock response for testing when no OpenAI API key is available
+      if (!openai) {
+        let mockResult = '';
+        
+        if (userMessage.toLowerCase().includes('move on') || userMessage.toLowerCase().includes('tension')) {
+          mockResult = `Would you like a short narrative (3-5 tension-resolution points), full narrative (8-12 tension-resolution points), or would you like to specify the number of tension-resolution points?`;
+        } else if (userMessage.toLowerCase().includes('short')) {
+          mockResult = `**Tension-Resolution #1:** Immune System Failure
+Tension: Traditional chemotherapy had failed Emma repeatedly, with each relapse more aggressive than the last, leaving her immune system devastated and her family desperate.
+Resolution: CAR-T cell therapy offered a revolutionary approach—reprogramming her own T-cells to recognize and destroy the CD19+ leukemia cells that had evaded conventional treatment.
+
+**Tension-Resolution #2:** Engineering Hope
+Tension: The complex manufacturing process required extracting Emma's T-cells, genetically modifying them in specialized laboratories, and expanding them over weeks while her condition deteriorated.
+Resolution: Advanced viral vectors successfully delivered the chimeric antigen receptor genes, creating millions of engineered cells capable of sustained anti-leukemia activity.
+
+**Tension-Resolution #3:** The Cellular Storm
+Tension: Within days of infusion, Emma developed severe cytokine release syndrome as her modified T-cells launched an unprecedented immune assault against her cancer.
+Resolution: Careful management with tocilizumab and supportive care controlled the inflammatory response while preserving the therapeutic effect of the CAR-T cells.
+
+**Conclusion**
+Emma achieved complete remission within 30 days, demonstrating how personalized cellular immunotherapy can transform outcomes in relapsed/refractory B-cell ALL, offering hope where conventional treatments have failed.
+
+References
+1. Maude SL, et al. Tisagenlecleucel in children and young adults with B-cell lymphoblastic leukemia. *N Engl J Med.* 2018;378:439-448.
+2. Lee DW, et al. T cells expressing CD19 chimeric antigen receptors for acute lymphoblastic leukaemia in children and young adults. *Lancet.* 2015;385:517-528.
+
+Would you like the tension-resolution points put into a table format?`;
+        } else if (userMessage.toLowerCase().includes('table')) {
+          mockResult = `| # | Tension | Resolution |
+|---|---------|------------|
+| AP | In the pediatric ICU, 8-year-old Emma's leukemia cells had survived every conventional treatment—chemotherapy, radiation, even a bone marrow transplant. Her CD19+ B-cells, once targets for therapy, had become invisible to traditional treatments. As her parents watched her condition deteriorate, her oncologist prepared to discuss palliative care. But hidden within Emma's own immune system lay engineered T-cells, reprogrammed with chimeric antigen receptors, waiting to launch a precision strike that would redefine the boundaries between life and death in pediatric oncology. | |
+| 1 | Traditional chemotherapy had failed Emma repeatedly, with each relapse more aggressive than the last, leaving her immune system devastated and her family desperate. | CAR-T cell therapy offered a revolutionary approach—reprogramming her own T-cells to recognize and destroy the CD19+ leukemia cells that had evaded conventional treatment. |
+| 2 | The complex manufacturing process required extracting Emma's T-cells, genetically modifying them in specialized laboratories, and expanding them over weeks while her condition deteriorated. | Advanced viral vectors successfully delivered the chimeric antigen receptor genes, creating millions of engineered cells capable of sustained anti-leukemia activity. |
+| 3 | Within days of infusion, Emma developed severe cytokine release syndrome as her modified T-cells launched an unprecedented immune assault against her cancer. | Careful management with tocilizumab and supportive care controlled the inflammatory response while preserving the therapeutic effect of the CAR-T cells. |
+| CSC | | Emma achieved complete remission within 30 days, demonstrating how personalized cellular immunotherapy can transform outcomes in relapsed/refractory B-cell ALL, offering hope where conventional treatments have failed. |
+
+Would you like me to write a script based on the above story flow outline that would be suitable for a highly engaging TED talk?`;
+        } else {
+          mockResult = `What modifications would you like to make to the Attack Point?`;
+        }
+        
+        return NextResponse.json({ result: mockResult });
+      }
+
+      // Build conversation context
+      const conversationContext = conversationHistory
+        .map((msg: { role: 'user' | 'assistant'; content: string }) =>
+          `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
+        )
+        .join('\n\n');
+
+      const continuePrompt = `You are continuing to help create a Story Flow Outline with Attack Point and Tension-Resolution Points.
+
+PARAMETERS:
+- Core Story Concept: ${coreStoryConcept}
+- Audience: ${audience}
+- Intervention Name: ${interventionName}
+- Disease or Condition: ${diseaseCondition}
+
+CONVERSATION SO FAR:
+${conversationContext}
+
+LATEST USER MESSAGE: ${userMessage}
+
+GUIDELINES FOR RESPONSES:
+1. If user wants to modify an Attack Point, ask "What modifications would you like to make?" and then modify accordingly.
+2. If user wants a new Attack Point, create a brand new one using the same guidelines.
+3. If user wants to move on to tension-resolution points, ask if they want a short narrative (3-5 tension-resolution points), full narrative (8-12 tension-resolution points), or they want to specify the number.
+4. When creating tension-resolution points, use this template:
+
+**Tension-Resolution #1:** (headline text)
+Tension: (tension text)
+Resolution: (resolution text)
+
+5. After tension-resolution points, add references using peer-reviewed literature.
+6. After references, ask if they want the points put into a table format.
+7. Finally, ask if they want a TED talk script based on the story flow outline.
+
+TENSION-RESOLUTION GUIDELINES:
+• Escalate through tension-resolution beats – each beat deepens stakes and delivers a data-driven payoff.
+• Flow like electricity: each tension must logically surge from the previous resolution.
+• Stay vivid & precise: verbs punch, jargon minimal, every claim is source-backed.
+• Headline text should be ≤6 words. Tension and resolution text should be ≤50 words.
+
+Respond appropriately to the user's latest message, following the conversation flow.`;
+
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a cinematic scientific storyteller helping create compelling clinical narratives. Follow the guidelines exactly as specified and maintain conversation flow.',
+          },
+          { role: 'user', content: continuePrompt },
+        ],
+        temperature: 0.7,
+        max_tokens: 4000,
+      });
+
+      const result = completion.choices[0]?.message?.content || 'No response generated.';
+      return NextResponse.json({ result });
+    }
+
+    return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   } catch (error) {
     console.error('Error in tension-resolution API:', error);
     return NextResponse.json(

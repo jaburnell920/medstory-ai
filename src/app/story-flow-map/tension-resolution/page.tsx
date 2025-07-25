@@ -11,6 +11,7 @@ export default function TensionResolution() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState('');
+  const [conversationStarted, setConversationStarted] = useState(false);
   const [context, setContext] = useState({
     coreStoryConcept: '',
     audience: '',
@@ -31,6 +32,7 @@ export default function TensionResolution() {
     setInput('');
     setLoading(false);
     setResult('');
+    setConversationStarted(false);
     setContext({
       coreStoryConcept: '',
       audience: '',
@@ -53,6 +55,64 @@ export default function TensionResolution() {
     'What is the Disease or Condition? (Clinical arena)',
   ];
 
+  // Function to separate content from questions in AI response
+  const parseAIResponse = (response: string) => {
+    // Look for questions that should appear in chat
+    const questionPatterns = [
+      /Would you like.*?\?/gi,
+      /Do you want.*?\?/gi,
+      /What.*?would you like.*?\?/gi,
+      /How.*?would you like.*?\?/gi,
+      /Which.*?would you prefer.*?\?/gi,
+      /are you satisfied.*?\?/gi,
+      /What modifications.*?\?/gi,
+    ];
+
+    let content = response;
+    let question = '';
+
+    // Split response into lines to better handle formatting
+    const lines = response.split('\n');
+    const contentLines = [];
+    let foundQuestion = false;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+
+      // Check if this line contains a question
+      let isQuestion = false;
+      for (const pattern of questionPatterns) {
+        if (pattern.test(line)) {
+          question = line;
+          isQuestion = true;
+          foundQuestion = true;
+          break;
+        }
+      }
+
+      // If we haven't found a question yet, or this isn't a question line, add to content
+      if (!isQuestion && !foundQuestion) {
+        contentLines.push(lines[i]);
+      }
+    }
+
+    // If no question found in individual lines, check the entire response
+    if (!question) {
+      for (const pattern of questionPatterns) {
+        const matches = response.match(pattern);
+        if (matches && matches.length > 0) {
+          question = matches[matches.length - 1];
+          content = response.replace(question, '').trim();
+          break;
+        }
+      }
+    } else {
+      content = contentLines.join('\n').trim();
+    }
+
+    return { content: content.trim(), question: question.trim() };
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -64,19 +124,77 @@ export default function TensionResolution() {
 
     const trimmed = input.trim();
 
-    if (step === 0) setContext((prev) => ({ ...prev, coreStoryConcept: trimmed }));
-    if (step === 1) setContext((prev) => ({ ...prev, audience: trimmed }));
-    if (step === 2) setContext((prev) => ({ ...prev, interventionName: trimmed }));
+    // Handle initial setup questions
+    if (!conversationStarted) {
+      if (step === 0) setContext((prev) => ({ ...prev, coreStoryConcept: trimmed }));
+      if (step === 1) setContext((prev) => ({ ...prev, audience: trimmed }));
+      if (step === 2) setContext((prev) => ({ ...prev, interventionName: trimmed }));
 
-    if (step === 3) {
-      setContext((prev) => ({ ...prev, diseaseCondition: trimmed }));
-      setMessages([
-        ...newMessages,
-        {
-          role: 'assistant',
-          content: 'Creating your Story Flow Outline…',
-        },
-      ]);
+      if (step === 3) {
+        setContext((prev) => ({ ...prev, diseaseCondition: trimmed }));
+        setMessages([
+          ...newMessages,
+          {
+            role: 'assistant',
+            content: 'Creating your Story Flow Outline',
+          },
+        ]);
+        setLoading(true);
+
+        try {
+          const res = await fetch('/api/tension-resolution', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'start',
+              coreStoryConcept: context.coreStoryConcept,
+              audience: context.audience,
+              interventionName: context.interventionName,
+              diseaseCondition: trimmed,
+            }),
+          });
+
+          const data = await res.json();
+          const { content, question } = parseAIResponse(data.result);
+
+          if (content) {
+            setResult(content);
+          }
+
+          if (question) {
+            setMessages((msgs) => [
+              ...msgs.slice(0, -1), // Remove "Creating..." message
+              {
+                role: 'assistant',
+                content: question,
+              },
+            ]);
+          }
+
+          setConversationStarted(true);
+        } catch (err) {
+          toast.error('Something went wrong.');
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
+
+        return;
+      }
+
+      const nextStep = step + 1;
+      setStep(nextStep);
+      if (nextStep < questions.length) {
+        setMessages((msgs) => [
+          ...msgs,
+          {
+            role: 'assistant',
+            content: questions[nextStep],
+          },
+        ]);
+      }
+    } else {
+      // Handle ongoing conversation
       setLoading(true);
 
       try {
@@ -84,35 +202,39 @@ export default function TensionResolution() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            action: 'continue',
             coreStoryConcept: context.coreStoryConcept,
             audience: context.audience,
             interventionName: context.interventionName,
-            diseaseCondition: trimmed,
+            diseaseCondition: context.diseaseCondition,
+            userMessage: trimmed,
+            conversationHistory: newMessages,
           }),
         });
 
         const data = await res.json();
-        setResult(data.result);
+        const { content, question } = parseAIResponse(data.result);
+
+        // Update result if there's substantial content
+        if (content && content.length > 50) {
+          setResult(content);
+        }
+
+        // Add AI response to chat
+        const responseContent = question || data.result;
+        setMessages((msgs) => [
+          ...msgs,
+          {
+            role: 'assistant',
+            content: responseContent,
+          },
+        ]);
       } catch (err) {
         toast.error('Something went wrong.');
         console.error(err);
       } finally {
         setLoading(false);
       }
-
-      return;
-    }
-
-    const nextStep = step + 1;
-    setStep(nextStep);
-    if (nextStep < questions.length) {
-      setMessages((msgs) => [
-        ...msgs,
-        {
-          role: 'assistant',
-          content: questions[nextStep],
-        },
-      ]);
     }
   };
 
@@ -139,7 +261,7 @@ export default function TensionResolution() {
             setInput={setInput}
             onSubmit={handleSubmit}
             loading={loading}
-            showInput={step <= questions.length - 1}
+            showInput={!conversationStarted ? step <= questions.length - 1 : true}
             placeholder="Type your response..."
             onReset={handleReset}
           />
