@@ -157,14 +157,20 @@ Generate the entire outline without stopping for user input.
   return (
     <PageLayout
       sectionIcon={
-        <Image src="/medstory_slide_deck_chat.png" alt="Core Story Chat" width={72} height={72} className="w-18 h-18" />
+        <Image
+          src="/medstory_slide_deck_chat.png"
+          alt="Core Story Chat"
+          width={72}
+          height={72}
+          className="w-18 h-18"
+        />
       }
       sectionName="MEDSTORY Slide Deck"
       taskName="Create MEDSTORY deck"
     >
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Chat Interface - Left Side */}
-        <div className="w-full lg:w-4/5">
+        <div className="w-full lg:w-3/5">
           <ChatInterface
             messages={messages}
             input={input}
