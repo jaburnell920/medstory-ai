@@ -293,7 +293,7 @@ export default function LandmarkPublicationsPage() {
           className="cursor-pointer hover:text-blue-600 transition-colors"
           title="Click to view saved studies"
         >
-          Find landmark publications
+          Find key publications
         </span>
       }
     >

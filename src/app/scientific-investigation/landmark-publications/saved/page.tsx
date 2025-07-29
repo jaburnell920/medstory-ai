@@ -37,14 +37,14 @@ export default function SavedLandmarkPublicationsPage() {
   }, []);
 
   const handleRemoveStudy = (studyId: string) => {
-    const updatedStudies = savedStudies.filter(study => study.id !== studyId);
+    const updatedStudies = savedStudies.filter((study) => study.id !== studyId);
     setSavedStudies(updatedStudies);
-    
+
     // Update session storage
     sessionStorage.setItem('selectedLandmarkStudiesData', JSON.stringify(updatedStudies));
-    
+
     // Update the selected IDs list
-    const selectedIds = updatedStudies.map(study => study.id);
+    const selectedIds = updatedStudies.map((study) => study.id);
     sessionStorage.setItem('selectedLandmarkStudies', JSON.stringify(selectedIds));
   };
 
@@ -56,11 +56,14 @@ export default function SavedLandmarkPublicationsPage() {
 
   const handleExportStudies = () => {
     if (savedStudies.length === 0) return;
-    
-    const exportText = savedStudies.map(study => 
-      `${study.number}. ${study.citation}\nImpact Score (0-100): ${study.impactScore}\n${study.description}\n`
-    ).join('\n---\n\n');
-    
+
+    const exportText = savedStudies
+      .map(
+        (study) =>
+          `${study.number}. ${study.citation}\nImpact Score (0-100): ${study.impactScore}\n${study.description}\n`
+      )
+      .join('\n---\n\n');
+
     const blob = new Blob([exportText], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -76,7 +79,13 @@ export default function SavedLandmarkPublicationsPage() {
     return (
       <PageLayout
         sectionIcon={
-          <Image src="/scientific_investigation_chat.png" alt="Core Story Chat" width={90} height={90} className="w-24 h-24" />
+          <Image
+            src="/scientific_investigation_chat.png"
+            alt="Core Story Chat"
+            width={90}
+            height={90}
+            className="w-24 h-24"
+          />
         }
         sectionName="Scientific Investigation"
         taskName="Saved Landmark Publications"
@@ -94,7 +103,13 @@ export default function SavedLandmarkPublicationsPage() {
   return (
     <PageLayout
       sectionIcon={
-        <Image src="/scientific_investigation_chat.png" alt="Core Story Chat" width={90} height={90} className="w-24 h-24" />
+        <Image
+          src="/scientific_investigation_chat.png"
+          alt="Core Story Chat"
+          width={90}
+          height={90}
+          className="w-24 h-24"
+        />
       }
       sectionName="Scientific Investigation"
       taskName="Saved Landmark Publications"
@@ -129,30 +144,44 @@ export default function SavedLandmarkPublicationsPage() {
           {savedStudies.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-gray-400 mb-4">
-                <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <svg
+                  className="mx-auto h-12 w-12"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
                 </svg>
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No saved studies</h3>
               <p className="text-gray-600 mb-4">
-                You haven&apos;t saved any landmark publications yet. Go back to the landmark publications page and select studies to save them here.
+                You haven&apos;t saved any landmark publications yet. Go back to the landmark
+                publications page and select studies to save them here.
               </p>
               <a
                 href="/scientific-investigation/landmark-publications"
                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                Find Landmark Publications
+                Find Key Publications
               </a>
             </div>
           ) : (
             <div className="space-y-4">
               {savedStudies.map((study) => (
-                <div key={study.id} className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div
+                  key={study.id}
+                  className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
+                >
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex-1">
-                      <a 
-                        href={`https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(study.citation)}`} 
-                        target="_blank" 
+                      <a
+                        href={`https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(study.citation)}`}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="block cursor-pointer hover:text-blue-700"
                       >
@@ -171,14 +200,22 @@ export default function SavedLandmarkPublicationsPage() {
                       className="ml-4 text-red-600 hover:text-red-800 transition-colors"
                       title="Remove study"
                     >
-                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      <svg
+                        className="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
                       </svg>
                     </button>
                   </div>
-                  <div className="text-gray-700 text-sm leading-relaxed">
-                    {study.description}
-                  </div>
+                  <div className="text-gray-700 text-sm leading-relaxed">{study.description}</div>
                 </div>
               ))}
             </div>
@@ -188,8 +225,9 @@ export default function SavedLandmarkPublicationsPage() {
             <div className="mt-6 p-4 bg-blue-50 rounded-lg">
               <h3 className="font-medium text-blue-900 mb-2">Using Your Saved Studies</h3>
               <p className="text-sm text-blue-800">
-                These saved studies are stored in your browser session and can be used for other prompts and analysis. 
-                You can export them as a text file or continue adding more studies from the landmark publications page.
+                These saved studies are stored in your browser session and can be used for other
+                prompts and analysis. You can export them as a text file or continue adding more
+                studies from the landmark publications page.
               </p>
             </div>
           )}
