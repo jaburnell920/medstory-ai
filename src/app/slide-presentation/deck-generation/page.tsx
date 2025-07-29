@@ -157,7 +157,13 @@ Generate the entire outline without stopping for user input.
   return (
     <PageLayout
       sectionIcon={
-        <Image src="/medstory_slide_deck_chat.png" alt="Core Story Chat" width={72} height={72} className="w-18 h-18" />
+        <Image
+          src="/medstory_slide_deck_chat.png"
+          alt="Core Story Chat"
+          width={72}
+          height={72}
+          className="w-18 h-18"
+        />
       }
       sectionName="MEDSTORY Slide Deck"
       taskName="Create MEDSTORY deck"
