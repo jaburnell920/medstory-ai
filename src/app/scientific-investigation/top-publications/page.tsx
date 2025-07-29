@@ -313,14 +313,6 @@ export default function TopPublicationsPage() {
                   </div>
                 ))}
               </div>
-              {selectedKeyPoints.size > 0 && (
-                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    💡 Tip: Click &quot;Save Selected&quot; to save your chosen key points, then
-                    click &quot;Simulated thought leader interview&quot; in the header to view them
-                  </p>
-                </div>
-              )}
             </div>
           </div>
         )}

@@ -55,7 +55,7 @@ export default function PageLayout({
         {/* Fixed Header with Section and Task */}
         <div className="flex items-center justify-between p-12 pb-6 flex-shrink-0 bg-[#ededed]">
           <div className="flex items-center">
-            <span className="text-4xl mr-4">{sectionIcon}</span>
+            <span className="text-5xl mr-1">{sectionIcon}</span>
             <div>
               <h1 className="text-3xl font-extrabold text-[#063471]">{sectionName}</h1>
               <h2 className="text-xl text-gray-600 mt-1">{taskName}</h2>
