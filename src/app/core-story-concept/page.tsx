@@ -29,7 +29,7 @@ export default function CoreStoryConcept() {
 
   // State for managing multiple core story concepts
   const [concepts, setConcepts] = useState<CoreStoryConcept[]>([]);
-  const [currentConceptIndex, setCurrentConceptIndex] = useState(0);
+
   const [selectedConcepts, setSelectedConcepts] = useState<Set<string>>(new Set());
 
   // Load selected concepts from session storage on component mount
@@ -70,7 +70,6 @@ export default function CoreStoryConcept() {
       },
     ]);
     // Don't reset concepts or selected concepts to preserve user selections
-    setCurrentConceptIndex(0);
   };
 
   // Function to handle selecting a concept
@@ -91,23 +90,6 @@ export default function CoreStoryConcept() {
     toast.success(
       newSelected.has(conceptId) ? 'Core Story Concept selected!' : 'Core Story Concept unselected'
     );
-  };
-
-  // Navigation functions for concepts
-  const goToNextConcept = () => {
-    if (concepts.length > 0) {
-      setCurrentConceptIndex((prevIndex) =>
-        prevIndex === concepts.length - 1 ? 0 : prevIndex + 1
-      );
-    }
-  };
-
-  const goToPreviousConcept = () => {
-    if (concepts.length > 0) {
-      setCurrentConceptIndex((prevIndex) =>
-        prevIndex === 0 ? concepts.length - 1 : prevIndex - 1
-      );
-    }
   };
 
   const questions = [
@@ -163,7 +145,7 @@ export default function CoreStoryConcept() {
                 },
                 {
                   role: 'user',
-                  content: `Create a new Core Story Concept for ${context.drug} in ${context.disease} for the target audience ${context.audience} with a length of ${context.length}.`,
+                  content: `Create a new Core Story Concept Candidate #${concepts.length + 1} for ${context.drug} in ${context.disease} for the target audience ${context.audience} with a length of ${context.length}.`,
                 },
               ],
               disease: context.disease,
@@ -192,9 +174,6 @@ export default function CoreStoryConcept() {
             sessionStorage.setItem('coreStoryConceptsData', JSON.stringify(updatedConcepts));
             return updatedConcepts;
           });
-
-          // Set the current index to the new concept
-          setCurrentConceptIndex(concepts.length);
 
           setMessages([
             ...newMessages,
@@ -234,12 +213,39 @@ export default function CoreStoryConcept() {
         'Got it. Would you like to see a table with all the Core Story Concept Candidates?'
     ) {
       if (trimmed.toLowerCase().includes('yes')) {
-        // Here we would normally create a table, but for now we'll just acknowledge
+        // Generate table content from concepts
+        let tableContent = 'Here is a table with all the Core Story Concept Candidates:\n\n';
+        tableContent += '| # | Tension | Resolution |\n';
+        tableContent += '|---|---------|------------|\n';
+
+        concepts.forEach((concept, index) => {
+          // Extract tension and resolution from concept content
+          const lines = concept.content.split('\n');
+          let tension = '';
+          let resolution = '';
+          let currentSection = '';
+
+          lines.forEach((line) => {
+            const trimmedLine = line.trim();
+            if (trimmedLine.toUpperCase().includes('TENSION')) {
+              currentSection = 'tension';
+            } else if (trimmedLine.toUpperCase().includes('RESOLUTION')) {
+              currentSection = 'resolution';
+            } else if (trimmedLine && currentSection === 'tension') {
+              tension += trimmedLine + ' ';
+            } else if (trimmedLine && currentSection === 'resolution') {
+              resolution += trimmedLine + ' ';
+            }
+          });
+
+          tableContent += `| ${index + 1} | ${tension.trim()} | ${resolution.trim()} |\n`;
+        });
+
         setMessages([
           ...newMessages,
           {
             role: 'assistant',
-            content: 'Here is a table with all the Core Story Concept Candidates.',
+            content: tableContent,
           },
         ]);
       }
@@ -267,7 +273,7 @@ export default function CoreStoryConcept() {
               },
               {
                 role: 'user',
-                content: `Modify this Core Story Concept for ${context.drug} in ${context.disease} based on the following feedback: ${trimmed}. Keep the length at ${context.length}.`,
+                content: `Modify this Core Story Concept Candidate #${concepts.length + 1} for ${context.drug} in ${context.disease} based on the following feedback: ${trimmed}. Keep the length at ${context.length}.`,
               },
               {
                 role: 'assistant',
@@ -284,25 +290,20 @@ export default function CoreStoryConcept() {
         const data = await res.json();
         setResult(data.result);
 
-        // Create a new concept for the modification
-        const newConcept: CoreStoryConcept = {
-          id: `concept-${Date.now()}`,
-          content: data.result,
-          disease: context.disease,
-          drug: context.drug,
-          audience: context.audience,
-          length: context.length,
-        };
-
+        // Update the most recent concept instead of creating a new one
         setConcepts((prevConcepts) => {
-          const updatedConcepts = [...prevConcepts, newConcept];
+          const updatedConcepts = [...prevConcepts];
+          if (updatedConcepts.length > 0) {
+            const lastIndex = updatedConcepts.length - 1;
+            updatedConcepts[lastIndex] = {
+              ...updatedConcepts[lastIndex],
+              content: data.result,
+            };
+          }
           // Save to session storage
           sessionStorage.setItem('coreStoryConceptsData', JSON.stringify(updatedConcepts));
           return updatedConcepts;
         });
-
-        // Set the current index to the new concept
-        setCurrentConceptIndex(concepts.length);
 
         setMessages([
           ...newMessages,
@@ -348,7 +349,7 @@ export default function CoreStoryConcept() {
               },
               {
                 role: 'user',
-                content: `Create a Core Story Concept for ${context.drug} in ${context.disease} for the target audience ${context.audience} with a length of ${context.length}.`,
+                content: `Create a Core Story Concept Candidate #1 for ${context.drug} in ${context.disease} for the target audience ${context.audience} with a length of ${context.length}.`,
               },
             ],
             disease: context.disease,
@@ -378,8 +379,14 @@ export default function CoreStoryConcept() {
           return updatedConcepts;
         });
 
-        // Set the current index to the new concept
-        setCurrentConceptIndex(concepts.length);
+        // Add the follow-up question
+        setMessages((msgs) => [
+          ...msgs,
+          {
+            role: 'assistant',
+            content: 'Would you like to modify this Core Story Concept or create a new one?',
+          },
+        ]);
       } catch (err) {
         toast.error('Something went wrong.');
         console.error(err);
@@ -433,89 +440,56 @@ export default function CoreStoryConcept() {
         </div>
 
         {/* Result Section - Right Side */}
-        {(result || concepts.length > 0) && (
-          <div className="flex-1 space-y-6">
-            <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md space-y-6">
-              <h2 className="text-xl font-bold text-blue-600 bg-blue-50 p-2 rounded">
-                Core Story Concept Candidate #{concepts.length > 0 ? currentConceptIndex + 1 : 1}
-              </h2>
-
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <p className="text-gray-800 whitespace-pre-wrap">
-                  {concepts.length > 0 ? concepts[currentConceptIndex]?.content : result}
-                </p>
+        {concepts.length > 0 && (
+          <div className="flex-1 space-y-4">
+            <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-blue-900">Core Story Concepts</h2>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-600">{selectedConcepts.size} selected</span>
+                </div>
               </div>
 
-              <div className="mt-4 flex flex-col gap-3">
-                {/* Select button */}
-                <button
-                  onClick={() => {
-                    if (concepts.length > 0) {
-                      handleSelectConcept(concepts[currentConceptIndex].id);
-                    } else if (result) {
-                      // If we have a result but it's not yet in concepts array
-                      const newConcept: CoreStoryConcept = {
-                        id: `concept-${Date.now()}`,
-                        content: result,
-                        disease: context.disease,
-                        drug: context.drug,
-                        audience: context.audience,
-                        length: context.length,
-                      };
-
-                      setConcepts((prevConcepts) => {
-                        const updatedConcepts = [...prevConcepts, newConcept];
-                        sessionStorage.setItem(
-                          'coreStoryConceptsData',
-                          JSON.stringify(updatedConcepts)
-                        );
-                        return updatedConcepts;
-                      });
-
-                      handleSelectConcept(newConcept.id);
-                    }
-                  }}
-                  className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
-                >
-                  {concepts.length > 0 && selectedConcepts.has(concepts[currentConceptIndex]?.id)
-                    ? 'Unselect This Core Story Concept'
-                    : 'Select This Core Story Concept'}
-                </button>
-
-                {/* Continue button */}
-                <button
-                  onClick={() => {
-                    setMessages([
-                      ...messages,
-                      {
-                        role: 'assistant',
-                        content:
-                          'Would you like to modify this Core Story Concept or create a new one?',
-                      },
-                    ]);
-                  }}
-                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-                >
-                  Continue
-                </button>
-
-                {/* Navigation buttons */}
-                {concepts.length > 1 && (
-                  <div className="flex justify-between mt-4">
-                    <button
-                      onClick={goToPreviousConcept}
-                      className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition-colors"
-                    >
-                      Previous Core Story Concept
-                    </button>
-                    <button
-                      onClick={goToNextConcept}
-                      className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition-colors"
-                    >
-                      Next Core Story Concept
-                    </button>
+              <div className="space-y-4">
+                {concepts.map((concept) => (
+                  <div
+                    key={concept.id}
+                    className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        id={concept.id}
+                        checked={selectedConcepts.has(concept.id)}
+                        onChange={() => handleSelectConcept(concept.id)}
+                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <div className="flex-1">
+                        <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                          {concept.content
+                            .replace(
+                              /\*\*TENSION\*\*/g,
+                              '<span class="font-bold text-blue-800 block mt-4 mb-2">TENSION</span>'
+                            )
+                            .replace(
+                              /\*\*RESOLUTION\*\*/g,
+                              '<span class="font-bold text-blue-800 block mt-4 mb-2">RESOLUTION</span>'
+                            )
+                            .replace(
+                              /Core Story Concept Candidate #\d+/g,
+                              (match) =>
+                                `<span class="font-bold text-blue-800 text-lg">${match}</span>`
+                            )
+                            .replace(/##/g, '') // Remove all occurrences of ##
+                            .split('\n')
+                            .map((line, i) => (
+                              <div key={i} dangerouslySetInnerHTML={{ __html: line }} />
+                            ))}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                )}
+                ))}
               </div>
             </div>
           </div>
