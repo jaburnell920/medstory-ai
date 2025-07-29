@@ -569,11 +569,11 @@ export default function CoreStoryConcept() {
                         <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
                           {concept.content ? concept.content
                             .replace(
-                              /(\*\*)?TENSION(\*\*)?:?/gi,
+                              /^(\*\*)?TENSION(\*\*)?:?\s*$/gim,
                               '<div class="font-bold text-blue-800 text-base mt-6 mb-4">TENSION</div>'
                             )
                             .replace(
-                              /(\*\*)?RESOLUTION(\*\*)?:?/gi,
+                              /^(\*\*)?RESOLUTION(\*\*)?:?\s*$/gim,
                               '<div class="font-bold text-blue-800 text-base mt-6 mb-4">RESOLUTION</div>'
                             )
                             .replace(
