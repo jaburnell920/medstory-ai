@@ -34,12 +34,38 @@ export default function CoreStoryConcept() {
   const [nextConceptNumber, setNextConceptNumber] = useState<number>(1);
 
 
-  // Clear results on page refresh or navigation
+  // Load saved concepts on component mount and clear generated results on page refresh
   useEffect(() => {
+    // Load saved concepts from localStorage
+    const savedConcepts = localStorage.getItem('coreStoryConceptsData');
+    const savedSelected = localStorage.getItem('selectedCoreStoryConcept');
+    
+    if (savedConcepts) {
+      const conceptsData = JSON.parse(savedConcepts);
+      setConcepts(conceptsData);
+
+      // Set the next concept number based on existing concepts
+      if (conceptsData.length > 0) {
+        const maxConceptNumber = Math.max(
+          ...conceptsData.map((c: CoreStoryConcept) => c.conceptNumber || 0)
+        );
+        setNextConceptNumber(maxConceptNumber + 1);
+      }
+
+      // If no concept is selected but we have concepts, select the newest one
+      if (!savedSelected && conceptsData.length > 0) {
+        const newestConcept = conceptsData[conceptsData.length - 1];
+        setSelectedConcept(newestConcept.id);
+        localStorage.setItem('selectedCoreStoryConcept', newestConcept.id);
+        localStorage.setItem('selectedCoreStoryConceptData', JSON.stringify(newestConcept));
+      } else if (savedSelected) {
+        setSelectedConcept(savedSelected);
+      }
+    }
+
     const handleBeforeUnload = () => {
       // Clear the generated results but keep saved concepts
       setResult('');
-      setConcepts([]);
       setStep(0);
       setLoading(false);
       setMessages([
@@ -55,16 +81,7 @@ export default function CoreStoryConcept() {
         length: '',
       });
       setInput('');
-      setNextConceptNumber(1);
-      setSelectedConcept('');
-      
-      // Clear localStorage for generated results but keep saved concepts
-      localStorage.removeItem('coreStoryConceptsData');
-      localStorage.removeItem('selectedCoreStoryConcept');
     };
-
-    // Clear results on component mount (page refresh)
-    handleBeforeUnload();
 
     // Add event listener for page unload
     window.addEventListener('beforeunload', handleBeforeUnload);
@@ -326,7 +343,7 @@ export default function CoreStoryConcept() {
               },
               {
                 role: 'user',
-                content: `Modify this Core Story Concept Candidate #${concepts.length > 0 ? concepts[concepts.length - 1].conceptNumber : 1} for ${context.drug} in ${context.disease} based on the following feedback: ${trimmed}. Keep the length at ${context.length}.`,
+                content: `Modify this Core Story Concept Candidate #${concepts.length > 0 ? concepts[concepts.length - 1].conceptNumber : 1} for ${context.drug} in ${context.disease} based on the following feedback: ${trimmed}. Keep the length at ${context.length}. Keep the same candidate number in the response.`,
               },
               {
                 role: 'assistant',
