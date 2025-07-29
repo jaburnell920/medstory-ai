@@ -512,6 +512,7 @@ export default function CoreStoryConcept() {
         />
       }
       sectionName="Core Story Concept"
+      initialResultsLoaded={true}
       taskName={
         <span
           onClick={handleTitleClick}
