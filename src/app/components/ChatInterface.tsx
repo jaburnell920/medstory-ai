@@ -161,7 +161,7 @@ export default function ChatInterface({
                 </button>
               </form>
 
-              {onReset && messages.length > 1 && (
+              {onReset && (
                 <div className="flex justify-start pt-24 space-x-4">
                   <button
                     type="button"

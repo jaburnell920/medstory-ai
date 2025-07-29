@@ -1,18 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 export async function POST(req: NextRequest) {
   const body = await req.json();
+  
+  // Check if OpenAI API key is configured
+  if (!process.env.OPENAI_API_KEY) {
+    return NextResponse.json({ 
+      error: 'OpenAI API key not configured. Please add OPENAI_API_KEY to your .env.local file.' 
+    }, { status: 500 });
+  }
   
   // Check if this is a key points extraction request
   if (body.prompt) {
     const { prompt, max_tokens } = body;
     
     try {
+      const openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+      });
+      
       const chatCompletion = await openai.chat.completions.create({
         model: 'gpt-4',
         messages: [
@@ -41,6 +48,10 @@ export async function POST(req: NextRequest) {
   // Check if we have messages (for modifications or new concepts)
   if (messages && messages.length > 0) {
     try {
+      const openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+      });
+      
       const chatCompletion = await openai.chat.completions.create({
         model: 'gpt-4',
         messages: [
@@ -109,6 +120,10 @@ Create a Core Story Concept using the guidelines above.
         `;
 
   try {
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+    
     const chatCompletion = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [
@@ -124,14 +139,6 @@ Create a Core Story Concept using the guidelines above.
     });
 
     return NextResponse.json({ result: chatCompletion.choices[0].message.content });
-
-    // return NextResponse.json({
-    //   result: `Tension:
-    //   In a world where kidney stones cause excruciating pain and inefficiency in daily life, urologists face the ongoing challenge of providing effective treatments to prevent reoccurrence in their patients. Despite various therapeutic approaches, many individuals still endure the agony of kidney stone formation, prompting urologists to seek innovative solutions to improve patient outcomes and quality of life.
-
-    //   Resolution:
-    //   Introducing magnesium as a potential game-changer in the prevention of kidney stones. Through in-depth research and clinical trials, urologists discover the promising role of magnesium in inhibiting the formation of crystals that lead to stone development. As urologists delve deeper into the science behind magnesium's mechanisms of action, they uncover a new avenue for personalized treatment strategies, empowering them to offer their patients a proactive and effective approach to managing kidney stone recurrence.,`,
-    // });
   } catch (error) {
     console.error('OpenAI Error:', error);
     return NextResponse.json({ error: 'Failed to generate content' }, { status: 500 });
