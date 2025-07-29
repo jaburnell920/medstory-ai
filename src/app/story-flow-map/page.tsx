@@ -89,7 +89,7 @@ export default function StoryFlowMap() {
     }
     
     // Check if this is a Conclusion
-    if (response.includes('Conclusion') && response.includes('TED talk')) {
+    if (response.includes('Conclusion') && (response.includes('TED talk') || response.includes('clinical takeaway'))) {
       const parts = response.split(/(?=Would you like|Do you want)/);
       const content = parts[0].trim();
       const followUpQuestion = parts[1] ? parts[1].trim() : '';
@@ -98,6 +98,15 @@ export default function StoryFlowMap() {
         type: 'conclusion',
         content: content,
         followUpQuestion: followUpQuestion
+      };
+    }
+    
+    // Check if this is just a follow-up question (no content to display)
+    if (response.match(/^(Would you like|Do you want)/)) {
+      return {
+        type: 'chat',
+        content: response,
+        followUpQuestion: ''
       };
     }
     
@@ -236,14 +245,16 @@ export default function StoryFlowMap() {
               attackPoints: [...prev.attackPoints, parsed.content]
             }));
             
-            // Add follow-up question to chat
-            setMessages((msgs) => [
-              ...msgs.slice(0, -1), // Remove "Creating..." message
-              {
-                role: 'assistant',
-                content: parsed.followUpQuestion,
-              },
-            ]);
+            // Add follow-up question to chat if it exists
+            if (parsed.followUpQuestion) {
+              setMessages((msgs) => [
+                ...msgs.slice(0, -1), // Remove "Creating..." message
+                {
+                  role: 'assistant',
+                  content: parsed.followUpQuestion,
+                },
+              ]);
+            }
           } else {
             // Fallback to original behavior
             setMessages((msgs) => [
@@ -302,20 +313,32 @@ export default function StoryFlowMap() {
         const parsed = parseStoryFlowResponse(data.result);
         
         if (parsed.type === 'attackPoint') {
-          // Add attack point to results
-          setStoryFlowResults(prev => ({
-            ...prev,
-            attackPoints: [...prev.attackPoints, parsed.content]
-          }));
+          // For attack points, replace the last one (for modifications) or add new one
+          setStoryFlowResults(prev => {
+            const newAttackPoints = [...prev.attackPoints];
+            if (newAttackPoints.length > 0) {
+              // Replace the last attack point (modification case)
+              newAttackPoints[newAttackPoints.length - 1] = parsed.content;
+            } else {
+              // Add new attack point (first time)
+              newAttackPoints.push(parsed.content);
+            }
+            return {
+              ...prev,
+              attackPoints: newAttackPoints
+            };
+          });
           
-          // Add follow-up question to chat
-          setMessages((msgs) => [
-            ...msgs,
-            {
-              role: 'assistant',
-              content: parsed.followUpQuestion,
-            },
-          ]);
+          // Add follow-up question to chat if it exists
+          if (parsed.followUpQuestion) {
+            setMessages((msgs) => [
+              ...msgs,
+              {
+                role: 'assistant',
+                content: parsed.followUpQuestion,
+              },
+            ]);
+          }
         } else if (parsed.type === 'tensionResolution') {
           // Add tension-resolution points to results
           setStoryFlowResults(prev => ({
@@ -323,14 +346,16 @@ export default function StoryFlowMap() {
             tensionResolutionPoints: [...prev.tensionResolutionPoints, parsed.content]
           }));
           
-          // Add follow-up question to chat
-          setMessages((msgs) => [
-            ...msgs,
-            {
-              role: 'assistant',
-              content: parsed.followUpQuestion,
-            },
-          ]);
+          // Add follow-up question to chat if it exists
+          if (parsed.followUpQuestion) {
+            setMessages((msgs) => [
+              ...msgs,
+              {
+                role: 'assistant',
+                content: parsed.followUpQuestion,
+              },
+            ]);
+          }
         } else if (parsed.type === 'conclusion') {
           // Add conclusion to results
           setStoryFlowResults(prev => ({
@@ -338,14 +363,16 @@ export default function StoryFlowMap() {
             conclusion: parsed.content
           }));
           
-          // Add follow-up question to chat
-          setMessages((msgs) => [
-            ...msgs,
-            {
-              role: 'assistant',
-              content: parsed.followUpQuestion,
-            },
-          ]);
+          // Add follow-up question to chat if it exists
+          if (parsed.followUpQuestion) {
+            setMessages((msgs) => [
+              ...msgs,
+              {
+                role: 'assistant',
+                content: parsed.followUpQuestion,
+              },
+            ]);
+          }
         } else {
           // Fallback to original behavior for regular chat messages
           setMessages((msgs) => [

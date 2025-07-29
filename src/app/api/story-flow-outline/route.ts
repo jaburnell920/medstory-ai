@@ -91,6 +91,12 @@ Please start with the Attack Point phase.`,
         
         if (userMessage.toLowerCase().includes('move on') || userMessage.toLowerCase().includes('tension')) {
           mockResult = `Would you like a short narrative (3-5 tension-resolution points), full narrative (8-12 tension-resolution points), or would you like to specify the number of tension-resolution points?`;
+        } else if (userMessage.toLowerCase().includes('modify') || userMessage.toLowerCase().includes('dramatic') || userMessage.toLowerCase().includes('young')) {
+          mockResult = `Attack Point #1
+
+At 34 years old, Marcus Thompson should have been planning his daughter's birthday party, not lying unconscious in the cardiac ICU after a massive STEMI. No family history, marathon runner, plant-based diet, LDL cholesterol at 65 mg/dL—he defied every risk calculator. Yet the emergency angiogram revealed the unthinkable: a completely occluded LAD from a ruptured plaque that appeared stable just months earlier. As Dr. Chen performed the life-saving PCI, one question haunted her: how do you prevent the unpredictable when inflammation turns a "safe" plaque into a silent assassin? The answer would challenge everything she thought she knew about cardiovascular prevention.
+
+Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?`;
         } else if (userMessage.toLowerCase().includes('short')) {
           mockResult = `**Tension-Resolution #1:** Inflammation Beyond Lipids
 Tension: Despite achieving LDL targets below 70 mg/dL, patients with established CAD continue experiencing recurrent events, suggesting lipid-lowering alone is insufficient.
@@ -179,7 +185,16 @@ Would you like me to write a script based on the above story flow outline that w
 - Speak with conviction during the solution section
 - End with optimistic, forward-looking tone`;
         } else {
-          mockResult = `What modifications would you like to make to the Attack Point?`;
+          // If user provided modification instructions, create a modified attack point
+          if (userMessage.toLowerCase().includes('make') || userMessage.toLowerCase().includes('change') || userMessage.toLowerCase().includes('focus')) {
+            mockResult = `Attack Point #1
+
+At 34 years old, Marcus Thompson should have been planning his daughter's birthday party, not lying unconscious in the cardiac ICU after a massive STEMI. No family history, marathon runner, plant-based diet, LDL cholesterol at 65 mg/dL—he defied every risk calculator. Yet the emergency angiogram revealed the unthinkable: a completely occluded LAD from a ruptured plaque that appeared stable just months earlier. As Dr. Chen performed the life-saving PCI, one question haunted her: how do you prevent the unpredictable when inflammation turns a "safe" plaque into a silent assassin? The answer would challenge everything she thought she knew about cardiovascular prevention.
+
+Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?`;
+          } else {
+            mockResult = `What modifications would you like to make to the Attack Point?`;
+          }
         }
         
         return NextResponse.json({ result: mockResult });
