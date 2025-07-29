@@ -92,8 +92,6 @@ export default function CoreStoryConcept() {
     );
   };
 
-
-
   const questions = [
     'What is the disease state?',
     'What is the therapeutic intervention?',
@@ -177,8 +175,6 @@ export default function CoreStoryConcept() {
             return updatedConcepts;
           });
 
-
-
           setMessages([
             ...newMessages,
             {
@@ -221,15 +217,15 @@ export default function CoreStoryConcept() {
         let tableContent = 'Here is a table with all the Core Story Concept Candidates:\n\n';
         tableContent += '| # | Tension | Resolution |\n';
         tableContent += '|---|---------|------------|\n';
-        
+
         concepts.forEach((concept, index) => {
           // Extract tension and resolution from concept content
           const lines = concept.content.split('\n');
           let tension = '';
           let resolution = '';
           let currentSection = '';
-          
-          lines.forEach(line => {
+
+          lines.forEach((line) => {
             const trimmedLine = line.trim();
             if (trimmedLine.toUpperCase().includes('TENSION')) {
               currentSection = 'tension';
@@ -241,10 +237,10 @@ export default function CoreStoryConcept() {
               resolution += trimmedLine + ' ';
             }
           });
-          
+
           tableContent += `| ${index + 1} | ${tension.trim()} | ${resolution.trim()} |\n`;
         });
-        
+
         setMessages([
           ...newMessages,
           {
@@ -383,8 +379,6 @@ export default function CoreStoryConcept() {
           return updatedConcepts;
         });
 
-
-
         // Add the follow-up question
         setMessages((msgs) => [
           ...msgs,
@@ -455,36 +449,47 @@ export default function CoreStoryConcept() {
                   <span className="text-sm text-gray-600">{selectedConcepts.size} selected</span>
                 </div>
               </div>
-              
+
               <div className="space-y-4">
                 {concepts.map((concept, index) => (
                   <div
                     key={concept.id}
                     className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
                   >
-                <div className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    id={concept.id}
-                    checked={selectedConcepts.has(concept.id)}
-                    onChange={() => handleSelectConcept(concept.id)}
-                    className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <div className="flex-1">
-                    <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
-                      {concept.content
-                        .replace(/\*\*TENSION\*\*/g, '<span class="font-bold text-blue-800">TENSION</span>')
-                        .replace(/\*\*RESOLUTION\*\*/g, '<span class="font-bold text-blue-800">RESOLUTION</span>')
-                        .split('\n')
-                        .map((line, i) => (
-                          <div key={i} dangerouslySetInnerHTML={{ __html: line }} />
-                        ))
-                      }
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        id={concept.id}
+                        checked={selectedConcepts.has(concept.id)}
+                        onChange={() => handleSelectConcept(concept.id)}
+                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <div className="flex-1">
+                        <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                          {concept.content
+                            .replace(
+                              /\*\*TENSION\*\*/g,
+                              '<span class="font-bold text-blue-800 block mt-4 mb-2">TENSION</span>'
+                            )
+                            .replace(
+                              /\*\*RESOLUTION\*\*/g,
+                              '<span class="font-bold text-blue-800 block mt-4 mb-2">RESOLUTION</span>'
+                            )
+                            .replace(
+                              /Core Story Concept Candidate #\d+/g,
+                              (match) =>
+                                `<span class="font-bold text-blue-800 text-lg">${match}</span>`
+                            )
+                            .replace(/##/g, '') // Remove all occurrences of ##
+                            .split('\n')
+                            .map((line, i) => (
+                              <div key={i} dangerouslySetInnerHTML={{ __html: line }} />
+                            ))}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            ))}
+                ))}
               </div>
             </div>
           </div>
