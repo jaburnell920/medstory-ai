@@ -34,7 +34,6 @@ export default function CoreStoryConcept() {
   const [nextConceptNumber, setNextConceptNumber] = useState<number>(1);
 
 
-
   // Clear results on page refresh or navigation
   useEffect(() => {
     const handleBeforeUnload = () => {
@@ -110,7 +109,7 @@ export default function CoreStoryConcept() {
     localStorage.setItem('selectedCoreStoryConcept', conceptId);
 
     // Also save the selected concept data for the saved page
-    const selectedConceptData = concepts.find(concept => concept.id === conceptId);
+    const selectedConceptData = concepts.find((concept) => concept.id === conceptId);
     if (selectedConceptData) {
       localStorage.setItem('selectedCoreStoryConceptData', JSON.stringify(selectedConceptData));
     }
@@ -123,7 +122,7 @@ export default function CoreStoryConcept() {
     if (!selectedConcept) return;
 
     // Find the selected concept data
-    const selectedConceptData = concepts.find(concept => concept.id === selectedConcept);
+    const selectedConceptData = concepts.find((concept) => concept.id === selectedConcept);
     if (!selectedConceptData) return;
 
     // Save to localStorage (same as selection, but with different toast message)
@@ -524,7 +523,9 @@ export default function CoreStoryConcept() {
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-blue-900">Core Story Concepts</h2>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-600">{selectedConcept ? '1 selected' : '0 selected'}</span>
+                  <span className="text-sm text-gray-600">
+                    {selectedConcept ? '1 selected' : '0 selected'}
+                  </span>
                   {selectedConcept && (
                     <button
                       onClick={handleSaveSelected}
