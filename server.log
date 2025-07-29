@@ -34,3 +34,14 @@ Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allow
  POST /api/story-flow-outline 200 in 28ms
  POST /api/story-flow-outline 200 in 27ms
  POST /api/story-flow-outline 200 in 29ms
+ GET / 200 in 61ms
+ GET / 200 in 53ms
+ ○ Compiling /enter ...
+ ✓ Compiled /enter in 962ms
+ GET /enter 200 in 1058ms
+ ✓ Compiled in 94ms
+ GET /story-flow-map 200 in 233ms
+ ○ Compiling /core-story-concept ...
+ ✓ Compiled /core-story-concept in 1023ms
+ GET /core-story-concept 200 in 1186ms
+ GET /story-flow-map 200 in 76ms

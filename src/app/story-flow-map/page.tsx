@@ -242,8 +242,8 @@ export default function StoryFlowMap() {
       taskName="Create story flow outline"
     >
       <div className="flex flex-col lg:flex-row gap-4">
-        {/* Chat Interface - Full Width */}
-        <div className="w-full">
+        {/* Chat Interface - Left Side */}
+        <div className="w-full lg:w-3/5">
           <ChatInterface
             messages={messages}
             input={input}
