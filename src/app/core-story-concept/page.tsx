@@ -32,6 +32,7 @@ export default function CoreStoryConcept() {
   const [concepts, setConcepts] = useState<CoreStoryConcept[]>([]);
   const [selectedConcept, setSelectedConcept] = useState<string>('');
   const [nextConceptNumber, setNextConceptNumber] = useState<number>(1);
+  const [currentlyModifyingConcept, setCurrentlyModifyingConcept] = useState<CoreStoryConcept | null>(null);
 
 
   // Load saved concepts on component mount and clear generated results on page refresh
@@ -74,6 +75,7 @@ export default function CoreStoryConcept() {
       setConcepts([]);
       setSelectedConcept('');
       setNextConceptNumber(1);
+      setCurrentlyModifyingConcept(null);
     };
 
     // Add event listener for page unload
@@ -112,6 +114,7 @@ export default function CoreStoryConcept() {
     setConcepts([]);
     setSelectedConcept('');
     setNextConceptNumber(1);
+    setCurrentlyModifyingConcept(null);
   };
 
   // Function to handle selecting a concept
@@ -179,6 +182,10 @@ export default function CoreStoryConcept() {
       setLoading(true);
 
       if (trimmed.toLowerCase().includes('modify')) {
+        // Set the currently modifying concept to the most recent one
+        if (concepts.length > 0) {
+          setCurrentlyModifyingConcept(concepts[concepts.length - 1]);
+        }
         // Ask for modifications
         setMessages([
           ...newMessages,
@@ -339,7 +346,7 @@ export default function CoreStoryConcept() {
               },
               {
                 role: 'user',
-                content: `Modify this Core Story Concept Candidate #${concepts.length > 0 ? concepts[concepts.length - 1].conceptNumber : 1} for ${context.drug} in ${context.disease} based on the following feedback: ${trimmed}. Keep the length at ${context.length}. Keep the same candidate number in the response.`,
+                content: `Modify this Core Story Concept Candidate #${currentlyModifyingConcept ? currentlyModifyingConcept.conceptNumber : 1} for ${context.drug} in ${context.disease} based on the following feedback: ${trimmed}. Keep the length at ${context.length}. Keep the same candidate number in the response.`,
               },
               {
                 role: 'assistant',
@@ -356,15 +363,17 @@ export default function CoreStoryConcept() {
         const data = await res.json();
         setResult(data.result);
 
-        // Update the most recent concept instead of creating a new one
+        // Update the specific concept being modified instead of creating a new one
         setConcepts((prevConcepts) => {
           const updatedConcepts = [...prevConcepts];
-          if (updatedConcepts.length > 0) {
-            const lastIndex = updatedConcepts.length - 1;
-            updatedConcepts[lastIndex] = {
-              ...updatedConcepts[lastIndex],
-              content: data.result,
-            };
+          if (currentlyModifyingConcept) {
+            const conceptIndex = updatedConcepts.findIndex(c => c.id === currentlyModifyingConcept.id);
+            if (conceptIndex !== -1) {
+              updatedConcepts[conceptIndex] = {
+                ...updatedConcepts[conceptIndex],
+                content: data.result,
+              };
+            }
           }
           // Save to localStorage
           localStorage.setItem('coreStoryConceptsData', JSON.stringify(updatedConcepts));
@@ -372,12 +381,9 @@ export default function CoreStoryConcept() {
         });
 
         // Update the selected concept data if it's the one being modified
-        if (concepts.length > 0) {
-          const modifiedConcept = concepts[concepts.length - 1];
-          if (selectedConcept === modifiedConcept.id) {
-            const updatedConcept = { ...modifiedConcept, content: data.result };
-            localStorage.setItem('selectedCoreStoryConceptData', JSON.stringify(updatedConcept));
-          }
+        if (currentlyModifyingConcept && selectedConcept === currentlyModifyingConcept.id) {
+          const updatedConcept = { ...currentlyModifyingConcept, content: data.result };
+          localStorage.setItem('selectedCoreStoryConceptData', JSON.stringify(updatedConcept));
         }
 
         setMessages([
@@ -393,6 +399,8 @@ export default function CoreStoryConcept() {
         console.error(err);
       } finally {
         setLoading(false);
+        // Clear the tracking state after modification is complete
+        setCurrentlyModifyingConcept(null);
       }
       return;
     }
