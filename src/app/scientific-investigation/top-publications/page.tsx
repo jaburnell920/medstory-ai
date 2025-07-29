@@ -67,9 +67,9 @@ export default function TopPublicationsPage() {
       // Extract key points from the conversation
       // Skip the first 8 messages which are the expert info collection
       const interviewMessages = interviewStarted ? messages.slice(8) : messages;
-      const conversationText = interviewMessages.map((msg) => 
-        `${msg.role === 'user' ? 'Interviewer' : 'Expert'}: ${msg.content}`
-      ).join('\n\n');
+      const conversationText = interviewMessages
+        .map((msg) => `${msg.role === 'user' ? 'Interviewer' : 'Expert'}: ${msg.content}`)
+        .join('\n\n');
 
       // For demonstration purposes, create mock key points when API is not available
       const mockKeyPoints = [
@@ -104,19 +104,25 @@ export default function TopPublicationsPage() {
           const pointsText = data.result || '';
           // Try to handle different formats of key points
           let pointsList: string[] = [];
-          
+
           // First try numbered format (1. Point)
-          const numberedPoints = pointsText.split(/\d+\./).filter(p => p.trim().length > 0);
+          const numberedPoints = pointsText.split(/\d+\./).filter((p) => p.trim().length > 0);
           if (numberedPoints.length > 1) {
-            pointsList = numberedPoints.map(p => p.trim());
-          } 
+            pointsList = numberedPoints.map((p) => p.trim());
+          }
           // Then try bullet points
           else if (pointsText.includes('•')) {
-            pointsList = pointsText.split('•').filter(p => p.trim().length > 0).map(p => p.trim());
+            pointsList = pointsText
+              .split('•')
+              .filter((p) => p.trim().length > 0)
+              .map((p) => p.trim());
           }
           // Then try dash points
           else if (pointsText.includes('-')) {
-            pointsList = pointsText.split('-').filter(p => p.trim().length > 0).map(p => p.trim());
+            pointsList = pointsText
+              .split('-')
+              .filter((p) => p.trim().length > 0)
+              .map((p) => p.trim());
           }
           // If all else fails, just use the whole text
           else {
@@ -190,36 +196,44 @@ export default function TopPublicationsPage() {
     setMessages(newMessages);
 
     // Check if this is an "end interview" command
-    const isEndInterview = input.toLowerCase().includes('end interview') || 
-                          input.toLowerCase().includes('interview complete');
+    const isEndInterview =
+      input.toLowerCase().includes('end interview') ||
+      input.toLowerCase().includes('interview complete');
 
     if (!interviewStarted) {
       // First response - collect expert info
       // We'll collect all the expert information before starting the actual interview
       // The first 4 messages are for collecting expert information
       setLoading(true);
-      
+
       // Continue collecting expert info
       let nextQuestion = '';
-      
-      if (newMessages.length === 2) { // After first answer (professional background)
-        nextQuestion = "In what areas of science and/or medicine do they have deep expertise?";
+
+      if (newMessages.length === 2) {
+        // After first answer (professional background)
+        nextQuestion = 'In what areas of science and/or medicine do they have deep expertise?';
         setMessages([...newMessages, { role: 'assistant', content: nextQuestion }]);
         setLoading(false);
-      } else if (newMessages.length === 4) { // After second answer (areas of expertise)
-        nextQuestion = "Is this expert a basic scientist, a clinician, or a mix of both?";
+      } else if (newMessages.length === 4) {
+        // After second answer (areas of expertise)
+        nextQuestion = 'Is this expert a basic scientist, a clinician, or a mix of both?';
         setMessages([...newMessages, { role: 'assistant', content: nextQuestion }]);
         setLoading(false);
-      } else if (newMessages.length === 6) { // After third answer (scientist/clinician)
-        nextQuestion = "Is this expert considered an academic, a practitioner, or a mix of both?";
+      } else if (newMessages.length === 6) {
+        // After third answer (scientist/clinician)
+        nextQuestion = 'Is this expert considered an academic, a practitioner, or a mix of both?';
         setMessages([...newMessages, { role: 'assistant', content: nextQuestion }]);
         setLoading(false);
-      } else if (newMessages.length === 8) { // After fourth answer (academic/practitioner)
+      } else if (newMessages.length === 8) {
+        // After fourth answer (academic/practitioner)
         // We have all the info, now start the interview
-        const expertInfoCollected = newMessages.filter(msg => msg.role === 'user').map(msg => msg.content).join('; ');
+        const expertInfoCollected = newMessages
+          .filter((msg) => msg.role === 'user')
+          .map((msg) => msg.content)
+          .join('; ');
         setExpertInfo(expertInfoCollected);
         setInterviewStarted(true);
-        
+
         try {
           const res = await fetch('/api/expert-interview', {
             method: 'POST',
@@ -230,7 +244,7 @@ export default function TopPublicationsPage() {
             }),
           });
           const data = await res.json();
-          
+
           setMessages([...newMessages, { role: 'assistant', content: data.result }]);
         } catch (err) {
           console.error('Error starting interview:', err);
@@ -246,7 +260,9 @@ export default function TopPublicationsPage() {
       }
     } else {
       // Continue interview - append instruction to not ask questions
-      const modifiedInput = isEndInterview ? input : `${input}. Do not ask any questions in your response.`;
+      const modifiedInput = isEndInterview
+        ? input
+        : `${input}. Do not ask any questions in your response.`;
       setLoading(true);
 
       try {
@@ -263,7 +279,7 @@ export default function TopPublicationsPage() {
         const data = await res.json();
 
         setMessages([...newMessages, { role: 'assistant', content: data.result }]);
-        
+
         // If this was an end interview command, update the state and extract key points
         if (isEndInterview) {
           setInterviewEnded(true);
@@ -305,7 +321,7 @@ export default function TopPublicationsPage() {
           className="cursor-pointer hover:text-blue-600 transition-colors"
           title="Click to view saved key points"
         >
-          Simulated thought leader interview
+          Simulate expert interview
         </span>
       }
     >
@@ -321,7 +337,7 @@ export default function TopPublicationsPage() {
             placeholder={
               interviewStarted
                 ? 'Ask your question... (type "end interview" when finished)'
-                : "Enter your response..."
+                : 'Enter your response...'
             }
             removeExpertPrefix={true}
             onReset={handleReset}
