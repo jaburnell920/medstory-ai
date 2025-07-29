@@ -103,6 +103,27 @@ export default function CoreStoryConcept() {
     toast.success('Core Story Concept selected!');
   };
 
+  // Handle saving selected concept to localStorage (explicit save action)
+  const handleSaveSelected = () => {
+    if (!selectedConcept) return;
+
+    // Find the selected concept data
+    const selectedConceptData = concepts.find(concept => concept.id === selectedConcept);
+    if (!selectedConceptData) return;
+
+    // Save to localStorage (same as selection, but with different toast message)
+    localStorage.setItem('selectedCoreStoryConceptData', JSON.stringify(selectedConceptData));
+    localStorage.setItem('selectedCoreStoryConcept', selectedConcept);
+
+    // Show success message
+    toast.success('Core story concept saved successfully!');
+  };
+
+  // Handle clicking on title to access saved page
+  const handleTitleClick = () => {
+    window.location.href = '/core-story-concept/saved';
+  };
+
   const questions = [
     'What is the disease state?',
     'What is the therapeutic intervention?',
@@ -456,7 +477,15 @@ export default function CoreStoryConcept() {
         />
       }
       sectionName="Core Story Concept"
-      taskName="Create Core Story Concept options"
+      taskName={
+        <span
+          onClick={handleTitleClick}
+          className="cursor-pointer hover:text-blue-600 transition-colors"
+          title="Click to view saved concepts"
+        >
+          Create Core Story Concept options
+        </span>
+      }
     >
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Chat Interface - Left Side */}
@@ -481,6 +510,14 @@ export default function CoreStoryConcept() {
                 <h2 className="text-xl font-bold text-blue-900">Core Story Concepts</h2>
                 <div className="flex items-center gap-3">
                   <span className="text-sm text-gray-600">{selectedConcept ? '1 selected' : '0 selected'}</span>
+                  {selectedConcept && (
+                    <button
+                      onClick={handleSaveSelected}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                    >
+                      Save Selected
+                    </button>
+                  )}
                 </div>
               </div>
 
