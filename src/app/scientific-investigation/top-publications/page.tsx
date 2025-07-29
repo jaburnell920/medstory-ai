@@ -106,7 +106,9 @@ export default function TopPublicationsPage() {
           let pointsList: string[] = [];
 
           // First try numbered format (1. Point)
-          const numberedPoints = pointsText.split(/\d+\./).filter((p) => p.trim().length > 0);
+          const numberedPoints: string[] = pointsText
+            .split(/\d+\./)
+            .filter((p: string) => p.trim().length > 0);
           if (numberedPoints.length > 1) {
             pointsList = numberedPoints.map((p) => p.trim());
           }
@@ -114,15 +116,15 @@ export default function TopPublicationsPage() {
           else if (pointsText.includes('•')) {
             pointsList = pointsText
               .split('•')
-              .filter((p) => p.trim().length > 0)
-              .map((p) => p.trim());
+              .filter((p: string) => p.trim().length > 0)
+              .map((p: string) => p.trim());
           }
           // Then try dash points
           else if (pointsText.includes('-')) {
             pointsList = pointsText
               .split('-')
-              .filter((p) => p.trim().length > 0)
-              .map((p) => p.trim());
+              .filter((p: string) => p.trim().length > 0)
+              .map((p: string) => p.trim());
           }
           // If all else fails, just use the whole text
           else {

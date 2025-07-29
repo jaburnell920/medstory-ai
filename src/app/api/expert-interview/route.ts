@@ -10,17 +10,17 @@ export async function POST(req: NextRequest) {
 
   if (action === 'start') {
     // Parse the expert info which is a semicolon-separated string of answers to the 4 questions
-    const expertInfoParts = expertInfo.split(';').map(part => part.trim());
-    
+    const expertInfoParts: string[] = expertInfo.split(';').map((part: string) => part.trim());
+
     // Create a concise description of the expert based on the collected information
     let expertDescription = '';
-    
+
     if (expertInfoParts.length >= 4) {
       const background = expertInfoParts[0];
       const expertise = expertInfoParts[1];
       const scientistOrClinician = expertInfoParts[2];
       const academicOrPractitioner = expertInfoParts[3];
-      
+
       expertDescription = `I'll be simulating an interview with an expert who has a background in ${background}, with deep expertise in ${expertise}. They are ${scientistOrClinician === 'both' ? 'both a basic scientist and a clinician' : `a ${scientistOrClinician}`} and ${academicOrPractitioner === 'both' ? 'both an academic and a practitioner' : `a ${academicOrPractitioner}`}.`;
     } else {
       // Fallback if we don't have all the information
@@ -66,8 +66,9 @@ Your first response should be brief - simply acknowledge that you're pleased to 
     }
   } else if (action === 'continue') {
     // Check if this is an end interview command
-    const isEndInterview = userMessage.toLowerCase().includes('end interview') || 
-                          userMessage.toLowerCase().includes('interview complete');
+    const isEndInterview =
+      userMessage.toLowerCase().includes('end interview') ||
+      userMessage.toLowerCase().includes('interview complete');
 
     // Build conversation context
     const conversationContext = conversationHistory
@@ -78,7 +79,7 @@ Your first response should be brief - simply acknowledge that you're pleased to 
       .join('\n\n');
 
     let continuePrompt;
-    
+
     if (isEndInterview) {
       continuePrompt = `
 You have been participating in an interview as an expert with the following background: ${expertInfo}
