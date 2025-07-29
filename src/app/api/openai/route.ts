@@ -4,6 +4,13 @@ import OpenAI from 'openai';
 export async function POST(req: NextRequest) {
   const body = await req.json();
   
+  // Check if OpenAI API key is configured
+  if (!process.env.OPENAI_API_KEY) {
+    return NextResponse.json({ 
+      error: 'OpenAI API key not configured. Please add OPENAI_API_KEY to your .env.local file.' 
+    }, { status: 500 });
+  }
+  
   // Check if this is a key points extraction request
   if (body.prompt) {
     const { prompt, max_tokens } = body;
@@ -41,19 +48,6 @@ export async function POST(req: NextRequest) {
   // Check if we have messages (for modifications or new concepts)
   if (messages && messages.length > 0) {
     try {
-      // Mock response for testing - comment out when using real OpenAI
-      return NextResponse.json({
-        result: `Core Story Concept Candidate #2
-
-**TENSION**
-Healthcare professionals treating diabetes often encounter patients who experience gastrointestinal side effects with metformin, leading to poor adherence and suboptimal outcomes. The challenge lies in balancing therapeutic efficacy with patient tolerability, as discontinuation rates remain high despite metformin's proven benefits in diabetes management.
-
-**RESOLUTION**
-The key to optimizing metformin therapy lies in understanding its dose-dependent pharmacokinetics and implementing strategic dosing protocols. Extended-release formulations and gradual dose titration can significantly reduce GI intolerance while maintaining therapeutic effectiveness. This approach allows healthcare professionals to maximize patient adherence and long-term glycemic control, ensuring that more patients can benefit from metformin's comprehensive metabolic advantages.`,
-      });
-
-      // Uncomment below when using real OpenAI API
-      /*
       const openai = new OpenAI({
         apiKey: process.env.OPENAI_API_KEY,
       });
@@ -92,7 +86,6 @@ Return only the concepts in the template above.`,
       });
 
       return NextResponse.json({ result: chatCompletion.choices[0].message.content });
-      */
     } catch (error) {
       console.error('OpenAI Error:', error);
       return NextResponse.json({ error: 'Failed to generate content' }, { status: 500 });
@@ -127,19 +120,6 @@ Create a Core Story Concept using the guidelines above.
         `;
 
   try {
-    // Mock response for testing - comment out when using real OpenAI
-    return NextResponse.json({
-      result: `Core Story Concept Candidate #1
-
-**TENSION**
-Healthcare professionals treating diabetes face a persistent challenge: despite metformin's established role as first-line therapy, many patients still struggle with suboptimal glycemic control and progressive disease complications. The traditional approach of simply prescribing metformin often overlooks the complex interplay between insulin resistance, hepatic glucose production, and cellular energy metabolism that drives diabetes progression.
-
-**RESOLUTION**
-Metformin's true power lies not just in lowering blood glucose, but in its unique ability to activate AMPK (AMP-activated protein kinase) - the body's master metabolic switch. This activation simultaneously reduces hepatic glucose production, enhances insulin sensitivity, and improves cellular energy efficiency, creating a comprehensive metabolic reset that addresses diabetes at its fundamental level. For healthcare professionals, this means metformin offers a mechanistic advantage that goes beyond glucose control, providing patients with a foundation for long-term metabolic health.`,
-    });
-
-    // Uncomment below when using real OpenAI API
-    /*
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
@@ -159,7 +139,6 @@ Metformin's true power lies not just in lowering blood glucose, but in its uniqu
     });
 
     return NextResponse.json({ result: chatCompletion.choices[0].message.content });
-    */
   } catch (error) {
     console.error('OpenAI Error:', error);
     return NextResponse.json({ error: 'Failed to generate content' }, { status: 500 });
