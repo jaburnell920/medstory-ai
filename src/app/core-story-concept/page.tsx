@@ -311,25 +311,19 @@ export default function CoreStoryConcept() {
         const data = await res.json();
         setResult(data.result);
 
-        // Create a new concept for the modification
-        const newConcept: CoreStoryConcept = {
-          id: `concept-${Date.now()}`,
-          content: data.result,
-          disease: context.disease,
-          drug: context.drug,
-          audience: context.audience,
-          length: context.length,
-        };
-
+        // Update the existing concept instead of creating a new one
         setConcepts((prevConcepts) => {
-          const updatedConcepts = [...prevConcepts, newConcept];
+          const updatedConcepts = [...prevConcepts];
+          if (updatedConcepts[currentConceptIndex]) {
+            updatedConcepts[currentConceptIndex] = {
+              ...updatedConcepts[currentConceptIndex],
+              content: data.result,
+            };
+          }
           // Save to session storage
           sessionStorage.setItem('coreStoryConceptsData', JSON.stringify(updatedConcepts));
           return updatedConcepts;
         });
-
-        // Set the current index to the new concept
-        setCurrentConceptIndex(concepts.length);
 
         setMessages([
           ...newMessages,
@@ -518,22 +512,7 @@ export default function CoreStoryConcept() {
                     : 'Select This Core Story Concept'}
                 </button>
 
-                {/* Continue button */}
-                <button
-                  onClick={() => {
-                    setMessages([
-                      ...messages,
-                      {
-                        role: 'assistant',
-                        content:
-                          'Would you like to modify this Core Story Concept or create a new one?',
-                      },
-                    ]);
-                  }}
-                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-                >
-                  Continue
-                </button>
+
 
                 {/* Navigation buttons */}
                 {concepts.length > 1 && (
