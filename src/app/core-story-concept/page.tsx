@@ -448,11 +448,20 @@ export default function CoreStoryConcept() {
         {/* Result Section - Right Side */}
         {concepts.length > 0 && (
           <div className="flex-1 space-y-4">
-            {concepts.map((concept, index) => (
-              <div
-                key={concept.id}
-                className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
-              >
+            <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-blue-900">Core Story Concepts</h2>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-600">{selectedConcepts.size} selected</span>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                {concepts.map((concept, index) => (
+                  <div
+                    key={concept.id}
+                    className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
+                  >
                 <div className="flex items-start gap-3">
                   <input
                     type="checkbox"
@@ -472,6 +481,8 @@ export default function CoreStoryConcept() {
                 </div>
               </div>
             ))}
+              </div>
+            </div>
           </div>
         )}
       </div>
