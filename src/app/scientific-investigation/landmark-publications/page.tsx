@@ -332,7 +332,10 @@ export default function LandmarkPublicationsPage() {
               </div>
               <div className="space-y-4">
                 {studies.map((study) => (
-                  <div key={study.id} className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                  <div
+                    key={study.id}
+                    className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
+                  >
                     <div className="flex items-start gap-3">
                       <input
                         type="checkbox"
@@ -342,9 +345,9 @@ export default function LandmarkPublicationsPage() {
                         className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
                       <div className="flex-1">
-                        <a 
-                          href={`https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(study.citation)}`} 
-                          target="_blank" 
+                        <a
+                          href={`https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(study.citation)}`}
+                          target="_blank"
                           rel="noopener noreferrer"
                           className="block cursor-pointer hover:text-blue-700"
                         >
@@ -365,14 +368,6 @@ export default function LandmarkPublicationsPage() {
                   </div>
                 ))}
               </div>
-              {selectedStudies.size > 0 && (
-                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    💡 Tip: Click &quot;Save Selected&quot; to save your chosen studies, then click
-                    &quot;Find landmark publications&quot; in the header to view them
-                  </p>
-                </div>
-              )}
             </div>
           </div>
         )}
