@@ -96,7 +96,7 @@ export default function ChatInterface({
   return (
     <div className="flex flex-col lg:flex-row gap-4 h-full">
       {/* Chat Area - Left Side */}
-      <div className="w-full lg:w-3/5 flex flex-col min-h-0">
+      <div className="w-full lg:w-4/5 flex flex-col min-h-0">
         <div className="flex-1 space-y-4 overflow-y-auto">
           {messages.map((m, i) => (
             <div key={i} className="w-full">

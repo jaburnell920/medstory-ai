@@ -164,7 +164,7 @@ Generate the entire outline without stopping for user input.
     >
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Chat Interface - Left Side */}
-        <div className="w-full lg:w-3/5">
+        <div className="w-full lg:w-4/5">
           <ChatInterface
             messages={messages}
             input={input}
