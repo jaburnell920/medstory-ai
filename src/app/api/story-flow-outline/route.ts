@@ -93,6 +93,13 @@ Please start with the Attack Point phase.`,
           mockResult = `Would you like a short narrative (3-5 tension-resolution points), full narrative (8-12 tension-resolution points), or would you like to specify the number of tension-resolution points?`;
         } else if (userMessage.toLowerCase().trim() === 'modify') {
           mockResult = `What modifications would you like to make to the Attack Point?`;
+        } else if (conversationHistory.some(msg => msg.content.includes('What modifications would you like to make')) && userMessage.length > 5 && !userMessage.toLowerCase().includes('modify')) {
+          // User is providing modification instructions
+          mockResult = `Attack Point #1
+
+Dr. Elena Rodriguez had seen thousands of angiograms, but this one stopped her cold. Her patient—a 45-year-old triathlete with pristine lipid panels and zero traditional risk factors—lay before her with a completely occluded left main coronary artery. The emergency catheterization revealed not the expected calcified plaque of an older patient, but something far more sinister: a soft, lipid-rich lesion teeming with inflammatory cells. Despite achieving every prevention target modern medicine could offer, the patient's arterial wall had become a battlefield where immune cells turned against the very vessels they were meant to protect. As she deployed the life-saving stent, one question echoed in her mind: how do you fight an enemy that lives within the walls themselves?
+
+Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?`;
         } else if (userMessage.toLowerCase().includes('young patient example')) {
           mockResult = `Attack Point #1
 
@@ -197,18 +204,7 @@ Would you like me to write a script based on the above story flow outline that w
 - Speak with conviction during the solution section
 - End with optimistic, forward-looking tone`;
         } else {
-          // Check if this is a follow-up to "What modifications would you like to make?"
-          // If user provided any substantial input (more than just "modify"), treat it as modification instructions
-          if (userMessage.length > 10 && !userMessage.toLowerCase().includes('what modifications')) {
-            // Create a modified attack point based on user input
-            mockResult = `Attack Point #1
-
-Dr. Elena Rodriguez had seen thousands of angiograms, but this one stopped her cold. Her patient—a 45-year-old triathlete with pristine lipid panels and zero traditional risk factors—lay before her with a completely occluded left main coronary artery. The emergency catheterization revealed not the expected calcified plaque of an older patient, but something far more sinister: a soft, lipid-rich lesion teeming with inflammatory cells. Despite achieving every prevention target modern medicine could offer, the patient's arterial wall had become a battlefield where immune cells turned against the very vessels they were meant to protect. As she deployed the life-saving stent, one question echoed in her mind: how do you fight an enemy that lives within the walls themselves?
-
-Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?`;
-          } else {
-            mockResult = `What modifications would you like to make to the Attack Point?`;
-          }
+          mockResult = `I'm not sure how to help with that request. Please try asking for modifications, creating a new attack point, or moving on to tension-resolution points.`;
         }
         
         return NextResponse.json({ result: mockResult });
