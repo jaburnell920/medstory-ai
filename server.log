@@ -105,3 +105,4 @@ OpenAI Error: Error: The OPENAI_API_KEY environment variable is missing or empty
  GET /core-story-concept 200 in 107ms
  GET /core-story-concept/saved 200 in 79ms
  GET / 200 in 54ms
+ GET / 200 in 51ms
