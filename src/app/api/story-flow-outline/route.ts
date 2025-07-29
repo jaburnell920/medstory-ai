@@ -147,7 +147,7 @@ Would you like the tension-resolution points put into a table format?`;
 | CSC | | By directly targeting plaque inflammation through macrophage inhibition, ${interventionName} offers a precision approach to reduce cardiovascular risk beyond traditional lipid-lowering therapy, addressing the inflammatory component that drives residual risk in optimally treated patients. |
 
 Would you like me to write a script based on the above story flow outline that would be suitable for a highly engaging TED talk?`;
-        } else if (userMessage.toLowerCase().includes('ted') || userMessage.toLowerCase().includes('script')) {
+        } else if (userMessage.toLowerCase().includes('ted') || userMessage.toLowerCase().includes('script') || (userMessage.toLowerCase().includes('yes') && conversationHistory.some(msg => msg.content.includes('TED talk')))) {
           mockResult = `How long should the TED talk be (in minutes)?`;
         } else if (userMessage.match(/\d+/)) {
           const minutes = userMessage.match(/\d+/)[0];
