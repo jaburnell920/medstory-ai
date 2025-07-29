@@ -281,9 +281,9 @@ export default function LandmarkPublicationsPage() {
         <Image
           src="/scientific_investigation_chat.png"
           alt="Core Story Chat"
-          width={72}
-          height={72}
-          className="w-18 h-18"
+          width={90}
+          height={90}
+          className="w-24 h-24"
         />
       }
       sectionName="Scientific Investigation"
@@ -297,7 +297,7 @@ export default function LandmarkPublicationsPage() {
         </span>
       }
     >
-      <div className="flex flex-col lg:flex-row gap-4">
+      <div className="flex flex-col lg:flex-row gap-2">
         {/* Chat Interface - Left Side */}
         <div className="w-full lg:w-3/5">
           <ChatInterface
@@ -314,7 +314,7 @@ export default function LandmarkPublicationsPage() {
 
         {/* Result Section - Right Side */}
         {studies.length > 0 && (
-          <div className="flex-1 space-y-6" ref={resultRef}>
+          <div className="flex-1 space-y-4" ref={resultRef}>
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-blue-900">Landmark Publications</h2>
@@ -330,9 +330,9 @@ export default function LandmarkPublicationsPage() {
                   )}
                 </div>
               </div>
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {studies.map((study) => (
-                  <div key={study.id} className="border-b border-gray-200 pb-4 last:border-b-0">
+                  <div key={study.id} className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
                     <div className="flex items-start gap-3">
                       <input
                         type="checkbox"
@@ -342,8 +342,13 @@ export default function LandmarkPublicationsPage() {
                         className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
                       <div className="flex-1">
-                        <label htmlFor={study.id} className="cursor-pointer">
-                          <div className="font-medium text-gray-900 mb-2">
+                        <a 
+                          href={`https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(study.citation)}`} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="block cursor-pointer hover:text-blue-700"
+                        >
+                          <div className="font-medium text-blue-800 mb-2 hover:underline">
                             {study.number}. {study.citation}
                           </div>
                           {study.impactScore && (
@@ -354,7 +359,7 @@ export default function LandmarkPublicationsPage() {
                           <div className="text-gray-700 text-sm leading-relaxed">
                             {study.description}
                           </div>
-                        </label>
+                        </a>
                       </div>
                     </div>
                   </div>

@@ -76,7 +76,7 @@ export default function SavedLandmarkPublicationsPage() {
     return (
       <PageLayout
         sectionIcon={
-          <Image src="/scientific_investigation_chat.png" alt="Core Story Chat" width={72} height={72} className="w-18 h-18" />
+          <Image src="/scientific_investigation_chat.png" alt="Core Story Chat" width={90} height={90} className="w-24 h-24" />
         }
         sectionName="Scientific Investigation"
         taskName="Saved Landmark Publications"
@@ -94,7 +94,7 @@ export default function SavedLandmarkPublicationsPage() {
   return (
     <PageLayout
       sectionIcon={
-        <Image src="/scientific_investigation_chat.png" alt="Core Story Chat" width={72} height={72} className="w-18 h-18" />
+        <Image src="/scientific_investigation_chat.png" alt="Core Story Chat" width={90} height={90} className="w-24 h-24" />
       }
       sectionName="Scientific Investigation"
       taskName="Saved Landmark Publications"
@@ -145,19 +145,26 @@ export default function SavedLandmarkPublicationsPage() {
               </a>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-4">
               {savedStudies.map((study) => (
-                <div key={study.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div key={study.id} className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex-1">
-                      <div className="font-medium text-gray-900 mb-2">
-                        {study.number}. {study.citation}
-                      </div>
-                      {study.impactScore && (
-                        <div className="text-sm font-semibold text-blue-600 mb-2">
-                          Impact Score (0-100): {study.impactScore}
+                      <a 
+                        href={`https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(study.citation)}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="block cursor-pointer hover:text-blue-700"
+                      >
+                        <div className="font-medium text-blue-800 mb-2 hover:underline">
+                          {study.number}. {study.citation}
                         </div>
-                      )}
+                        {study.impactScore && (
+                          <div className="text-sm font-semibold text-blue-600 mb-2">
+                            Impact Score (0-100): {study.impactScore}
+                          </div>
+                        )}
+                      </a>
                     </div>
                     <button
                       onClick={() => handleRemoveStudy(study.id)}
