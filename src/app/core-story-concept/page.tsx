@@ -451,7 +451,7 @@ export default function CoreStoryConcept() {
               </div>
 
               <div className="space-y-4">
-                {concepts.map((concept, index) => (
+                {concepts.map((concept) => (
                   <div
                     key={concept.id}
                     className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
