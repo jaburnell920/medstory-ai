@@ -100,9 +100,9 @@ export default function StoryFlowMap() {
     // Check if this is just a follow-up question (no content to display)
     if (response.match(/^(Would you like|Do you want)/)) {
       return {
-        type: 'chat',
-        content: response,
-        followUpQuestion: ''
+        type: 'followUpOnly',
+        content: '',
+        followUpQuestion: response
       };
     }
     
@@ -304,6 +304,15 @@ export default function StoryFlowMap() {
                 },
               ]);
             }
+          } else if (parsed.type === 'followUpOnly') {
+            // Only add follow-up question to chat, no content to results
+            setMessages((msgs) => [
+              ...msgs.slice(0, -1), // Remove "Creating..." message
+              {
+                role: 'assistant',
+                content: parsed.followUpQuestion,
+              },
+            ]);
           } else {
             // Fallback to original behavior
             setMessages((msgs) => [
@@ -407,6 +416,15 @@ export default function StoryFlowMap() {
               },
             ]);
           }
+        } else if (parsed.type === 'followUpOnly') {
+          // Only add follow-up question to chat, no content to results
+          setMessages((msgs) => [
+            ...msgs,
+            {
+              role: 'assistant',
+              content: parsed.followUpQuestion,
+            },
+          ]);
         } else {
           // Fallback to original behavior for regular chat messages
           setMessages((msgs) => [
