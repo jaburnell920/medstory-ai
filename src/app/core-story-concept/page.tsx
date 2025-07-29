@@ -471,11 +471,15 @@ export default function CoreStoryConcept() {
                     className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
                   <div className="flex-1">
-                    <div className="font-medium text-blue-800 mb-2">
-                      Core Story Concept Candidate #{index + 1}
-                    </div>
                     <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
-                      {concept.content}
+                      {concept.content
+                        .replace(/\*\*TENSION\*\*/g, '<span class="font-bold text-blue-800">TENSION</span>')
+                        .replace(/\*\*RESOLUTION\*\*/g, '<span class="font-bold text-blue-800">RESOLUTION</span>')
+                        .split('\n')
+                        .map((line, i) => (
+                          <div key={i} dangerouslySetInnerHTML={{ __html: line }} />
+                        ))
+                      }
                     </div>
                   </div>
                 </div>
