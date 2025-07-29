@@ -163,7 +163,7 @@ export default function CoreStoryConcept() {
                 },
                 {
                   role: 'user',
-                  content: `Create a new Core Story Concept for ${context.drug} in ${context.disease} for the target audience ${context.audience} with a length of ${context.length}.`,
+                  content: `Create a new Core Story Concept Candidate #${concepts.length + 1} for ${context.drug} in ${context.disease} for the target audience ${context.audience} with a length of ${context.length}.`,
                 },
               ],
               disease: context.disease,
@@ -234,12 +234,39 @@ export default function CoreStoryConcept() {
         'Got it. Would you like to see a table with all the Core Story Concept Candidates?'
     ) {
       if (trimmed.toLowerCase().includes('yes')) {
-        // Here we would normally create a table, but for now we'll just acknowledge
+        // Generate table content from concepts
+        let tableContent = 'Here is a table with all the Core Story Concept Candidates:\n\n';
+        tableContent += '| # | Tension | Resolution |\n';
+        tableContent += '|---|---------|------------|\n';
+        
+        concepts.forEach((concept, index) => {
+          // Extract tension and resolution from concept content
+          const lines = concept.content.split('\n');
+          let tension = '';
+          let resolution = '';
+          let currentSection = '';
+          
+          lines.forEach(line => {
+            const trimmedLine = line.trim();
+            if (trimmedLine.toUpperCase().includes('TENSION')) {
+              currentSection = 'tension';
+            } else if (trimmedLine.toUpperCase().includes('RESOLUTION')) {
+              currentSection = 'resolution';
+            } else if (trimmedLine && currentSection === 'tension') {
+              tension += trimmedLine + ' ';
+            } else if (trimmedLine && currentSection === 'resolution') {
+              resolution += trimmedLine + ' ';
+            }
+          });
+          
+          tableContent += `| ${index + 1} | ${tension.trim()} | ${resolution.trim()} |\n`;
+        });
+        
         setMessages([
           ...newMessages,
           {
             role: 'assistant',
-            content: 'Here is a table with all the Core Story Concept Candidates.',
+            content: tableContent,
           },
         ]);
       }
@@ -267,7 +294,7 @@ export default function CoreStoryConcept() {
               },
               {
                 role: 'user',
-                content: `Modify this Core Story Concept for ${context.drug} in ${context.disease} based on the following feedback: ${trimmed}. Keep the length at ${context.length}.`,
+                content: `Modify this Core Story Concept Candidate #${concepts.length + 1} for ${context.drug} in ${context.disease} based on the following feedback: ${trimmed}. Keep the length at ${context.length}.`,
               },
               {
                 role: 'assistant',
@@ -348,7 +375,7 @@ export default function CoreStoryConcept() {
               },
               {
                 role: 'user',
-                content: `Create a Core Story Concept for ${context.drug} in ${context.disease} for the target audience ${context.audience} with a length of ${context.length}.`,
+                content: `Create a Core Story Concept Candidate #1 for ${context.drug} in ${context.disease} for the target audience ${context.audience} with a length of ${context.length}.`,
               },
             ],
             disease: context.disease,
@@ -380,6 +407,15 @@ export default function CoreStoryConcept() {
 
         // Set the current index to the new concept
         setCurrentConceptIndex(concepts.length);
+
+        // Add the follow-up question
+        setMessages((msgs) => [
+          ...msgs,
+          {
+            role: 'assistant',
+            content: 'Would you like to modify this Core Story Concept or create a new one?',
+          },
+        ]);
       } catch (err) {
         toast.error('Something went wrong.');
         console.error(err);
