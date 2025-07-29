@@ -7,23 +7,14 @@ export default function EnterPage() {
   return (
     <>
       <aside className="w-80 bg-white flex flex-col flex-shrink-0 h-screen fixed font-sans">
-        <div className="bg-white p-6 pb-4 flex-col">
+        <div className="bg-white pl-13 p-6 pb-4 flex-col">
           <Image
-            src="/medstory_logo_wo_sss.png"
+            src="/msailogo.png"
             alt="MEDSTORYAI Logo"
             width={200}
             height={64}
             className="h-16 w-auto border-0 outline-0"
           />
-          <div className="flex justify-end pr-10">
-            <Image
-              src="/smart-speedy-simple.png"
-              alt="Smart Speedy Simple"
-              width={150}
-              height={24}
-              className="mt-2 h-6 w-auto opacity-70 border-0 outline-0"
-            />
-          </div>
         </div>
         <div className="bg-[#002F6C] text-white flex-1 px-6 pb-6 overflow-y-auto">
           <SidebarMenu />
@@ -41,10 +32,9 @@ export default function EnterPage() {
             </p>
             <p className="text-base leading-normal text-[#111827] mt-6">
               <span className="font-semibold text-[#04316f]">MEDSTORY</span>
-              <span className="text-[#fc9b5f] font-semibold">AI</span> gives you a smart, speedy,
-              and simple way to build polished slide decks. By combining state-of-the-art generative
-              AI with SBC’s proven storytelling framework—honed over 15 years—we help you craft
-              narratives that educate, engage, and persuade.
+              <span className="text-[#fc9b5f] font-semibold">AI</span> delivers a smart, speedy and
+              simple way to create a strategically sound, medically accurate and attractive slide
+              presentation.
             </p>
 
             <div className="mt-8">
