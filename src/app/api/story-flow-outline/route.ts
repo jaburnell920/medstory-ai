@@ -137,7 +137,7 @@ References
 3. Swirski FK, Nahrendorf M. Cardioimmunology: the immune system in cardiac homeostasis and disease. *Nat Rev Immunol.* 2018;18:733-744.
 
 Would you like the tension-resolution points put into a table format?`;
-        } else if (userMessage.toLowerCase().includes('table')) {
+        } else if (userMessage.toLowerCase().includes('table') || (userMessage.toLowerCase().includes('yes') && conversationHistory.some(msg => msg.content.includes('table format')))) {
           mockResult = `| # | Tension | Resolution |
 |---|---------|------------|
 | AP | In the cardiac catheterization lab, Dr. Sarah Chen stared at the angiogram of her 52-year-old patient—three stents, optimal medical therapy, LDL at 45 mg/dL, yet another acute coronary syndrome just eighteen months later. The culprit lesion showed no significant stenosis, but the intravascular ultrasound revealed something more sinister: a thin-cap fibroatheroma with intense inflammatory infiltration. Despite achieving every guideline target, the plaque remained a ticking time bomb. Traditional lipid-lowering had silenced cholesterol synthesis, but the inflammatory cascade within the arterial wall continued its relentless march toward the next event. | |

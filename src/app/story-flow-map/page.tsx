@@ -27,6 +27,7 @@ export default function StoryFlowMap() {
     tensionResolutionPoints: [] as string[],
     conclusion: '',
     references: '',
+    table: '',
   });
 
   // Check for saved Core Story Concept on component mount
@@ -93,6 +94,19 @@ export default function StoryFlowMap() {
       return {
         type: 'tensionResolutionComplete',
         content: sections,
+        followUpQuestion: followUpQuestion
+      };
+    }
+    
+    // Check if this is a table response
+    if (response.includes('| # | Tension | Resolution |')) {
+      const parts = response.split(/(?=Would you like|Do you want)/);
+      const tableContent = parts[0].trim();
+      const followUpQuestion = parts[1] ? parts[1].trim() : '';
+      
+      return {
+        type: 'table',
+        content: tableContent,
         followUpQuestion: followUpQuestion
       };
     }
@@ -304,6 +318,23 @@ export default function StoryFlowMap() {
                 },
               ]);
             }
+          } else if (parsed.type === 'table') {
+            // Add table to results
+            setStoryFlowResults(prev => ({
+              ...prev,
+              table: parsed.content
+            }));
+            
+            // Add follow-up question to chat if it exists
+            if (parsed.followUpQuestion) {
+              setMessages((msgs) => [
+                ...msgs.slice(0, -1), // Remove "Creating..." message
+                {
+                  role: 'assistant',
+                  content: parsed.followUpQuestion,
+                },
+              ]);
+            }
           } else if (parsed.type === 'followUpOnly') {
             // Only add follow-up question to chat, no content to results
             setMessages((msgs) => [
@@ -416,6 +447,23 @@ export default function StoryFlowMap() {
               },
             ]);
           }
+        } else if (parsed.type === 'table') {
+          // Add table to results
+          setStoryFlowResults(prev => ({
+            ...prev,
+            table: parsed.content
+          }));
+          
+          // Add follow-up question to chat if it exists
+          if (parsed.followUpQuestion) {
+            setMessages((msgs) => [
+              ...msgs,
+              {
+                role: 'assistant',
+                content: parsed.followUpQuestion,
+              },
+            ]);
+          }
         } else if (parsed.type === 'followUpOnly') {
           // Only add follow-up question to chat, no content to results
           setMessages((msgs) => [
@@ -474,7 +522,7 @@ export default function StoryFlowMap() {
         </div>
 
         {/* Results Section - Right Side */}
-        {(storyFlowResults.attackPoints.length > 0 || storyFlowResults.tensionResolutionPoints.length > 0 || storyFlowResults.conclusion) && (
+        {(storyFlowResults.attackPoints.length > 0 || storyFlowResults.tensionResolutionPoints.length > 0 || storyFlowResults.conclusion || storyFlowResults.table) && (
           <div className="flex-1 space-y-4">
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md">
               <h2 className="text-xl font-bold text-blue-900 mb-4">Story Flow Outline</h2>
@@ -522,6 +570,45 @@ export default function StoryFlowMap() {
                     <h3 className="font-bold text-blue-800 text-lg mb-3">References</h3>
                     <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
                       {storyFlowResults.references}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Table */}
+              {storyFlowResults.table && (
+                <div className="mb-4">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm">
+                    <h3 className="font-bold text-blue-800 text-lg mb-3">Story Flow Table</h3>
+                    <div className="text-gray-700 text-sm leading-relaxed">
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full border-collapse border border-gray-300">
+                          <thead>
+                            <tr className="bg-gray-100">
+                              <th className="border border-gray-300 px-4 py-2 text-left font-semibold">#</th>
+                              <th className="border border-gray-300 px-4 py-2 text-left font-semibold">Tension</th>
+                              <th className="border border-gray-300 px-4 py-2 text-left font-semibold">Resolution</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {storyFlowResults.table.split('\n').slice(2).map((row, index) => {
+                              if (row.trim() && row.includes('|')) {
+                                const cells = row.split('|').map(cell => cell.trim()).filter(cell => cell);
+                                if (cells.length >= 3) {
+                                  return (
+                                    <tr key={index} className="hover:bg-gray-50">
+                                      <td className="border border-gray-300 px-4 py-2 font-medium">{cells[0]}</td>
+                                      <td className="border border-gray-300 px-4 py-2">{cells[1]}</td>
+                                      <td className="border border-gray-300 px-4 py-2">{cells[2]}</td>
+                                    </tr>
+                                  );
+                                }
+                              }
+                              return null;
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 </div>
