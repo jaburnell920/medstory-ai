@@ -1,16 +1,22 @@
 
 > medstory-ai@0.1.0 dev
-> next dev --turbopack
+> next dev --turbopack --port 12000 --hostname 0.0.0.0
 
- ⚠ Port 3000 is in use, using available port 3001 instead.
    ▲ Next.js 15.3.3 (Turbopack)
-   - Local:        http://localhost:3001
-   - Network:      http://10.2.94.145:3001
+   - Local:        http://localhost:12000
+   - Network:      http://0.0.0.0:12000
+   - Environments: .env.local
 
  ✓ Starting...
- ✓ Compiled middleware in 316ms
- ✓ Ready in 1392ms
+ ✓ Compiled middleware in 259ms
+ ✓ Ready in 1323ms
  ⚠ Webpack is configured while Turbopack is not, which may cause problems.
  ⚠ See instructions if you need to configure Turbopack:
   https://nextjs.org/docs/app/api-reference/next-config-js/turbo
 
+ ○ Compiling /core-story-concept ...
+ ✓ Compiled /core-story-concept in 2.6s
+ GET /core-story-concept 200 in 3005ms
+ ⚠ Cross origin request detected from work-1-fhizflujuwfvdvah.prod-runtime.all-hands.dev to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+ GET /core-story-concept 200 in 95ms

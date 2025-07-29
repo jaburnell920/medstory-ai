@@ -36,30 +36,19 @@ export default function CoreStoryConcept() {
 
   // Load saved concepts on component mount and clear generated results on page refresh
   useEffect(() => {
-    // Load saved concepts from localStorage
+    // Load saved concepts from localStorage only for the saved page functionality
+    // Don't display them immediately on page load - they should only appear after generation
     const savedConcepts = localStorage.getItem('coreStoryConceptsData');
-    const savedSelected = localStorage.getItem('selectedCoreStoryConcept');
     
     if (savedConcepts) {
       const conceptsData = JSON.parse(savedConcepts);
-      setConcepts(conceptsData);
-
-      // Set the next concept number based on existing concepts
+      
+      // Set the next concept number based on existing saved concepts
       if (conceptsData.length > 0) {
         const maxConceptNumber = Math.max(
           ...conceptsData.map((c: CoreStoryConcept) => c.conceptNumber || 0)
         );
         setNextConceptNumber(maxConceptNumber + 1);
-      }
-
-      // If no concept is selected but we have concepts, select the newest one
-      if (!savedSelected && conceptsData.length > 0) {
-        const newestConcept = conceptsData[conceptsData.length - 1];
-        setSelectedConcept(newestConcept.id);
-        localStorage.setItem('selectedCoreStoryConcept', newestConcept.id);
-        localStorage.setItem('selectedCoreStoryConceptData', JSON.stringify(newestConcept));
-      } else if (savedSelected) {
-        setSelectedConcept(savedSelected);
       }
     }
 
@@ -81,6 +70,10 @@ export default function CoreStoryConcept() {
         length: '',
       });
       setInput('');
+      // Clear the generated concepts from display but keep saved concepts in localStorage
+      setConcepts([]);
+      setSelectedConcept('');
+      setNextConceptNumber(1);
     };
 
     // Add event listener for page unload
@@ -115,7 +108,10 @@ export default function CoreStoryConcept() {
         content: 'What is the disease state?',
       },
     ]);
-    // Don't reset concepts or selected concepts to preserve user selections
+    // Clear the generated concepts from display but keep saved concepts in localStorage
+    setConcepts([]);
+    setSelectedConcept('');
+    setNextConceptNumber(1);
   };
 
   // Function to handle selecting a concept
@@ -573,17 +569,17 @@ export default function CoreStoryConcept() {
                         <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
                           {concept.content ? concept.content
                             .replace(
-                              /\*\*TENSION\*\*/g,
-                              '<span class="font-bold text-blue-800 block mt-6 mb-4">TENSION</span>'
+                              /(\*\*)?TENSION(\*\*)?:?/gi,
+                              '<div class="font-bold text-blue-800 text-base mt-6 mb-4">TENSION</div>'
                             )
                             .replace(
-                              /\*\*RESOLUTION\*\*/g,
-                              '<span class="font-bold text-blue-800 block mt-6 mb-4">RESOLUTION</span>'
+                              /(\*\*)?RESOLUTION(\*\*)?:?/gi,
+                              '<div class="font-bold text-blue-800 text-base mt-6 mb-4">RESOLUTION</div>'
                             )
                             .replace(
                               /Core Story Concept Candidate #\d+/g,
                               () =>
-                                `<span class="font-bold text-blue-800 text-lg">Core Story Concept Candidate #${concept.conceptNumber}</span>`
+                                `<div class="font-bold text-blue-800 text-lg mb-4">Core Story Concept Candidate #${concept.conceptNumber}</div>`
                             )
                             .replace(/##/g, '') // Remove all occurrences of ##
                             .split('\n')
