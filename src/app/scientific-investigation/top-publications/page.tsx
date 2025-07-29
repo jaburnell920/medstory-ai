@@ -348,9 +348,12 @@ export default function TopPublicationsPage() {
                   )}
                 </div>
               </div>
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {keyPoints.map((point) => (
-                  <div key={point.id} className="border-b border-gray-200 pb-4 last:border-b-0">
+                  <div
+                    key={point.id}
+                    className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
+                  >
                     <div className="flex items-start gap-3">
                       <input
                         type="checkbox"
