@@ -29,7 +29,7 @@ export default function CoreStoryConcept() {
 
   // State for managing multiple core story concepts
   const [concepts, setConcepts] = useState<CoreStoryConcept[]>([]);
-  const [currentConceptIndex, setCurrentConceptIndex] = useState(0);
+
   const [selectedConcepts, setSelectedConcepts] = useState<Set<string>>(new Set());
 
   // Load selected concepts from session storage on component mount
@@ -70,7 +70,6 @@ export default function CoreStoryConcept() {
       },
     ]);
     // Don't reset concepts or selected concepts to preserve user selections
-    setCurrentConceptIndex(0);
   };
 
   // Function to handle selecting a concept
@@ -93,22 +92,7 @@ export default function CoreStoryConcept() {
     );
   };
 
-  // Navigation functions for concepts
-  const goToNextConcept = () => {
-    if (concepts.length > 0) {
-      setCurrentConceptIndex((prevIndex) =>
-        prevIndex === concepts.length - 1 ? 0 : prevIndex + 1
-      );
-    }
-  };
 
-  const goToPreviousConcept = () => {
-    if (concepts.length > 0) {
-      setCurrentConceptIndex((prevIndex) =>
-        prevIndex === 0 ? concepts.length - 1 : prevIndex - 1
-      );
-    }
-  };
 
   const questions = [
     'What is the disease state?',
@@ -193,8 +177,7 @@ export default function CoreStoryConcept() {
             return updatedConcepts;
           });
 
-          // Set the current index to the new concept
-          setCurrentConceptIndex(concepts.length);
+
 
           setMessages([
             ...newMessages,
@@ -311,12 +294,13 @@ export default function CoreStoryConcept() {
         const data = await res.json();
         setResult(data.result);
 
-        // Update the existing concept instead of creating a new one
+        // Update the most recent concept instead of creating a new one
         setConcepts((prevConcepts) => {
           const updatedConcepts = [...prevConcepts];
-          if (updatedConcepts[currentConceptIndex]) {
-            updatedConcepts[currentConceptIndex] = {
-              ...updatedConcepts[currentConceptIndex],
+          if (updatedConcepts.length > 0) {
+            const lastIndex = updatedConcepts.length - 1;
+            updatedConcepts[lastIndex] = {
+              ...updatedConcepts[lastIndex],
               content: data.result,
             };
           }
@@ -399,8 +383,7 @@ export default function CoreStoryConcept() {
           return updatedConcepts;
         });
 
-        // Set the current index to the new concept
-        setCurrentConceptIndex(concepts.length);
+
 
         // Add the follow-up question
         setMessages((msgs) => [
@@ -463,76 +446,32 @@ export default function CoreStoryConcept() {
         </div>
 
         {/* Result Section - Right Side */}
-        {(result || concepts.length > 0) && (
-          <div className="flex-1 space-y-6">
-            <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md space-y-6">
-              <h2 className="text-xl font-bold text-blue-600 bg-blue-50 p-2 rounded">
-                Core Story Concept Candidate #{concepts.length > 0 ? currentConceptIndex + 1 : 1}
-              </h2>
-
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <p className="text-gray-800 whitespace-pre-wrap">
-                  {concepts.length > 0 ? concepts[currentConceptIndex]?.content : result}
-                </p>
-              </div>
-
-              <div className="mt-4 flex flex-col gap-3">
-                {/* Select button */}
-                <button
-                  onClick={() => {
-                    if (concepts.length > 0) {
-                      handleSelectConcept(concepts[currentConceptIndex].id);
-                    } else if (result) {
-                      // If we have a result but it's not yet in concepts array
-                      const newConcept: CoreStoryConcept = {
-                        id: `concept-${Date.now()}`,
-                        content: result,
-                        disease: context.disease,
-                        drug: context.drug,
-                        audience: context.audience,
-                        length: context.length,
-                      };
-
-                      setConcepts((prevConcepts) => {
-                        const updatedConcepts = [...prevConcepts, newConcept];
-                        sessionStorage.setItem(
-                          'coreStoryConceptsData',
-                          JSON.stringify(updatedConcepts)
-                        );
-                        return updatedConcepts;
-                      });
-
-                      handleSelectConcept(newConcept.id);
-                    }
-                  }}
-                  className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
-                >
-                  {concepts.length > 0 && selectedConcepts.has(concepts[currentConceptIndex]?.id)
-                    ? 'Unselect This Core Story Concept'
-                    : 'Select This Core Story Concept'}
-                </button>
-
-
-
-                {/* Navigation buttons */}
-                {concepts.length > 1 && (
-                  <div className="flex justify-between mt-4">
-                    <button
-                      onClick={goToPreviousConcept}
-                      className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition-colors"
-                    >
-                      Previous Core Story Concept
-                    </button>
-                    <button
-                      onClick={goToNextConcept}
-                      className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition-colors"
-                    >
-                      Next Core Story Concept
-                    </button>
+        {concepts.length > 0 && (
+          <div className="flex-1 space-y-4">
+            {concepts.map((concept, index) => (
+              <div
+                key={concept.id}
+                className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id={concept.id}
+                    checked={selectedConcepts.has(concept.id)}
+                    onChange={() => handleSelectConcept(concept.id)}
+                    className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <div className="flex-1">
+                    <div className="font-medium text-blue-800 mb-2">
+                      Core Story Concept Candidate #{index + 1}
+                    </div>
+                    <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                      {concept.content}
+                    </div>
                   </div>
-                )}
+                </div>
               </div>
-            </div>
+            ))}
           </div>
         )}
       </div>
