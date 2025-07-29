@@ -20,6 +20,13 @@ export default function StoryFlowMap() {
   });
 
   const [messages, setMessages] = useState<{ role: 'assistant' | 'user'; content: string }[]>([]);
+  
+  // State for story flow outline components
+  const [storyFlowResults, setStoryFlowResults] = useState({
+    attackPoints: [] as string[],
+    tensionResolutionPoints: [] as string[],
+    conclusion: '',
+  });
 
   // Check for saved Core Story Concept on component mount
   useEffect(() => {
@@ -47,6 +54,61 @@ export default function StoryFlowMap() {
     }
   }, []);
 
+  // Function to parse API response and separate content from follow-up questions
+  const parseStoryFlowResponse = (response: string) => {
+    // Check if this is an Attack Point
+    if (response.includes('Attack Point #')) {
+      // Split by the follow-up question
+      const parts = response.split(/(?=Would you like|Do you want)/);
+      const attackPointSection = parts[0].trim();
+      const followUpQuestion = parts[1] ? parts[1].trim() : '';
+      
+      // Extract just the content after "Attack Point #X"
+      const contentMatch = attackPointSection.match(/Attack Point #\d+\s*\n*([\s\S]*)/);
+      const attackPointContent = contentMatch ? contentMatch[1].trim() : attackPointSection;
+      
+      return {
+        type: 'attackPoint',
+        content: attackPointContent,
+        followUpQuestion: followUpQuestion
+      };
+    }
+    
+    // Check if this is Tension-Resolution Points
+    if (response.includes('Tension-Resolution #') || response.includes('TensionResolution #')) {
+      // Extract tension-resolution content and follow-up question
+      const parts = response.split(/(?=Would you like|Do you want)/);
+      const content = parts[0].trim();
+      const followUpQuestion = parts[1] ? parts[1].trim() : '';
+      
+      return {
+        type: 'tensionResolution',
+        content: content,
+        followUpQuestion: followUpQuestion
+      };
+    }
+    
+    // Check if this is a Conclusion
+    if (response.includes('Conclusion') && response.includes('TED talk')) {
+      const parts = response.split(/(?=Would you like|Do you want)/);
+      const content = parts[0].trim();
+      const followUpQuestion = parts[1] ? parts[1].trim() : '';
+      
+      return {
+        type: 'conclusion',
+        content: content,
+        followUpQuestion: followUpQuestion
+      };
+    }
+    
+    // Default case - treat as regular chat message
+    return {
+      type: 'chat',
+      content: response,
+      followUpQuestion: ''
+    };
+  };
+
   const handleReset = () => {
     setStep(0);
     setInput('');
@@ -58,6 +120,11 @@ export default function StoryFlowMap() {
       audience: '',
       interventionName: '',
       diseaseCondition: '',
+    });
+    setStoryFlowResults({
+      attackPoints: [],
+      tensionResolutionPoints: [],
+      conclusion: '',
     });
     
     const defaultCoreStoryConcept = "Plaque inflammation drives CV events. Direct and safe ways to reduce plaque inflammation are needed. Orticumab is a plaque-targeted anti-inflammatory therapy. By inhibiting pro-inflammatory macrophages within plaques, this new approach has the potential to reduce CV risk on top of current standard of care.";
@@ -159,13 +226,34 @@ export default function StoryFlowMap() {
 
           const data = await res.json();
           
-          setMessages((msgs) => [
-            ...msgs.slice(0, -1), // Remove "Creating..." message
-            {
-              role: 'assistant',
-              content: data.result,
-            },
-          ]);
+          // Parse the response to separate content from follow-up questions
+          const parsed = parseStoryFlowResponse(data.result);
+          
+          if (parsed.type === 'attackPoint') {
+            // Add attack point to results
+            setStoryFlowResults(prev => ({
+              ...prev,
+              attackPoints: [...prev.attackPoints, parsed.content]
+            }));
+            
+            // Add follow-up question to chat
+            setMessages((msgs) => [
+              ...msgs.slice(0, -1), // Remove "Creating..." message
+              {
+                role: 'assistant',
+                content: parsed.followUpQuestion,
+              },
+            ]);
+          } else {
+            // Fallback to original behavior
+            setMessages((msgs) => [
+              ...msgs.slice(0, -1), // Remove "Creating..." message
+              {
+                role: 'assistant',
+                content: data.result,
+              },
+            ]);
+          }
 
           setConversationStarted(true);
         } catch (err) {
@@ -210,14 +298,64 @@ export default function StoryFlowMap() {
 
         const data = await res.json();
 
-        // Add AI response to chat
-        setMessages((msgs) => [
-          ...msgs,
-          {
-            role: 'assistant',
-            content: data.result,
-          },
-        ]);
+        // Parse the response to separate content from follow-up questions
+        const parsed = parseStoryFlowResponse(data.result);
+        
+        if (parsed.type === 'attackPoint') {
+          // Add attack point to results
+          setStoryFlowResults(prev => ({
+            ...prev,
+            attackPoints: [...prev.attackPoints, parsed.content]
+          }));
+          
+          // Add follow-up question to chat
+          setMessages((msgs) => [
+            ...msgs,
+            {
+              role: 'assistant',
+              content: parsed.followUpQuestion,
+            },
+          ]);
+        } else if (parsed.type === 'tensionResolution') {
+          // Add tension-resolution points to results
+          setStoryFlowResults(prev => ({
+            ...prev,
+            tensionResolutionPoints: [...prev.tensionResolutionPoints, parsed.content]
+          }));
+          
+          // Add follow-up question to chat
+          setMessages((msgs) => [
+            ...msgs,
+            {
+              role: 'assistant',
+              content: parsed.followUpQuestion,
+            },
+          ]);
+        } else if (parsed.type === 'conclusion') {
+          // Add conclusion to results
+          setStoryFlowResults(prev => ({
+            ...prev,
+            conclusion: parsed.content
+          }));
+          
+          // Add follow-up question to chat
+          setMessages((msgs) => [
+            ...msgs,
+            {
+              role: 'assistant',
+              content: parsed.followUpQuestion,
+            },
+          ]);
+        } else {
+          // Fallback to original behavior for regular chat messages
+          setMessages((msgs) => [
+            ...msgs,
+            {
+              role: 'assistant',
+              content: data.result,
+            },
+          ]);
+        }
       } catch (err) {
         toast.error('Something went wrong.');
         console.error(err);
@@ -255,6 +393,51 @@ export default function StoryFlowMap() {
             onReset={handleReset}
           />
         </div>
+
+        {/* Results Section - Right Side */}
+        {(storyFlowResults.attackPoints.length > 0 || storyFlowResults.tensionResolutionPoints.length > 0 || storyFlowResults.conclusion) && (
+          <div className="flex-1 space-y-4">
+            <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md">
+              <h2 className="text-xl font-bold text-blue-900 mb-4">Story Flow Outline</h2>
+              
+              {/* Attack Points */}
+              {storyFlowResults.attackPoints.map((attackPoint, index) => (
+                <div key={`attack-${index}`} className="mb-4">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm">
+                    <h3 className="font-bold text-blue-800 text-lg mb-3">Attack Point #{index + 1}</h3>
+                    <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                      {attackPoint}
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Tension-Resolution Points */}
+              {storyFlowResults.tensionResolutionPoints.map((tensionResolution, index) => (
+                <div key={`tension-${index}`} className="mb-4">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm">
+                    <h3 className="font-bold text-blue-800 text-lg mb-3">Tension-Resolution Points</h3>
+                    <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                      {tensionResolution}
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Conclusion */}
+              {storyFlowResults.conclusion && (
+                <div className="mb-4">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm">
+                    <h3 className="font-bold text-blue-800 text-lg mb-3">Conclusion</h3>
+                    <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                      {storyFlowResults.conclusion}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </PageLayout>
   );
