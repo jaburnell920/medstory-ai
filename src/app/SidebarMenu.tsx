@@ -30,7 +30,7 @@ function SidebarMenu() {
       name: 'Stakeholder Interviews',
       links: [
         { href: '/scientific-investigation/top-publications', label: 'Simulate expert interview' },
-        { href: '', label: 'Create question list of expert interview' },
+        { href: '', label: 'Create list of interview questions' },
         { href: '', label: 'Analyze expert interview transcript' },
       ],
     },
@@ -45,7 +45,7 @@ function SidebarMenu() {
     },
     {
       number: '4',
-      name: 'Story Flow Map',
+      name: 'Story Flow',
       links: [
         { href: '/story-flow-map/tension-resolution', label: 'Create story flow outline' },
         { href: '', label: 'Evaluate tension-resolution points' },
@@ -87,7 +87,7 @@ function SidebarMenu() {
 
           {/* Section content */}
           <div>
-            <p className="font-bold text-white text-xs mb-1">{section.name}</p>
+            <p className="font-bold text-white text-base mb-1">{section.name}</p>
             <ul className="ml-1 space-y-0.5 text-gray-200 text-xs">
               {section.links.map((link) => (
                 <li key={link.label} className="leading-tight">
