@@ -97,6 +97,16 @@ Please start with the Attack Point phase.`,
 At 34 years old, Marcus Thompson should have been planning his daughter's birthday party, not lying unconscious in the cardiac ICU after a massive STEMI. No family history, marathon runner, plant-based diet, LDL cholesterol at 65 mg/dL—he defied every risk calculator. Yet the emergency angiogram revealed the unthinkable: a completely occluded LAD from a ruptured plaque that appeared stable just months earlier. As Dr. Chen performed the life-saving PCI, one question haunted her: how do you prevent the unpredictable when inflammation turns a "safe" plaque into a silent assassin? The answer would challenge everything she thought she knew about cardiovascular prevention.
 
 Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?`;
+        } else if (userMessage.toLowerCase().includes('create') && userMessage.toLowerCase().includes('new')) {
+          mockResult = `**Attack Point:**
+Hypertension, a silent killer, affects millions globally and often goes unnoticed until critical complications arise.
+
+Would you like to move on to creating tension-resolution points? If so, do you want a short narrative (3-5 tension-resolution points), a full narrative (8-12 tension-resolution points), or would you like to specify the number?`;
+        } else if (userMessage.toLowerCase().includes('new') && (userMessage.toLowerCase().includes('attack') || userMessage.toLowerCase().includes('one'))) {
+          mockResult = `**Attack Point:**
+Hypertension, a silent killer, affects millions globally and often goes unnoticed until critical complications arise.
+
+Would you like to move on to creating tension-resolution points? If so, do you want a short narrative (3-5 tension-resolution points), a full narrative (8-12 tension-resolution points), or would you like to specify the number?`;
         } else if (userMessage.toLowerCase().includes('short')) {
           mockResult = `**Tension-Resolution #1:** Inflammation Beyond Lipids
 Tension: Despite achieving LDL targets below 70 mg/dL, patients with established CAD continue experiencing recurrent events, suggesting lipid-lowering alone is insufficient.

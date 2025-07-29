@@ -26,6 +26,7 @@ export default function StoryFlowMap() {
     attackPoints: [] as string[],
     tensionResolutionPoints: [] as string[],
     conclusion: '',
+    references: '',
   });
 
   // Check for saved Core Story Concept on component mount
@@ -56,16 +57,22 @@ export default function StoryFlowMap() {
 
   // Function to parse API response and separate content from follow-up questions
   const parseStoryFlowResponse = (response: string) => {
-    // Check if this is an Attack Point
-    if (response.includes('Attack Point #')) {
+    // Check if this is an Attack Point (including **Attack Point:** format)
+    if (response.includes('Attack Point #') || response.includes('**Attack Point:**')) {
       // Split by the follow-up question
       const parts = response.split(/(?=Would you like|Do you want)/);
       const attackPointSection = parts[0].trim();
       const followUpQuestion = parts[1] ? parts[1].trim() : '';
       
-      // Extract just the content after "Attack Point #X"
-      const contentMatch = attackPointSection.match(/Attack Point #\d+\s*\n*([\s\S]*)/);
-      const attackPointContent = contentMatch ? contentMatch[1].trim() : attackPointSection;
+      // Extract content - handle both formats
+      let attackPointContent = '';
+      if (response.includes('Attack Point #')) {
+        const contentMatch = attackPointSection.match(/Attack Point #\d+\s*\n*([\s\S]*)/);
+        attackPointContent = contentMatch ? contentMatch[1].trim() : attackPointSection;
+      } else if (response.includes('**Attack Point:**')) {
+        const contentMatch = attackPointSection.match(/\*\*Attack Point:\*\*\s*\n*([\s\S]*)/);
+        attackPointContent = contentMatch ? contentMatch[1].trim() : attackPointSection;
+      }
       
       return {
         type: 'attackPoint',
@@ -74,29 +81,18 @@ export default function StoryFlowMap() {
       };
     }
     
-    // Check if this is Tension-Resolution Points
-    if (response.includes('Tension-Resolution #') || response.includes('TensionResolution #')) {
-      // Extract tension-resolution content and follow-up question
+    // Check if this is Tension-Resolution Points (with multiple points)
+    if (response.includes('**Tension-Resolution #') || response.includes('Tension-Resolution #')) {
       const parts = response.split(/(?=Would you like|Do you want)/);
       const content = parts[0].trim();
       const followUpQuestion = parts[1] ? parts[1].trim() : '';
       
-      return {
-        type: 'tensionResolution',
-        content: content,
-        followUpQuestion: followUpQuestion
-      };
-    }
-    
-    // Check if this is a Conclusion
-    if (response.includes('Conclusion') && (response.includes('TED talk') || response.includes('clinical takeaway'))) {
-      const parts = response.split(/(?=Would you like|Do you want)/);
-      const content = parts[0].trim();
-      const followUpQuestion = parts[1] ? parts[1].trim() : '';
+      // Parse individual tension-resolution points, conclusion, and references
+      const sections = parseTensionResolutionSections(content);
       
       return {
-        type: 'conclusion',
-        content: content,
+        type: 'tensionResolutionComplete',
+        content: sections,
         followUpQuestion: followUpQuestion
       };
     }
@@ -116,6 +112,40 @@ export default function StoryFlowMap() {
       content: response,
       followUpQuestion: ''
     };
+  };
+
+  // Function to parse tension-resolution sections into separate components
+  const parseTensionResolutionSections = (content: string) => {
+    const sections = {
+      tensionResolutionPoints: [] as string[],
+      conclusion: '',
+      references: ''
+    };
+
+    // Split by the dividers (---)
+    const parts = content.split(/---/);
+    
+    // Extract individual tension-resolution points
+    parts.forEach(part => {
+      const trimmedPart = part.trim();
+      if (trimmedPart.includes('**Tension-Resolution #')) {
+        sections.tensionResolutionPoints.push(trimmedPart);
+      }
+    });
+
+    // Extract conclusion
+    const conclusionMatch = content.match(/\*\*Conclusion\*\*([\s\S]*?)(?=References|$)/);
+    if (conclusionMatch) {
+      sections.conclusion = conclusionMatch[1].trim();
+    }
+
+    // Extract references
+    const referencesMatch = content.match(/References([\s\S]*?)$/);
+    if (referencesMatch) {
+      sections.references = referencesMatch[1].trim();
+    }
+
+    return sections;
   };
 
   const handleReset = () => {
@@ -255,6 +285,25 @@ export default function StoryFlowMap() {
                 },
               ]);
             }
+          } else if (parsed.type === 'tensionResolutionComplete') {
+            // Add all tension-resolution components to results
+            setStoryFlowResults(prev => ({
+              ...prev,
+              tensionResolutionPoints: parsed.content.tensionResolutionPoints,
+              conclusion: parsed.content.conclusion,
+              references: parsed.content.references
+            }));
+            
+            // Add follow-up question to chat if it exists
+            if (parsed.followUpQuestion) {
+              setMessages((msgs) => [
+                ...msgs.slice(0, -1), // Remove "Creating..." message
+                {
+                  role: 'assistant',
+                  content: parsed.followUpQuestion,
+                },
+              ]);
+            }
           } else {
             // Fallback to original behavior
             setMessages((msgs) => [
@@ -339,28 +388,13 @@ export default function StoryFlowMap() {
               },
             ]);
           }
-        } else if (parsed.type === 'tensionResolution') {
-          // Add tension-resolution points to results
+        } else if (parsed.type === 'tensionResolutionComplete') {
+          // Add all tension-resolution components to results
           setStoryFlowResults(prev => ({
             ...prev,
-            tensionResolutionPoints: [...prev.tensionResolutionPoints, parsed.content]
-          }));
-          
-          // Add follow-up question to chat if it exists
-          if (parsed.followUpQuestion) {
-            setMessages((msgs) => [
-              ...msgs,
-              {
-                role: 'assistant',
-                content: parsed.followUpQuestion,
-              },
-            ]);
-          }
-        } else if (parsed.type === 'conclusion') {
-          // Add conclusion to results
-          setStoryFlowResults(prev => ({
-            ...prev,
-            conclusion: parsed.content
+            tensionResolutionPoints: parsed.content.tensionResolutionPoints,
+            conclusion: parsed.content.conclusion,
+            references: parsed.content.references
           }));
           
           // Add follow-up question to chat if it exists
@@ -439,11 +473,11 @@ export default function StoryFlowMap() {
                 </div>
               ))}
 
-              {/* Tension-Resolution Points */}
+              {/* Tension-Resolution Points - Each in its own box */}
               {storyFlowResults.tensionResolutionPoints.map((tensionResolution, index) => (
                 <div key={`tension-${index}`} className="mb-4">
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm">
-                    <h3 className="font-bold text-blue-800 text-lg mb-3">Tension-Resolution Points</h3>
+                    <h3 className="font-bold text-blue-800 text-lg mb-3">Tension-Resolution Point #{index + 1}</h3>
                     <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
                       {tensionResolution}
                     </div>
@@ -458,6 +492,18 @@ export default function StoryFlowMap() {
                     <h3 className="font-bold text-blue-800 text-lg mb-3">Conclusion</h3>
                     <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
                       {storyFlowResults.conclusion}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* References */}
+              {storyFlowResults.references && (
+                <div className="mb-4">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm">
+                    <h3 className="font-bold text-blue-800 text-lg mb-3">References</h3>
+                    <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                      {storyFlowResults.references}
                     </div>
                   </div>
                 </div>
