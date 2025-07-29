@@ -33,31 +33,46 @@ export default function CoreStoryConcept() {
   const [selectedConcept, setSelectedConcept] = useState<string>('');
   const [nextConceptNumber, setNextConceptNumber] = useState<number>(1);
 
-  // Load selected concept and concepts from localStorage on component mount
-  useEffect(() => {
-    const savedSelected = localStorage.getItem('selectedCoreStoryConcept');
-    if (savedSelected) {
-      setSelectedConcept(savedSelected);
-    }
 
-    const savedConcepts = localStorage.getItem('coreStoryConceptsData');
-    if (savedConcepts) {
-      const conceptsData = JSON.parse(savedConcepts);
-      setConcepts(conceptsData);
+
+  // Clear results on page refresh or navigation
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // Clear the generated results but keep saved concepts
+      setResult('');
+      setConcepts([]);
+      setStep(0);
+      setLoading(false);
+      setMessages([
+        {
+          role: 'assistant',
+          content: 'What is the disease state?',
+        },
+      ]);
+      setContext({
+        disease: '',
+        drug: '',
+        audience: '',
+        length: '',
+      });
+      setInput('');
+      setNextConceptNumber(1);
+      setSelectedConcept('');
       
-      // Set the next concept number based on existing concepts
-      if (conceptsData.length > 0) {
-        const maxConceptNumber = Math.max(...conceptsData.map((c: CoreStoryConcept) => c.conceptNumber || 0));
-        setNextConceptNumber(maxConceptNumber + 1);
-      }
-      
-      // If no concept is selected but we have concepts, select the newest one
-      if (!savedSelected && conceptsData.length > 0) {
-        const newestConcept = conceptsData[conceptsData.length - 1];
-        setSelectedConcept(newestConcept.id);
-        localStorage.setItem('selectedCoreStoryConcept', newestConcept.id);
-      }
-    }
+      // Clear localStorage for generated results but keep saved concepts
+      localStorage.removeItem('coreStoryConceptsData');
+      localStorage.removeItem('selectedCoreStoryConcept');
+    };
+
+    // Clear results on component mount (page refresh)
+    handleBeforeUnload();
+
+    // Add event listener for page unload
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
   }, []);
 
   const [messages, setMessages] = useState<{ role: 'assistant' | 'user'; content: string }[]>([
@@ -541,11 +556,11 @@ export default function CoreStoryConcept() {
                           {concept.content ? concept.content
                             .replace(
                               /\*\*TENSION\*\*/g,
-                              '<span class="font-bold text-blue-800 block mt-4 mb-2">TENSION</span>'
+                              '<span class="font-bold text-blue-800 block mt-6 mb-4">TENSION</span>'
                             )
                             .replace(
                               /\*\*RESOLUTION\*\*/g,
-                              '<span class="font-bold text-blue-800 block mt-4 mb-2">RESOLUTION</span>'
+                              '<span class="font-bold text-blue-800 block mt-6 mb-4">RESOLUTION</span>'
                             )
                             .replace(
                               /Core Story Concept Candidate #\d+/g,
