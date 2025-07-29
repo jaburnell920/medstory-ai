@@ -44,13 +44,15 @@ export default function CoreStoryConcept() {
     if (savedConcepts) {
       const conceptsData = JSON.parse(savedConcepts);
       setConcepts(conceptsData);
-      
+
       // Set the next concept number based on existing concepts
       if (conceptsData.length > 0) {
-        const maxConceptNumber = Math.max(...conceptsData.map((c: CoreStoryConcept) => c.conceptNumber || 0));
+        const maxConceptNumber = Math.max(
+          ...conceptsData.map((c: CoreStoryConcept) => c.conceptNumber || 0)
+        );
         setNextConceptNumber(maxConceptNumber + 1);
       }
-      
+
       // If no concept is selected but we have concepts, select the newest one
       if (!savedSelected && conceptsData.length > 0) {
         const newestConcept = conceptsData[conceptsData.length - 1];
@@ -95,7 +97,7 @@ export default function CoreStoryConcept() {
     localStorage.setItem('selectedCoreStoryConcept', conceptId);
 
     // Also save the selected concept data for the saved page
-    const selectedConceptData = concepts.find(concept => concept.id === conceptId);
+    const selectedConceptData = concepts.find((concept) => concept.id === conceptId);
     if (selectedConceptData) {
       localStorage.setItem('selectedCoreStoryConceptData', JSON.stringify(selectedConceptData));
     }
@@ -108,7 +110,7 @@ export default function CoreStoryConcept() {
     if (!selectedConcept) return;
 
     // Find the selected concept data
-    const selectedConceptData = concepts.find(concept => concept.id === selectedConcept);
+    const selectedConceptData = concepts.find((concept) => concept.id === selectedConcept);
     if (!selectedConceptData) return;
 
     // Save to localStorage (same as selection, but with different toast message)
@@ -509,7 +511,9 @@ export default function CoreStoryConcept() {
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-blue-900">Core Story Concepts</h2>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-600">{selectedConcept ? '1 selected' : '0 selected'}</span>
+                  <span className="text-sm text-gray-600">
+                    {selectedConcept ? '1 selected' : '0 selected'}
+                  </span>
                   {selectedConcept && (
                     <button
                       onClick={handleSaveSelected}
@@ -538,25 +542,28 @@ export default function CoreStoryConcept() {
                       />
                       <div className="flex-1">
                         <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
-                          {concept.content ? concept.content
-                            .replace(
-                              /\*\*TENSION\*\*/g,
-                              '<span class="font-bold text-blue-800 block mt-4 mb-2">TENSION</span>'
-                            )
-                            .replace(
-                              /\*\*RESOLUTION\*\*/g,
-                              '<span class="font-bold text-blue-800 block mt-4 mb-2">RESOLUTION</span>'
-                            )
-                            .replace(
-                              /Core Story Concept Candidate #\d+/g,
-                              () =>
-                                `<span class="font-bold text-blue-800 text-lg">Core Story Concept Candidate #${concept.conceptNumber}</span>`
-                            )
-                            .replace(/##/g, '') // Remove all occurrences of ##
-                            .split('\n')
-                            .map((line, i) => (
-                              <div key={i} dangerouslySetInnerHTML={{ __html: line }} />
-                            )) : 'No content available'}
+                          {concept.content
+                            ? concept.content
+                                .replace(
+                                  /\*\*TENSION\*\*/g,
+                                  '<span style="color: blue; font-weight: bold; display: block; margin-top: 8px; margin-bottom: 8px;">TENSION</span>'
+                                )
+                                .replace(
+                                  /\*\*RESOLUTION\*\*/g,
+                                  '<span style="color: blue; font-weight: bold; display: block; margin-top: 8px; margin-bottom: 8px;">RESOLUTION</span>'
+                                )
+                                .replace(
+                                  /Core Story Concept Candidate #\d+/g,
+                                  () =>
+                                    `<span class="font-bold text-blue-800 text-lg">Core Story Concept Candidate #${concept.conceptNumber}</span>`
+                                )
+                                .replace(/\*\*/g, '') // Remove all occurrences of **
+                                .replace(/##/g, '') // Remove all occurrences of ##
+                                .split('\n')
+                                .map((line, i) => (
+                                  <div key={i} dangerouslySetInnerHTML={{ __html: line }} />
+                                ))
+                            : 'No content available'}
                         </div>
                       </div>
                     </div>
