@@ -65,7 +65,11 @@ export default function TopPublicationsPage() {
 
     try {
       // Extract key points from the conversation
-      const conversationText = messages.map((msg) => msg.content).join('\n\n');
+      // Skip the first 8 messages which are the expert info collection
+      const interviewMessages = interviewStarted ? messages.slice(8) : messages;
+      const conversationText = interviewMessages.map((msg) => 
+        `${msg.role === 'user' ? 'Interviewer' : 'Expert'}: ${msg.content}`
+      ).join('\n\n');
 
       // For demonstration purposes, create mock key points when API is not available
       const mockKeyPoints = [
@@ -82,7 +86,7 @@ export default function TopPublicationsPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            prompt: `Extract 5-10 key points from this interview with ${expertInfo}. 
+            prompt: `Extract 5-10 key points from this interview with an expert in ${expertInfo}. 
             Format each point as a clear, concise statement that captures an important insight or piece of information.
             
             INTERVIEW TRANSCRIPT:
@@ -98,10 +102,26 @@ export default function TopPublicationsPage() {
         if (data.result) {
           // Parse the key points from API response
           const pointsText = data.result || '';
-          const pointsList: string[] = pointsText
-            .split(/\d+\./)
-            .filter((point: string) => point.trim().length > 0)
-            .map((point: string) => point.trim());
+          // Try to handle different formats of key points
+          let pointsList: string[] = [];
+          
+          // First try numbered format (1. Point)
+          const numberedPoints = pointsText.split(/\d+\./).filter(p => p.trim().length > 0);
+          if (numberedPoints.length > 1) {
+            pointsList = numberedPoints.map(p => p.trim());
+          } 
+          // Then try bullet points
+          else if (pointsText.includes('•')) {
+            pointsList = pointsText.split('•').filter(p => p.trim().length > 0).map(p => p.trim());
+          }
+          // Then try dash points
+          else if (pointsText.includes('-')) {
+            pointsList = pointsText.split('-').filter(p => p.trim().length > 0).map(p => p.trim());
+          }
+          // If all else fails, just use the whole text
+          else {
+            pointsList = [pointsText.trim()];
+          }
 
           // Create key points with IDs
           const formattedKeyPoints: KeyPoint[] = pointsList.map(
