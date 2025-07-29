@@ -7,17 +7,100 @@
    - Network:      http://0.0.0.0:12000
 
  ✓ Starting...
- ✓ Compiled middleware in 404ms
- ✓ Ready in 1722ms
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+ ✓ Compiled middleware in 255ms
+ ✓ Ready in 1344ms
  ⚠ Webpack is configured while Turbopack is not, which may cause problems.
  ⚠ See instructions if you need to configure Turbopack:
   https://nextjs.org/docs/app/api-reference/next-config-js/turbo
 
  ○ Compiling /core-story-concept ...
- ✓ Compiled /core-story-concept in 2.6s
- GET /core-story-concept 200 in 2992ms
- ⚠ Cross origin request detected from work-1-eysdymkutblszmmr.prod-runtime.all-hands.dev to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+ ✓ Compiled /core-story-concept in 2.7s
+ GET /core-story-concept 200 in 3155ms
+ ⚠ Cross origin request detected from work-1-fhizflujuwfvdvah.prod-runtime.all-hands.dev to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
 Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
- ✓ Compiled in 116ms
- GET /core-story-concept 200 in 254ms
- ✓ Compiled in 173ms
+ ○ Compiling /api/openai ...
+ ✓ Compiled /api/openai in 919ms
+ ⨯ Error: The OPENAI_API_KEY environment variable is missing or empty; either provide it, or instantiate the OpenAI client with an apiKey option, like new OpenAI({ apiKey: 'My API Key' }).
+    at new OpenAI (src/client.ts:310:12)
+    at [project]/src/app/api/openai/route.ts [app-route] (ecmascript) (src/app/api/openai/route.ts:4:15)
+    at Object.<anonymous> (.next/server/app/api/openai/route.js:6:9)
+  2 | import OpenAI from 'openai';
+  3 |
+> 4 | const openai = new OpenAI({
+    |               ^
+  5 |   apiKey: process.env.OPENAI_API_KEY,
+  6 | });
+  7 | {
+  page: '/api/openai'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 1357ms
+ POST /api/openai 500 in 2696ms
+ GET /core-story-concept 200 in 108ms
+ ⨯ Error: The OPENAI_API_KEY environment variable is missing or empty; either provide it, or instantiate the OpenAI client with an apiKey option, like new OpenAI({ apiKey: 'My API Key' }).
+    at new OpenAI (src/client.ts:310:12)
+    at [project]/src/app/api/openai/route.ts [app-route] (ecmascript) (src/app/api/openai/route.ts:4:15)
+    at Object.<anonymous> (.next/server/app/api/openai/route.js:6:9)
+  2 | import OpenAI from 'openai';
+  3 |
+> 4 | const openai = new OpenAI({
+    |               ^
+  5 |   apiKey: process.env.OPENAI_API_KEY,
+  6 | });
+  7 | {
+  page: '/api/openai'
+}
+ POST /api/openai 500 in 211ms
+OpenAI Error: Error: The OPENAI_API_KEY environment variable is missing or empty; either provide it, or instantiate the OpenAI client with an apiKey option, like new OpenAI({ apiKey: 'My API Key' }).
+    at new OpenAI (src/client.ts:310:12)
+    at POST (src/app/api/openai/route.ts:44:21)
+  42 |   if (messages && messages.length > 0) {
+  43 |     try {
+> 44 |       const openai = new OpenAI({
+     |                     ^
+  45 |         apiKey: process.env.OPENAI_API_KEY,
+  46 |       });
+  47 |       
+ POST /api/openai 500 in 218ms
+ GET /core-story-concept 200 in 100ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 147ms
+ GET /core-story-concept 200 in 312ms
+ GET /core-story-concept 200 in 82ms
+ POST /api/openai 200 in 90ms
+ POST /api/openai 200 in 43ms
+ ○ Compiling /core-story-concept/saved ...
+ ✓ Compiled /core-story-concept/saved in 960ms
+ GET /core-story-concept/saved 200 in 1114ms
+ GET /core-story-concept 200 in 92ms
+ GET /core-story-concept/saved 200 in 92ms
+ GET /core-story-concept 200 in 119ms
+ ○ Compiling / ...
+ ✓ Compiled / in 800ms
+ GET / 200 in 870ms
+ GET / 200 in 58ms
+ ○ Compiling /enter ...
+ ✓ Compiled /enter in 1032ms
+ GET /enter 200 in 1135ms
+ POST /api/openai 200 in 36ms
+ GET /core-story-concept/saved 200 in 98ms
+ GET /core-story-concept 200 in 107ms
+ GET /core-story-concept/saved 200 in 91ms
+ GET /core-story-concept 200 in 91ms
+ GET / 200 in 62ms
+ POST /api/openai 200 in 31ms
+ GET /core-story-concept/saved 200 in 94ms
+ GET /core-story-concept 200 in 84ms
+ GET /core-story-concept/saved 200 in 79ms
+ GET /core-story-concept 200 in 75ms
+ GET / 200 in 68ms
+ GET /core-story-concept/saved 200 in 87ms
+ GET /core-story-concept 200 in 84ms
+ POST /api/openai 200 in 42ms
+ GET /core-story-concept 200 in 107ms
+ GET /core-story-concept/saved 200 in 79ms

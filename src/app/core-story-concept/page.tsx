@@ -13,6 +13,7 @@ interface CoreStoryConcept {
   drug: string;
   audience: string;
   length: string;
+  conceptNumber: number;
 }
 
 export default function CoreStoryConcept() {
@@ -29,19 +30,33 @@ export default function CoreStoryConcept() {
 
   // State for managing multiple core story concepts
   const [concepts, setConcepts] = useState<CoreStoryConcept[]>([]);
+  const [selectedConcept, setSelectedConcept] = useState<string>('');
+  const [nextConceptNumber, setNextConceptNumber] = useState<number>(1);
 
-  const [selectedConcepts, setSelectedConcepts] = useState<Set<string>>(new Set());
-
-  // Load selected concepts from session storage on component mount
+  // Load selected concept and concepts from localStorage on component mount
   useEffect(() => {
-    const savedSelected = sessionStorage.getItem('selectedCoreStoryConcepts');
+    const savedSelected = localStorage.getItem('selectedCoreStoryConcept');
     if (savedSelected) {
-      setSelectedConcepts(new Set(JSON.parse(savedSelected)));
+      setSelectedConcept(savedSelected);
     }
 
-    const savedConcepts = sessionStorage.getItem('coreStoryConceptsData');
+    const savedConcepts = localStorage.getItem('coreStoryConceptsData');
     if (savedConcepts) {
-      setConcepts(JSON.parse(savedConcepts));
+      const conceptsData = JSON.parse(savedConcepts);
+      setConcepts(conceptsData);
+      
+      // Set the next concept number based on existing concepts
+      if (conceptsData.length > 0) {
+        const maxConceptNumber = Math.max(...conceptsData.map((c: CoreStoryConcept) => c.conceptNumber || 0));
+        setNextConceptNumber(maxConceptNumber + 1);
+      }
+      
+      // If no concept is selected but we have concepts, select the newest one
+      if (!savedSelected && conceptsData.length > 0) {
+        const newestConcept = conceptsData[conceptsData.length - 1];
+        setSelectedConcept(newestConcept.id);
+        localStorage.setItem('selectedCoreStoryConcept', newestConcept.id);
+      }
     }
   }, []);
 
@@ -74,22 +89,18 @@ export default function CoreStoryConcept() {
 
   // Function to handle selecting a concept
   const handleSelectConcept = (conceptId: string) => {
-    const newSelected = new Set(selectedConcepts);
+    setSelectedConcept(conceptId);
 
-    if (newSelected.has(conceptId)) {
-      newSelected.delete(conceptId);
-    } else {
-      newSelected.add(conceptId);
+    // Save to localStorage
+    localStorage.setItem('selectedCoreStoryConcept', conceptId);
+
+    // Also save the selected concept data for the saved page
+    const selectedConceptData = concepts.find(concept => concept.id === conceptId);
+    if (selectedConceptData) {
+      localStorage.setItem('selectedCoreStoryConceptData', JSON.stringify(selectedConceptData));
     }
 
-    setSelectedConcepts(newSelected);
-
-    // Save to session storage
-    sessionStorage.setItem('selectedCoreStoryConcepts', JSON.stringify(Array.from(newSelected)));
-
-    toast.success(
-      newSelected.has(conceptId) ? 'Core Story Concept selected!' : 'Core Story Concept unselected'
-    );
+    toast.success('Core Story Concept selected!');
   };
 
   const questions = [
@@ -145,7 +156,7 @@ export default function CoreStoryConcept() {
                 },
                 {
                   role: 'user',
-                  content: `Create a new Core Story Concept Candidate #${concepts.length + 1} for ${context.drug} in ${context.disease} for the target audience ${context.audience} with a length of ${context.length}.`,
+                  content: `Create a new Core Story Concept Candidate #${nextConceptNumber} for ${context.drug} in ${context.disease} for the target audience ${context.audience} with a length of ${context.length}.`,
                 },
               ],
               disease: context.disease,
@@ -166,14 +177,21 @@ export default function CoreStoryConcept() {
             drug: context.drug,
             audience: context.audience,
             length: context.length,
+            conceptNumber: nextConceptNumber,
           };
 
           setConcepts((prevConcepts) => {
             const updatedConcepts = [...prevConcepts, newConcept];
-            // Save to session storage
-            sessionStorage.setItem('coreStoryConceptsData', JSON.stringify(updatedConcepts));
+            // Save to localStorage
+            localStorage.setItem('coreStoryConceptsData', JSON.stringify(updatedConcepts));
             return updatedConcepts;
           });
+
+          // Auto-select the new concept and increment the next concept number
+          setSelectedConcept(newConcept.id);
+          localStorage.setItem('selectedCoreStoryConcept', newConcept.id);
+          localStorage.setItem('selectedCoreStoryConceptData', JSON.stringify(newConcept));
+          setNextConceptNumber(nextConceptNumber + 1);
 
           setMessages([
             ...newMessages,
@@ -273,7 +291,7 @@ export default function CoreStoryConcept() {
               },
               {
                 role: 'user',
-                content: `Modify this Core Story Concept Candidate #${concepts.length + 1} for ${context.drug} in ${context.disease} based on the following feedback: ${trimmed}. Keep the length at ${context.length}.`,
+                content: `Modify this Core Story Concept Candidate #${concepts.length > 0 ? concepts[concepts.length - 1].conceptNumber : 1} for ${context.drug} in ${context.disease} based on the following feedback: ${trimmed}. Keep the length at ${context.length}.`,
               },
               {
                 role: 'assistant',
@@ -300,10 +318,19 @@ export default function CoreStoryConcept() {
               content: data.result,
             };
           }
-          // Save to session storage
-          sessionStorage.setItem('coreStoryConceptsData', JSON.stringify(updatedConcepts));
+          // Save to localStorage
+          localStorage.setItem('coreStoryConceptsData', JSON.stringify(updatedConcepts));
           return updatedConcepts;
         });
+
+        // Update the selected concept data if it's the one being modified
+        if (concepts.length > 0) {
+          const modifiedConcept = concepts[concepts.length - 1];
+          if (selectedConcept === modifiedConcept.id) {
+            const updatedConcept = { ...modifiedConcept, content: data.result };
+            localStorage.setItem('selectedCoreStoryConceptData', JSON.stringify(updatedConcept));
+          }
+        }
 
         setMessages([
           ...newMessages,
@@ -349,7 +376,7 @@ export default function CoreStoryConcept() {
               },
               {
                 role: 'user',
-                content: `Create a Core Story Concept Candidate #1 for ${context.drug} in ${context.disease} for the target audience ${context.audience} with a length of ${context.length}.`,
+                content: `Create a Core Story Concept Candidate #${nextConceptNumber} for ${context.drug} in ${context.disease} for the target audience ${context.audience} with a length of ${context.length}.`,
               },
             ],
             disease: context.disease,
@@ -370,14 +397,21 @@ export default function CoreStoryConcept() {
           drug: context.drug,
           audience: context.audience,
           length: context.length,
+          conceptNumber: nextConceptNumber,
         };
 
         setConcepts((prevConcepts) => {
           const updatedConcepts = [...prevConcepts, newConcept];
-          // Save to session storage
-          sessionStorage.setItem('coreStoryConceptsData', JSON.stringify(updatedConcepts));
+          // Save to localStorage
+          localStorage.setItem('coreStoryConceptsData', JSON.stringify(updatedConcepts));
           return updatedConcepts;
         });
+
+        // Auto-select the new concept and increment the next concept number
+        setSelectedConcept(newConcept.id);
+        localStorage.setItem('selectedCoreStoryConcept', newConcept.id);
+        localStorage.setItem('selectedCoreStoryConceptData', JSON.stringify(newConcept));
+        setNextConceptNumber(nextConceptNumber + 1);
 
         // Add the follow-up question
         setMessages((msgs) => [
@@ -446,7 +480,7 @@ export default function CoreStoryConcept() {
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-blue-900">Core Story Concepts</h2>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-600">{selectedConcepts.size} selected</span>
+                  <span className="text-sm text-gray-600">{selectedConcept ? '1 selected' : '0 selected'}</span>
                 </div>
               </div>
 
@@ -458,15 +492,16 @@ export default function CoreStoryConcept() {
                   >
                     <div className="flex items-start gap-3">
                       <input
-                        type="checkbox"
+                        type="radio"
                         id={concept.id}
-                        checked={selectedConcepts.has(concept.id)}
+                        name="coreStoryConcept"
+                        checked={selectedConcept === concept.id}
                         onChange={() => handleSelectConcept(concept.id)}
-                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                       />
                       <div className="flex-1">
                         <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
-                          {concept.content
+                          {concept.content ? concept.content
                             .replace(
                               /\*\*TENSION\*\*/g,
                               '<span class="font-bold text-blue-800 block mt-4 mb-2">TENSION</span>'
@@ -477,14 +512,14 @@ export default function CoreStoryConcept() {
                             )
                             .replace(
                               /Core Story Concept Candidate #\d+/g,
-                              (match) =>
-                                `<span class="font-bold text-blue-800 text-lg">${match}</span>`
+                              () =>
+                                `<span class="font-bold text-blue-800 text-lg">Core Story Concept Candidate #${concept.conceptNumber}</span>`
                             )
                             .replace(/##/g, '') // Remove all occurrences of ##
                             .split('\n')
                             .map((line, i) => (
                               <div key={i} dangerouslySetInnerHTML={{ __html: line }} />
-                            ))}
+                            )) : 'No content available'}
                         </div>
                       </div>
                     </div>
