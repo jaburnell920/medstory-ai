@@ -17,7 +17,7 @@ export default function TopPublicationsPage() {
     {
       role: 'assistant',
       content:
-        'Who would you like to simulate an interview with:\n\nA specific person...Please provide the full name and their affiliation\nA scientific expert...Please provide the scientific area of expertise',
+        'Great. I will simulate an interview with an expert. Before we start, I need some information about the expert you have in mind:\n\nWhat is the professional background of the expert?',
     },
   ]);
   const [loading, setLoading] = useState(false);
@@ -48,7 +48,7 @@ export default function TopPublicationsPage() {
       {
         role: 'assistant',
         content:
-          'Who would you like to simulate an interview with:\n\nA specific person...Please provide the full name and their affiliation\nA scientific expert...Please provide the scientific area of expertise',
+          'Great. I will simulate an interview with an expert. Before we start, I need some information about the expert you have in mind:\n\nWhat is the professional background of the expert?',
       },
     ]);
     setLoading(false);
@@ -65,7 +65,11 @@ export default function TopPublicationsPage() {
 
     try {
       // Extract key points from the conversation
-      const conversationText = messages.map((msg) => msg.content).join('\n\n');
+      // Skip the first 8 messages which are the expert info collection
+      const interviewMessages = interviewStarted ? messages.slice(8) : messages;
+      const conversationText = interviewMessages
+        .map((msg) => `${msg.role === 'user' ? 'Interviewer' : 'Expert'}: ${msg.content}`)
+        .join('\n\n');
 
       // For demonstration purposes, create mock key points when API is not available
       const mockKeyPoints = [
@@ -82,7 +86,7 @@ export default function TopPublicationsPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            prompt: `Extract 5-10 key points from this interview with ${expertInfo}. 
+            prompt: `Extract 5-10 key points from this interview with an expert in ${expertInfo}. 
             Format each point as a clear, concise statement that captures an important insight or piece of information.
             
             INTERVIEW TRANSCRIPT:
@@ -98,10 +102,34 @@ export default function TopPublicationsPage() {
         if (data.result) {
           // Parse the key points from API response
           const pointsText = data.result || '';
-          const pointsList: string[] = pointsText
+          // Try to handle different formats of key points
+          let pointsList: string[] = [];
+
+          // First try numbered format (1. Point)
+          const numberedPoints: string[] = pointsText
             .split(/\d+\./)
-            .filter((point: string) => point.trim().length > 0)
-            .map((point: string) => point.trim());
+            .filter((p: string) => p.trim().length > 0);
+          if (numberedPoints.length > 1) {
+            pointsList = numberedPoints.map((p) => p.trim());
+          }
+          // Then try bullet points
+          else if (pointsText.includes('•')) {
+            pointsList = pointsText
+              .split('•')
+              .filter((p: string) => p.trim().length > 0)
+              .map((p: string) => p.trim());
+          }
+          // Then try dash points
+          else if (pointsText.includes('-')) {
+            pointsList = pointsText
+              .split('-')
+              .filter((p: string) => p.trim().length > 0)
+              .map((p: string) => p.trim());
+          }
+          // If all else fails, just use the whole text
+          else {
+            pointsList = [pointsText.trim()];
+          }
 
           // Create key points with IDs
           const formattedKeyPoints: KeyPoint[] = pointsList.map(
@@ -169,36 +197,74 @@ export default function TopPublicationsPage() {
     const newMessages = [...messages, { role: 'user' as const, content: input }];
     setMessages(newMessages);
 
+    // Check if this is an "end interview" command
+    const isEndInterview =
+      input.toLowerCase().includes('end interview') ||
+      input.toLowerCase().includes('interview complete');
+
     if (!interviewStarted) {
-      // First response - store expert info and start interview
-      setExpertInfo(input);
-      setInterviewStarted(true);
+      // First response - collect expert info
+      // We'll collect all the expert information before starting the actual interview
+      // The first 4 messages are for collecting expert information
       setLoading(true);
 
-      try {
-        const res = await fetch('/api/expert-interview', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'start',
-            expertInfo: input,
-          }),
-        });
-        const data = await res.json();
+      // Continue collecting expert info
+      let nextQuestion = '';
 
-        setMessages([...newMessages, { role: 'assistant', content: data.result }]);
-      } catch (err) {
-        console.error('Error starting interview:', err);
-        setMessages((prev) => [
-          ...prev,
-          { role: 'assistant', content: 'Failed to start interview.' },
-        ]);
-      } finally {
+      if (newMessages.length === 2) {
+        // After first answer (professional background)
+        nextQuestion = 'In what areas of science and/or medicine do they have deep expertise?';
+        setMessages([...newMessages, { role: 'assistant', content: nextQuestion }]);
+        setLoading(false);
+      } else if (newMessages.length === 4) {
+        // After second answer (areas of expertise)
+        nextQuestion = 'Is this expert a basic scientist, a clinician, or a mix of both?';
+        setMessages([...newMessages, { role: 'assistant', content: nextQuestion }]);
+        setLoading(false);
+      } else if (newMessages.length === 6) {
+        // After third answer (scientist/clinician)
+        nextQuestion = 'Is this expert considered an academic, a practitioner, or a mix of both?';
+        setMessages([...newMessages, { role: 'assistant', content: nextQuestion }]);
+        setLoading(false);
+      } else if (newMessages.length === 8) {
+        // After fourth answer (academic/practitioner)
+        // We have all the info, now start the interview
+        const expertInfoCollected = newMessages
+          .filter((msg) => msg.role === 'user')
+          .map((msg) => msg.content)
+          .join('; ');
+        setExpertInfo(expertInfoCollected);
+        setInterviewStarted(true);
+
+        try {
+          const res = await fetch('/api/expert-interview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'start',
+              expertInfo: expertInfoCollected,
+            }),
+          });
+          const data = await res.json();
+
+          setMessages([...newMessages, { role: 'assistant', content: data.result }]);
+        } catch (err) {
+          console.error('Error starting interview:', err);
+          setMessages((prev) => [
+            ...prev,
+            { role: 'assistant', content: 'Failed to start interview.' },
+          ]);
+        } finally {
+          setLoading(false);
+        }
+      } else {
         setLoading(false);
       }
     } else {
       // Continue interview - append instruction to not ask questions
-      const modifiedInput = `${input}. Do not ask any questions in your response.`;
+      const modifiedInput = isEndInterview
+        ? input
+        : `${input}. Do not ask any questions in your response.`;
       setLoading(true);
 
       try {
@@ -215,6 +281,15 @@ export default function TopPublicationsPage() {
         const data = await res.json();
 
         setMessages([...newMessages, { role: 'assistant', content: data.result }]);
+
+        // If this was an end interview command, update the state and extract key points
+        if (isEndInterview) {
+          setInterviewEnded(true);
+          // Wait for the response to be added to messages, then extract key points
+          setTimeout(() => {
+            handleEndInterview();
+          }, 1000);
+        }
       } catch (err) {
         console.error('Error continuing interview:', err);
         setMessages((prev) => [
@@ -248,7 +323,7 @@ export default function TopPublicationsPage() {
           className="cursor-pointer hover:text-blue-600 transition-colors"
           title="Click to view saved key points"
         >
-          Simulated thought leader interview
+          Simulate expert interview
         </span>
       }
     >
@@ -263,8 +338,8 @@ export default function TopPublicationsPage() {
             loading={loading}
             placeholder={
               interviewStarted
-                ? 'Ask your question...'
-                : "Specify the expert you'd like to interview..."
+                ? 'Ask your question... (type "end interview" when finished)'
+                : 'Enter your response...'
             }
             removeExpertPrefix={true}
             onReset={handleReset}
@@ -291,9 +366,12 @@ export default function TopPublicationsPage() {
                   )}
                 </div>
               </div>
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {keyPoints.map((point) => (
-                  <div key={point.id} className="border-b border-gray-200 pb-4 last:border-b-0">
+                  <div
+                    key={point.id}
+                    className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
+                  >
                     <div className="flex items-start gap-3">
                       <input
                         type="checkbox"

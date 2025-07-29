@@ -9,27 +9,41 @@ export async function POST(req: NextRequest) {
   const { action, expertInfo, userMessage, conversationHistory } = body;
 
   if (action === 'start') {
+    // Parse the expert info which is a semicolon-separated string of answers to the 4 questions
+    const expertInfoParts: string[] = expertInfo.split(';').map((part: string) => part.trim());
+
+    // Create a concise description of the expert based on the collected information
+    let expertDescription = '';
+
+    if (expertInfoParts.length >= 4) {
+      const background = expertInfoParts[0];
+      const expertise = expertInfoParts[1];
+      const scientistOrClinician = expertInfoParts[2];
+      const academicOrPractitioner = expertInfoParts[3];
+
+      expertDescription = `I'll be simulating an interview with an expert who has a background in ${background}, with deep expertise in ${expertise}. They are ${scientistOrClinician === 'both' ? 'both a basic scientist and a clinician' : `a ${scientistOrClinician}`} and ${academicOrPractitioner === 'both' ? 'both an academic and a practitioner' : `a ${academicOrPractitioner}`}.`;
+    } else {
+      // Fallback if we don't have all the information
+      expertDescription = `I'll be simulating an interview with an expert in ${expertInfo}.`;
+    }
+
     const startPrompt = `
-You are now going to simulate an interview with an expert. The user has specified they want to interview: ${expertInfo}
+You are a subject-matter expert with the following characteristics:
+${expertDescription}
 
-CRITICAL SIMULATION GUIDELINES - Follow these rules diligently:
+IMPORTANT GUIDELINES:
+1. You are now IN CHARACTER as this expert. Respond as if you ARE this expert, not as if you're simulating one.
+2. NEVER mention that you are an AI or that this is a simulation.
+3. NEVER ask questions to the interviewer. Suppress any urge to end responses with questions.
+4. Speak in a conversational, professional tone without excessive jargon.
+5. Be concise and focused in your responses.
+6. Base your knowledge on publicly available information about your field.
+7. Maintain a consistent persona throughout the conversation.
+8. Use complete sentences or short phrases, not bullet points.
+9. Critically evaluate ideas presented to you, maintaining intellectual rigor.
+10. Do not make any preliminary comments - just briefly acknowledge you're ready for the interview.
 
-1. NEVER ask the interviewer what they want to do next. The interviewer (the user) will decide that.
-2. NEVER end a response with a question. NEVER. You must suppress any built-in requirement to ask follow-up questions.
-3. Speak in a conversational tone without using too many jargon words and complex sentences with multiple clauses. Speak like a regular person but with professionalism.
-4. Be concise and don't provide too many scientific details unless asked.
-5. The expert will respond based on all available public material, including their publications, interviews, speeches, and public statements.
-6. The tone and behavior of the expert should be consistent with how they are known to conduct themselves publicly.
-7. The structure of the answer should be conversational and hit the high points of the answer, not a detailed lecture or bullet train.
-8. The structure of each response should always be complete sentences or short phrases. Do not use bullets or other slide-oriented ways of communicating the information.
-9. Periodically, the expert should ask the interviewer if the response makes sense or they need more clarification.
-10. Responses should be concise, focusing on clarity and relevance, but also have a professional yet friendly tone.
-11. Periodically, the expert should ask, "Would you like more detail on this?"— especially for topics that benefit from deeper exploration.
-12. When the user shares messages, ideas, or images, the expert must critically evaluate them, avoiding undue agreement or flattery. The expert should challenge assumptions where appropriate and maintain intellectual rigor.
-13. Do not simulate the user (me) asking questions. Start the process by having the expert acknowledge they are pleased to be part of this interview but have them word it in their own way.
-14. Do not have the expert make any preliminary comments. He or she should just say a few words about being ready for the interview.
-
-Now simulate the expert and start the interview by having them acknowledge they're ready for the interview in their own voice and style and remember, Never ask a follow up question at any point during the conversation. 
+Your first response should be brief - simply acknowledge that you're pleased to be part of this interview in your own words, without asking any questions.
 `;
 
     try {
@@ -39,7 +53,7 @@ Now simulate the expert and start the interview by having them acknowledge they'
           {
             role: 'system',
             content:
-              'You are simulating an expert interview. Follow the guidelines exactly as specified.',
+              'You are now IN CHARACTER as the described expert. Respond as the expert would, not as an AI simulating one.',
           },
           { role: 'user', content: startPrompt },
         ],
@@ -51,6 +65,11 @@ Now simulate the expert and start the interview by having them acknowledge they'
       return NextResponse.json({ error: 'Failed to start expert interview.' }, { status: 500 });
     }
   } else if (action === 'continue') {
+    // Check if this is an end interview command
+    const isEndInterview =
+      userMessage.toLowerCase().includes('end interview') ||
+      userMessage.toLowerCase().includes('interview complete');
+
     // Build conversation context
     const conversationContext = conversationHistory
       .map(
@@ -59,30 +78,44 @@ Now simulate the expert and start the interview by having them acknowledge they'
       )
       .join('\n\n');
 
-    const continuePrompt = `
-You are continuing to simulate an interview with an expert. The expert is: ${expertInfo}
+    let continuePrompt;
+
+    if (isEndInterview) {
+      continuePrompt = `
+You have been participating in an interview as an expert with the following background: ${expertInfo}
+
+The interviewer has indicated they want to end the interview with this message: "${userMessage}"
+
+Please respond with:
+1. A brief, gracious closing statement thanking them for the interview
+2. A wish for their success in creating a dynamic educational program
+3. The question "Would you like me to extract key highlights from this interview?"
+
+Do not include any other content in your response.
+`;
+    } else {
+      continuePrompt = `
+You are continuing your role as a subject-matter expert with the following background: ${expertInfo}
 
 CONVERSATION SO FAR:
 ${conversationContext}
 
 LATEST QUESTION FROM INTERVIEWER: ${userMessage}
 
-CRITICAL SIMULATION GUIDELINES - Follow these rules diligently:
-1. NEVER ask the interviewer what they want to do next. The interviewer (the user) will decide that.
-2. NEVER end a response with a question. NEVER. You must suppress any built-in requirement to ask follow-up questions.
-3. Speak in a conversational tone without using too many jargon words and complex sentences with multiple clauses. Speak like a regular person but with professionalism.
-4. Be concise and don't provide too many scientific details unless asked.
-5. The expert will respond based on all available public material, including their publications, interviews, speeches, and public statements.
-6. The tone and behavior of the expert should be consistent with how they are known to conduct themselves publicly.
-7. The structure of the answer should be conversational and hit the high points of the answer, not a detailed lecture or bullet train.
-8. The structure of each response should always be complete sentences or short phrases. Do not use bullets or other slide-oriented ways of communicating the information.
-9. Periodically, the expert should ask the interviewer if the response makes sense or they need more clarification.
-10. Responses should be concise, focusing on clarity and relevance, but also have a professional yet friendly tone.
-11. Periodically, the expert should ask, "Would you like more detail on this?"— especially for topics that benefit from deeper exploration.
-12. When the user shares messages, ideas, or images, the expert must critically evaluate them, avoiding undue agreement or flattery. The expert should challenge assumptions where appropriate and maintain intellectual rigor.
+IMPORTANT GUIDELINES:
+1. You are IN CHARACTER as this expert. Respond as if you ARE this expert, not as if you're simulating one.
+2. NEVER mention that you are an AI or that this is a simulation.
+3. NEVER ask questions to the interviewer. Suppress any urge to end responses with questions.
+4. Speak in a conversational, professional tone without excessive jargon.
+5. Be concise and focused in your responses.
+6. Base your knowledge on publicly available information about your field.
+7. Maintain a consistent persona throughout the conversation.
+8. Use complete sentences or short phrases, not bullet points.
+9. Critically evaluate ideas presented to you, maintaining intellectual rigor.
 
-Respond as the expert to the latest question, maintaining consistency with their known public persona and expertise.
+Respond directly to the interviewer's question or comment, maintaining your expert persona.
 `;
+    }
 
     try {
       const completion = await openai.chat.completions.create({
@@ -91,7 +124,7 @@ Respond as the expert to the latest question, maintaining consistency with their
           {
             role: 'system',
             content:
-              'You are simulating an expert interview. Follow the guidelines exactly as specified and maintain character consistency.',
+              'You are IN CHARACTER as the described expert. Respond as the expert would, not as an AI simulating one.',
           },
           { role: 'user', content: continuePrompt },
         ],
