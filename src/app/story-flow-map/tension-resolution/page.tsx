@@ -11,6 +11,10 @@ export default function TensionResolution() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState('');
+  const [attackPoints, setAttackPoints] = useState<string[]>([]);
+  const [tensionResolutionPoints, setTensionResolutionPoints] = useState<string[]>([]);
+  const [conclusion, setConclusion] = useState('');
+  const [references, setReferences] = useState('');
   const [conversationStarted, setConversationStarted] = useState(false);
   const [context, setContext] = useState({
     coreStoryConcept: '',
@@ -32,6 +36,10 @@ export default function TensionResolution() {
     setInput('');
     setLoading(false);
     setResult('');
+    setAttackPoints([]);
+    setTensionResolutionPoints([]);
+    setConclusion('');
+    setReferences('');
     setConversationStarted(false);
     setContext({
       coreStoryConcept: '',
@@ -54,6 +62,107 @@ export default function TensionResolution() {
     'What is your Intervention Name?',
     'What is the Disease or Condition?',
   ];
+
+  // Function to parse and categorize AI response content
+  const parseContentResponse = (response: string) => {
+    const lines = response.split('\n');
+    let attackPointsFound: string[] = [];
+    let tensionResolutionPointsFound: string[] = [];
+    let conclusionFound = '';
+    let referencesFound = '';
+    
+    let currentSection = '';
+    let currentContent: string[] = [];
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      
+      // Check for Attack Point
+      if (line.match(/^Attack Point #\d+/i)) {
+        if (currentSection && currentContent.length > 0) {
+          // Save previous section
+          if (currentSection === 'attack') {
+            attackPointsFound.push(currentContent.join('\n').trim());
+          }
+        }
+        currentSection = 'attack';
+        currentContent = [line];
+        continue;
+      }
+      
+      // Check for Tension-Resolution Point
+      if (line.match(/^\*?\*?Tension-Resolution #\d+/i)) {
+        if (currentSection && currentContent.length > 0) {
+          // Save previous section
+          if (currentSection === 'attack') {
+            attackPointsFound.push(currentContent.join('\n').trim());
+          } else if (currentSection === 'tension') {
+            tensionResolutionPointsFound.push(currentContent.join('\n').trim());
+          }
+        }
+        currentSection = 'tension';
+        currentContent = [line];
+        continue;
+      }
+      
+      // Check for Conclusion
+      if (line.match(/^\*?\*?Conclusion\*?\*?/i)) {
+        if (currentSection && currentContent.length > 0) {
+          // Save previous section
+          if (currentSection === 'attack') {
+            attackPointsFound.push(currentContent.join('\n').trim());
+          } else if (currentSection === 'tension') {
+            tensionResolutionPointsFound.push(currentContent.join('\n').trim());
+          }
+        }
+        currentSection = 'conclusion';
+        currentContent = [];
+        continue;
+      }
+      
+      // Check for References
+      if (line.match(/^References?$/i)) {
+        if (currentSection && currentContent.length > 0) {
+          // Save previous section
+          if (currentSection === 'attack') {
+            attackPointsFound.push(currentContent.join('\n').trim());
+          } else if (currentSection === 'tension') {
+            tensionResolutionPointsFound.push(currentContent.join('\n').trim());
+          } else if (currentSection === 'conclusion') {
+            conclusionFound = currentContent.join('\n').trim();
+          }
+        }
+        currentSection = 'references';
+        currentContent = [];
+        continue;
+      }
+      
+      // Add line to current content if we're in a section
+      if (currentSection) {
+        currentContent.push(lines[i]);
+      }
+    }
+    
+    // Save the last section
+    if (currentSection && currentContent.length > 0) {
+      if (currentSection === 'attack') {
+        attackPointsFound.push(currentContent.join('\n').trim());
+      } else if (currentSection === 'tension') {
+        tensionResolutionPointsFound.push(currentContent.join('\n').trim());
+      } else if (currentSection === 'conclusion') {
+        conclusionFound = currentContent.join('\n').trim();
+      } else if (currentSection === 'references') {
+        referencesFound = currentContent.join('\n').trim();
+      }
+    }
+    
+    return {
+      attackPoints: attackPointsFound,
+      tensionResolutionPoints: tensionResolutionPointsFound,
+      conclusion: conclusionFound,
+      references: referencesFound
+    };
+  };
 
   // Function to separate content from questions in AI response
   const parseAIResponse = (response: string) => {
@@ -185,7 +294,25 @@ export default function TensionResolution() {
 
           const data = await res.json();
           const { content, question } = parseAIResponse(data.result);
+          
+          // Parse the content to extract different sections
+          const parsedContent = parseContentResponse(data.result);
+          
+          // Update state with parsed content
+          if (parsedContent.attackPoints.length > 0) {
+            setAttackPoints(prev => [...prev, ...parsedContent.attackPoints]);
+          }
+          if (parsedContent.tensionResolutionPoints.length > 0) {
+            setTensionResolutionPoints(prev => [...prev, ...parsedContent.tensionResolutionPoints]);
+          }
+          if (parsedContent.conclusion) {
+            setConclusion(parsedContent.conclusion);
+          }
+          if (parsedContent.references) {
+            setReferences(parsedContent.references);
+          }
 
+          // Keep the old result for backward compatibility
           if (content) {
             setResult(content);
           }
@@ -243,6 +370,23 @@ export default function TensionResolution() {
 
         const data = await res.json();
         const { content, question } = parseAIResponse(data.result);
+        
+        // Parse the content to extract different sections
+        const parsedContent = parseContentResponse(data.result);
+        
+        // Update state with parsed content
+        if (parsedContent.attackPoints.length > 0) {
+          setAttackPoints(prev => [...prev, ...parsedContent.attackPoints]);
+        }
+        if (parsedContent.tensionResolutionPoints.length > 0) {
+          setTensionResolutionPoints(prev => [...prev, ...parsedContent.tensionResolutionPoints]);
+        }
+        if (parsedContent.conclusion) {
+          setConclusion(parsedContent.conclusion);
+        }
+        if (parsedContent.references) {
+          setReferences(parsedContent.references);
+        }
 
         // Update result if there's substantial content
         if (content && content.length > 50) {
@@ -297,15 +441,51 @@ export default function TensionResolution() {
         </div>
 
         {/* Result Section - Right Side */}
-        {result && (
+        {(attackPoints.length > 0 || tensionResolutionPoints.length > 0 || conclusion || references || result) && (
           <div className="flex-1 space-y-6">
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md space-y-6">
               <h2 className="text-xl font-bold text-blue-900">
-                Attack Point & Tension-Resolution Points
+                Story Flow Outline
               </h2>
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <pre className="text-gray-800 whitespace-pre-wrap font-sans">{result}</pre>
-              </div>
+              
+              {/* Attack Points */}
+              {attackPoints.map((attackPoint, index) => (
+                <div key={`attack-${index}`} className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <h3 className="text-lg font-semibold text-blue-800 mb-2">Attack Point #{index + 1}</h3>
+                  <pre className="text-gray-800 whitespace-pre-wrap font-sans">{attackPoint.replace(/^Attack Point #\d+\s*\n?/i, '')}</pre>
+                </div>
+              ))}
+              
+              {/* Tension-Resolution Points */}
+              {tensionResolutionPoints.map((point, index) => (
+                <div key={`tension-${index}`} className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <h3 className="text-lg font-semibold text-blue-800 mb-2">Tension-Resolution #{index + 1}</h3>
+                  <pre className="text-gray-800 whitespace-pre-wrap font-sans">{point.replace(/^\*?\*?Tension-Resolution #\d+.*?\n?/i, '')}</pre>
+                </div>
+              ))}
+              
+              {/* Conclusion */}
+              {conclusion && (
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <h3 className="text-lg font-semibold text-blue-800 mb-2">Conclusion</h3>
+                  <pre className="text-gray-800 whitespace-pre-wrap font-sans">{conclusion}</pre>
+                </div>
+              )}
+              
+              {/* References */}
+              {references && (
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <h3 className="text-lg font-semibold text-blue-800 mb-2">References</h3>
+                  <pre className="text-gray-800 whitespace-pre-wrap font-sans">{references}</pre>
+                </div>
+              )}
+              
+              {/* Fallback for old result format */}
+              {result && attackPoints.length === 0 && tensionResolutionPoints.length === 0 && !conclusion && !references && (
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <pre className="text-gray-800 whitespace-pre-wrap font-sans">{result}</pre>
+                </div>
+              )}
             </div>
           </div>
         )}
