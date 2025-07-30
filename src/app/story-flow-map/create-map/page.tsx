@@ -512,31 +512,29 @@ export default function CreateStoryFlowMap() {
   };
 
   return (
-    <PageLayout>
-      <div className="flex flex-col h-full">
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-4xl mx-auto">
-            <div className="mb-6">
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">Create Story Flow Map</h1>
-              <p className="text-gray-600">
-                Generate a visual story flow map based on your attack point, story flow outline, and core story concept.
-              </p>
-            </div>
-
-            {renderStoryFlowMap()}
-
-            <div className="bg-white rounded-lg shadow-lg">
-              <ChatInterface
-                messages={messages}
-                input={input}
-                setInput={setInput}
-                onSubmit={handleSubmit}
-                loading={loading}
-                placeholder="Type your response..."
-              />
-            </div>
-          </div>
+    <PageLayout
+      sectionName="Story Flow"
+      taskName="Create story flow map"
+    >
+      <div className="flex flex-col lg:flex-row gap-4">
+        {/* Chat Interface - Left Side */}
+        <div className="w-full lg:w-3/5">
+          <ChatInterface
+            messages={messages}
+            input={input}
+            setInput={setInput}
+            onSubmit={handleSubmit}
+            loading={loading}
+            placeholder="Type your response..."
+          />
         </div>
+
+        {/* Story Flow Map - Right Side */}
+        {showMap && (
+          <div className="flex-1">
+            {renderStoryFlowMap()}
+          </div>
+        )}
       </div>
     </PageLayout>
   );
