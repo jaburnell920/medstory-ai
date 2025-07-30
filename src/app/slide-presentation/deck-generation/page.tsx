@@ -26,7 +26,7 @@ export default function DeckGenerationPage() {
     {
       role: 'assistant',
       content:
-        'Got it - you need me to generate an outline for a MEDSTORY® presentation deck. First I\'ll need a few bits of information to generate your optimized presentation deck. This shouldn\'t take long - just 8 quick questions and we\'ll be on our way.\n\n1. ' +
+        "Got it - you need me to generate an outline for a MEDSTORY® presentation deck. First I'll need a few bits of information to generate your optimized presentation deck. This shouldn't take long - just 8 quick questions and we'll be on our way.\n\n1. " +
         questions[0],
     },
   ]);
@@ -49,7 +49,7 @@ export default function DeckGenerationPage() {
       {
         role: 'assistant',
         content:
-          'Got it - you need me to generate an outline for a MEDSTORY® presentation deck. First I\'ll need a few bits of information to generate your optimized presentation deck. This shouldn\'t take long - just 8 quick questions and we\'ll be on our way.\n\n1. ' +
+          "Got it - you need me to generate an outline for a MEDSTORY® presentation deck. First I'll need a few bits of information to generate your optimized presentation deck. This shouldn't take long - just 8 quick questions and we'll be on our way.\n\n1. " +
           questions[0],
       },
     ]);
@@ -80,7 +80,7 @@ export default function DeckGenerationPage() {
         {
           role: 'assistant' as const,
           content:
-            'Thanks for that info. Give me a moment and your presentation outline will be ready shortly...',
+            'Thanks for that info. Give me a moment and your presentation outline will be ready shortly',
         },
       ]);
       setShowFinalMessage(true);
