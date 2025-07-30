@@ -389,9 +389,12 @@ export default function TensionResolution() {
               }
               return newPoints;
             });
-          } else {
-            // Add new attack points
+          } else if (isCreatingNewAttackPoint) {
+            // Add new attack points (only when explicitly creating new)
             setAttackPoints(prev => [...prev, ...parsedContent.attackPoints]);
+          } else {
+            // For initial attack point creation or other cases, replace all
+            setAttackPoints(parsedContent.attackPoints);
           }
         }
         if (parsedContent.tensionResolutionPoints.length > 0) {
