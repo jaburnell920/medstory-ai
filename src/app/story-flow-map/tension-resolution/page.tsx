@@ -25,29 +25,36 @@ export default function TensionResolution() {
   });
 
   const [messages, setMessages] = useState<{ role: 'assistant' | 'user'; content: string }[]>([]);
-  
+
   // Initialize messages with core story concept from localStorage
   useEffect(() => {
     // Check if we're in a browser environment
     if (typeof window !== 'undefined') {
       const savedCoreStoryConceptData = localStorage.getItem('selectedCoreStoryConceptData');
-      let initialMessage = 'Do you want to use the currently selected Core Story Concept or provide a new one?';
-      
+      let initialMessage = '';
+
       if (savedCoreStoryConceptData) {
         try {
           const conceptData = JSON.parse(savedCoreStoryConceptData);
           if (conceptData && conceptData.content) {
-            initialMessage += '\n\nCurrently selected: ' + conceptData.content;
+            // initialMessage += '\n\nCurrently selected: ' + conceptData.content;
+            initialMessage =
+              'Do you want to use the currently selected Core Story Concept or provide a new one?';
           }
         } catch (error) {
           console.error('Error parsing core story concept from localStorage:', error);
         }
+      } else {
+        initialMessage =
+          'There is no Core Story Concept saved in memory. Please provide a new one, or visit the Create Core Story Concept Options page and then come back.';
       }
-      
-      setMessages([{
-        role: 'assistant',
-        content: initialMessage
-      }]);
+
+      setMessages([
+        {
+          role: 'assistant',
+          content: initialMessage,
+        },
+      ]);
     }
   }, []);
 
@@ -71,8 +78,9 @@ export default function TensionResolution() {
     // Reset messages with core story concept from localStorage
     if (typeof window !== 'undefined') {
       const savedCoreStoryConceptData = localStorage.getItem('selectedCoreStoryConceptData');
-      let initialMessage = 'Do you want to use the currently selected Core Story Concept or provide a new one?';
-      
+      let initialMessage =
+        'Do you want to use the currently selected Core Story Concept or provide a new one? jb';
+
       if (savedCoreStoryConceptData) {
         try {
           const conceptData = JSON.parse(savedCoreStoryConceptData);
@@ -83,34 +91,36 @@ export default function TensionResolution() {
           console.error('Error parsing core story concept from localStorage:', error);
         }
       }
-      
-      setMessages([{
-        role: 'assistant',
-        content: initialMessage
-      }]);
+
+      setMessages([
+        {
+          role: 'assistant',
+          content: initialMessage,
+        },
+      ]);
     }
   };
 
   // Initialize with default questions
   const [questions, setQuestions] = useState([
-    'Do you want to use the currently selected Core Story Concept or provide a new one?',
+    'Do you want to use the currently selected Core Story Concept or provide a new one? ay',
     'Who is your Audience?',
     'What is your Intervention Name?',
     'What is the Disease or Condition?',
   ]);
-  
+
   // Update the first question with core story concept from localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedCoreStoryConceptData = localStorage.getItem('selectedCoreStoryConceptData');
-      
+
       if (savedCoreStoryConceptData) {
         try {
           const conceptData = JSON.parse(savedCoreStoryConceptData);
           if (conceptData && conceptData.content) {
-            setQuestions(prevQuestions => [
+            setQuestions((prevQuestions) => [
               prevQuestions[0] + '\n\nCurrently selected: ' + conceptData.content,
-              ...prevQuestions.slice(1)
+              ...prevQuestions.slice(1),
             ]);
           }
         } catch (error) {
@@ -331,7 +341,7 @@ export default function TensionResolution() {
           // Get core story concept from localStorage
           if (typeof window !== 'undefined') {
             const savedCoreStoryConceptData = localStorage.getItem('selectedCoreStoryConceptData');
-            
+
             if (savedCoreStoryConceptData) {
               try {
                 const conceptData = JSON.parse(savedCoreStoryConceptData);
@@ -346,12 +356,12 @@ export default function TensionResolution() {
                     ...prev,
                     coreStoryConcept: '',
                   }));
-                  
+
                   setMessages((msgs) => [
                     ...msgs,
                     {
                       role: 'assistant',
-                      content: "No saved Core Story Concept found. Please create a new one.",
+                      content: 'No saved Core Story Concept found. Please create a new one.',
                     },
                   ]);
                   setStep(-1); // Special step to handle manual CSC input
@@ -364,12 +374,12 @@ export default function TensionResolution() {
                   ...prev,
                   coreStoryConcept: '',
                 }));
-                
+
                 setMessages((msgs) => [
                   ...msgs,
                   {
                     role: 'assistant',
-                    content: "Error loading saved Core Story Concept. Please create a new one.",
+                    content: 'Error loading saved Core Story Concept. Please create a new one.',
                   },
                 ]);
                 setStep(-1); // Special step to handle manual CSC input
@@ -381,12 +391,12 @@ export default function TensionResolution() {
                 ...prev,
                 coreStoryConcept: '',
               }));
-              
+
               setMessages((msgs) => [
                 ...msgs,
                 {
                   role: 'assistant',
-                  content: "No saved Core Story Concept found. Please create a new one.",
+                  content: 'No saved Core Story Concept found. Please create a new one.',
                 },
               ]);
               setStep(-1); // Special step to handle manual CSC input
