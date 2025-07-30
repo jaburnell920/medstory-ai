@@ -66,22 +66,23 @@ export default function TensionResolution() {
   ];
 
   // Helper function to safely update attack points with persistent backup
-  const updateAttackPoints = (newPoints: string[], mode: 'replace' | 'add' | 'modify' = 'replace') => {
+  const updateAttackPoints = (
+    newPoints: string[],
+    mode: 'replace' | 'add' | 'modify' = 'replace'
+  ) => {
     if (mode === 'add') {
-      // Add new points to existing ones
       const updatedPoints = [...persistentAttackPoints, ...newPoints];
       setAttackPoints(updatedPoints);
       setPersistentAttackPoints(updatedPoints);
     } else if (mode === 'modify') {
-      // Replace the last attack point with the modified one
       const updatedPoints = [...persistentAttackPoints];
       if (updatedPoints.length > 0 && newPoints.length > 0) {
+        // Replace last attack point with the modified version
         updatedPoints[updatedPoints.length - 1] = newPoints[0];
       }
       setAttackPoints(updatedPoints);
       setPersistentAttackPoints(updatedPoints);
     } else {
-      // Replace all points (default behavior for initial creation)
       setAttackPoints(newPoints);
       setPersistentAttackPoints(newPoints);
     }
@@ -97,19 +98,19 @@ export default function TensionResolution() {
   // Function to parse and categorize AI response content
   const parseContentResponse = (response: string) => {
     const lines = response.split('\n');
-    let attackPointsFound: string[] = [];
-    let tensionResolutionPointsFound: string[] = [];
+    const attackPointsFound: string[] = [];
+    const tensionResolutionPointsFound: string[] = [];
     let conclusionFound = '';
     let referencesFound = '';
-    
+
     let currentSection = '';
     let currentContent: string[] = [];
-    
+
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
-      
+
       // Check for Attack Point
-      if (line.match(/^Attack Point #\d+/i)) {
+      if (/Attack Point #\d+/i.test(line)) {
         if (currentSection && currentContent.length > 0) {
           // Save previous section
           if (currentSection === 'attack') {
@@ -120,7 +121,7 @@ export default function TensionResolution() {
         currentContent = [line];
         continue;
       }
-      
+
       // Check for Tension-Resolution Point
       if (line.match(/^\*?\*?Tension-Resolution #\d+/i)) {
         if (currentSection && currentContent.length > 0) {
@@ -135,7 +136,7 @@ export default function TensionResolution() {
         currentContent = [line];
         continue;
       }
-      
+
       // Check for Conclusion
       if (line.match(/^\*?\*?Conclusion\*?\*?/i)) {
         if (currentSection && currentContent.length > 0) {
@@ -150,7 +151,7 @@ export default function TensionResolution() {
         currentContent = [];
         continue;
       }
-      
+
       // Check for References
       if (line.match(/^References?$/i)) {
         if (currentSection && currentContent.length > 0) {
@@ -167,13 +168,13 @@ export default function TensionResolution() {
         currentContent = [];
         continue;
       }
-      
+
       // Add line to current content if we're in a section
       if (currentSection) {
         currentContent.push(lines[i]);
       }
     }
-    
+
     // Save the last section
     if (currentSection && currentContent.length > 0) {
       if (currentSection === 'attack') {
@@ -186,12 +187,12 @@ export default function TensionResolution() {
         referencesFound = currentContent.join('\n').trim();
       }
     }
-    
+
     return {
       attackPoints: attackPointsFound,
       tensionResolutionPoints: tensionResolutionPointsFound,
       conclusion: conclusionFound,
-      references: referencesFound
+      references: referencesFound,
     };
   };
 
@@ -268,15 +269,23 @@ export default function TensionResolution() {
     if (!conversationStarted) {
       if (step === 0) {
         // Handle Core Story Concept selection
-        if (trimmed.toLowerCase().includes('currently selected') || trimmed.toLowerCase().includes('current')) {
-          setContext((prev) => ({ ...prev, coreStoryConcept: 'Plaque inflammation drives CV events. Direct and safe ways to reduce plaque inflammation are needed. Orticumab is a plaque-targeted anti-inflammatory therapy. By inhibiting pro-inflammatory macrophages within plaques, this new approach has the potential to reduce CV risk on top of current standard of care.' }));
+        if (
+          trimmed.toLowerCase().includes('currently selected') ||
+          trimmed.toLowerCase().includes('current')
+        ) {
+          setContext((prev) => ({
+            ...prev,
+            coreStoryConcept:
+              'Plaque inflammation drives CV events. Direct and safe ways to reduce plaque inflammation are needed. Orticumab is a plaque-targeted anti-inflammatory therapy. By inhibiting pro-inflammatory macrophages within plaques, this new approach has the potential to reduce CV risk on top of current standard of care.',
+          }));
         } else {
           // User wants to provide new one, ask for it
           setMessages((msgs) => [
             ...msgs,
             {
               role: 'assistant',
-              content: 'Please enter the Core Story Concept you\'d like to use to guide the story flow.',
+              content:
+                "Please enter the Core Story Concept you'd like to use to guide the story flow.",
             },
           ]);
           setStep(-1); // Special step to handle manual CSC input
@@ -325,10 +334,10 @@ export default function TensionResolution() {
 
           const data = await res.json();
           const { content, question } = parseAIResponse(data.result);
-          
+
           // Parse the content to extract different sections
           const parsedContent = parseContentResponse(data.result);
-          
+
           // Update state with parsed content - only add new attack points if found
           if (parsedContent.attackPoints.length > 0) {
             updateAttackPoints(parsedContent.attackPoints, 'add');
@@ -404,35 +413,30 @@ export default function TensionResolution() {
 
         const data = await res.json();
         const { content, question } = parseAIResponse(data.result);
-        
+
         // Parse the content to extract different sections
         const parsedContent = parseContentResponse(data.result);
-        
+
         // Determine if this is a modification or new creation based on user input
         const isModifyingAttackPoint = trimmed.toLowerCase().includes('modif');
-        const isCreatingNewAttackPoint = trimmed.toLowerCase().includes('new') || trimmed.toLowerCase().includes('create');
-        
-        // Update state with parsed content
+        // const isCreatingNewAttackPoint = trimmed.toLowerCase().includes('new') || trimmed.toLowerCase().includes('create');
+
         if (parsedContent.attackPoints.length > 0) {
           if (isModifyingAttackPoint) {
-            // Replace the last attack point with the modified one
             updateAttackPoints(parsedContent.attackPoints, 'modify');
-          } else if (isCreatingNewAttackPoint) {
-            // Add new attack points (only when explicitly creating new)
-            updateAttackPoints(parsedContent.attackPoints, 'add');
           } else {
-            // For initial attack point creation or other cases, replace all
-            updateAttackPoints(parsedContent.attackPoints, 'replace');
+            // Default to 'add' so Attack Point #1, #2, etc., accumulate
+            updateAttackPoints(parsedContent.attackPoints, 'add');
           }
         }
-        
+
         // Always restore attack points before updating other content to prevent loss
-        restoreAttackPoints();
-        
+        // restoreAttackPoints();
+
         if (parsedContent.tensionResolutionPoints.length > 0) {
           setTensionResolutionPoints(parsedContent.tensionResolutionPoints);
           // Ensure attack points are still there after setting tension-resolution points
-          restoreAttackPoints();
+          // restoreAttackPoints();
         }
         if (parsedContent.conclusion) {
           setConclusion(parsedContent.conclusion);
@@ -442,7 +446,7 @@ export default function TensionResolution() {
         }
 
         // Final restoration to ensure attack points are never lost
-        restoreAttackPoints();
+        // restoreAttackPoints();
 
         // Update result if there's substantial content
         if (content && content.length > 50) {
@@ -497,29 +501,45 @@ export default function TensionResolution() {
         </div>
 
         {/* Result Section - Right Side */}
-        {(attackPoints.length > 0 || tensionResolutionPoints.length > 0 || conclusion || references || result) && (
+        {(attackPoints.length > 0 ||
+          tensionResolutionPoints.length > 0 ||
+          conclusion ||
+          references ||
+          result) && (
           <div className="flex-1 space-y-6">
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md space-y-6">
-              <h2 className="text-xl font-bold text-blue-900">
-                Story Flow Outline
-              </h2>
-              
+              <h2 className="text-xl font-bold text-blue-900">Story Flow Outline</h2>
+
               {/* Attack Points */}
               {attackPoints.map((attackPoint, index) => (
-                <div key={`attack-${index}`} className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                  <h3 className="text-lg font-semibold text-blue-800 mb-2">Attack Point #{index + 1}</h3>
-                  <pre className="text-gray-800 whitespace-pre-wrap font-sans">{attackPoint.replace(/^Attack Point #\d+\s*\n?/i, '')}</pre>
+                <div
+                  key={`attack-${index}`}
+                  className="bg-blue-50 p-4 rounded-lg border border-blue-200"
+                >
+                  <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                    Attack Point #{index + 1}
+                  </h3>
+                  <pre className="text-gray-800 whitespace-pre-wrap font-sans">
+                    {attackPoint.replace(/^\*{0,2}Attack Point #\d+\*{0,2}:?\s*\n?/i, '')}{' '}
+                  </pre>
                 </div>
               ))}
-              
+
               {/* Tension-Resolution Points */}
               {tensionResolutionPoints.map((point, index) => (
-                <div key={`tension-${index}`} className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                  <h3 className="text-lg font-semibold text-blue-800 mb-2">Tension-Resolution #{index + 1}</h3>
-                  <pre className="text-gray-800 whitespace-pre-wrap font-sans">{point.replace(/^\*?\*?Tension-Resolution #\d+.*?\n?/i, '')}</pre>
+                <div
+                  key={`tension-${index}`}
+                  className="bg-blue-50 p-4 rounded-lg border border-blue-200"
+                >
+                  <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                    Tension-Resolution #{index + 1}
+                  </h3>
+                  <pre className="text-gray-800 whitespace-pre-wrap font-sans">
+                    {point.replace(/^\*?\*?Tension-Resolution #\d+.*?\n?/i, '')}
+                  </pre>
                 </div>
               ))}
-              
+
               {/* Conclusion */}
               {conclusion && (
                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
@@ -527,7 +547,7 @@ export default function TensionResolution() {
                   <pre className="text-gray-800 whitespace-pre-wrap font-sans">{conclusion}</pre>
                 </div>
               )}
-              
+
               {/* References */}
               {references && (
                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
@@ -535,13 +555,17 @@ export default function TensionResolution() {
                   <pre className="text-gray-800 whitespace-pre-wrap font-sans">{references}</pre>
                 </div>
               )}
-              
+
               {/* Fallback for old result format */}
-              {result && attackPoints.length === 0 && tensionResolutionPoints.length === 0 && !conclusion && !references && (
-                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                  <pre className="text-gray-800 whitespace-pre-wrap font-sans">{result}</pre>
-                </div>
-              )}
+              {result &&
+                attackPoints.length === 0 &&
+                tensionResolutionPoints.length === 0 &&
+                !conclusion &&
+                !references && (
+                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <pre className="text-gray-800 whitespace-pre-wrap font-sans">{result}</pre>
+                  </div>
+                )}
             </div>
           </div>
         )}
