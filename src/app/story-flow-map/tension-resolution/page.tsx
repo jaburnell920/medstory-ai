@@ -48,6 +48,80 @@ export default function TensionResolution() {
     ]);
   };
 
+  // Function to render each section in separate blue boxes
+  const renderSeparateBoxes = (content: string) => {
+    // Split the content into sections
+    const sections = [];
+    
+    // Check for NEW: prefix in content
+    const hasNewContent = content.includes('NEW:');
+    
+    // Extract Attack Points (including those with NEW: prefix)
+    const attackPointRegex = /(?:NEW:\s*)?Attack Point #\d+[\s\S]*?(?=(?:NEW:\s*)?Attack Point #\d+|\*\*Tension-Resolution #|Tension-Resolution #|Would you|$)/gi;
+    let attackPointMatch;
+    while ((attackPointMatch = attackPointRegex.exec(content)) !== null) {
+      if (attackPointMatch[0].trim()) {
+        const attackPointContent = attackPointMatch[0].trim();
+        const isNew = attackPointContent.includes('NEW:');
+        sections.push({
+          title: isNew ? 'New Attack Point' : 'Attack Point',
+          content: isNew ? attackPointContent.replace('NEW:', '').trim() : attackPointContent
+        });
+      }
+    }
+    
+    // Extract Tension-Resolution Points
+    const tensionResolutionRegex = /(?:\*\*)?Tension-Resolution #\d+(?:\*\*)?:?[\s\S]*?(?=(?:\*\*)?Tension-Resolution #\d+(?:\*\*)?|\*\*Conclusion|Conclusion|\*\*References|References|Would you|$)/gi;
+    let match;
+    while ((match = tensionResolutionRegex.exec(content)) !== null) {
+      if (match[0].trim()) {
+        sections.push({
+          title: 'Tension-Resolution Point',
+          content: match[0].trim()
+        });
+      }
+    }
+    
+    // Extract Conclusion
+    const conclusionMatch = content.match(/(?:\*\*)?Conclusion(?:\*\*)?[\s\S]*?(?=\*\*References|References|Would you|$)/i);
+    if (conclusionMatch && conclusionMatch[0].trim()) {
+      sections.push({
+        title: 'Conclusion',
+        content: conclusionMatch[0].trim()
+      });
+    }
+    
+    // Extract References
+    const referencesMatch = content.match(/(?:\*\*)?References(?:\*\*)?[\s\S]*?(?=Would you|$)/i);
+    if (referencesMatch && referencesMatch[0].trim()) {
+      sections.push({
+        title: 'References',
+        content: referencesMatch[0].trim()
+      });
+    }
+    
+    // If no sections were found or if there's content that wasn't captured, add the entire content
+    if (sections.length === 0) {
+      return (
+        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-4">
+          <pre className="text-gray-800 whitespace-pre-wrap font-sans">{content}</pre>
+        </div>
+      );
+    }
+    
+    // Render each section in its own blue box
+    return (
+      <div className="space-y-4">
+        {sections.map((section, index) => (
+          <div key={index} className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-4">
+            <h3 className="text-lg font-semibold text-blue-800 mb-2">{section.title}</h3>
+            <pre className="text-gray-800 whitespace-pre-wrap font-sans">{section.content}</pre>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   const questions = [
     'Do you want to use the currently selected Core Story Concept or provide a new one?\n\nCurrently selected: Plaque inflammation drives CV events. Direct and safe ways to reduce plaque inflammation are needed. Orticumab is a plaque-targeted anti-inflammatory therapy. By inhibiting pro-inflammatory macrophages within plaques, this new approach has the potential to reduce CV risk on top of current standard of care.',
     'Who is your Audience?',
@@ -303,9 +377,7 @@ export default function TensionResolution() {
               <h2 className="text-xl font-bold text-blue-900">
                 Attack Point & Tension-Resolution Points
               </h2>
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <pre className="text-gray-800 whitespace-pre-wrap font-sans">{result}</pre>
-              </div>
+              {renderSeparateBoxes(result)}
             </div>
           </div>
         )}
