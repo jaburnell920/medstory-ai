@@ -298,12 +298,12 @@ export default function TensionResolution() {
           // Parse the content to extract different sections
           const parsedContent = parseContentResponse(data.result);
           
-          // Update state with parsed content
+          // Update state with parsed content - only add new attack points if found
           if (parsedContent.attackPoints.length > 0) {
             setAttackPoints(prev => [...prev, ...parsedContent.attackPoints]);
           }
           if (parsedContent.tensionResolutionPoints.length > 0) {
-            setTensionResolutionPoints(prev => [...prev, ...parsedContent.tensionResolutionPoints]);
+            setTensionResolutionPoints(parsedContent.tensionResolutionPoints);
           }
           if (parsedContent.conclusion) {
             setConclusion(parsedContent.conclusion);
@@ -374,12 +374,28 @@ export default function TensionResolution() {
         // Parse the content to extract different sections
         const parsedContent = parseContentResponse(data.result);
         
+        // Determine if this is a modification or new creation based on user input
+        const isModifyingAttackPoint = trimmed.toLowerCase().includes('modif');
+        const isCreatingNewAttackPoint = trimmed.toLowerCase().includes('new') || trimmed.toLowerCase().includes('create');
+        
         // Update state with parsed content
         if (parsedContent.attackPoints.length > 0) {
-          setAttackPoints(prev => [...prev, ...parsedContent.attackPoints]);
+          if (isModifyingAttackPoint) {
+            // Replace the last attack point with the modified one
+            setAttackPoints(prev => {
+              const newPoints = [...prev];
+              if (newPoints.length > 0) {
+                newPoints[newPoints.length - 1] = parsedContent.attackPoints[0];
+              }
+              return newPoints;
+            });
+          } else {
+            // Add new attack points
+            setAttackPoints(prev => [...prev, ...parsedContent.attackPoints]);
+          }
         }
         if (parsedContent.tensionResolutionPoints.length > 0) {
-          setTensionResolutionPoints(prev => [...prev, ...parsedContent.tensionResolutionPoints]);
+          setTensionResolutionPoints(parsedContent.tensionResolutionPoints);
         }
         if (parsedContent.conclusion) {
           setConclusion(parsedContent.conclusion);

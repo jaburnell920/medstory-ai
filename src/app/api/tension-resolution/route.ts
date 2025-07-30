@@ -169,6 +169,12 @@ Please start with the Attack Point phase.`,
         
         if (userMessage.toLowerCase().includes('move on') || userMessage.toLowerCase().includes('tension')) {
           mockResult = `Would you like a short narrative (3-5 tension-resolution points), full narrative (8-12 tension-resolution points), or would you like to specify the number of tension-resolution points?`;
+        } else if (userMessage.toLowerCase().includes('new') || userMessage.toLowerCase().includes('create')) {
+          mockResult = `Attack Point #2
+
+In the cardiac catheterization lab, Dr. Sarah Chen stared at the angiogram of her 52-year-old patient—three stents, optimal medical therapy, yet another acute coronary syndrome just six months later. The culprit lesion showed no significant stenosis, but the plaque was angry, inflamed, and primed to rupture again. Traditional lipid-lowering had failed to silence the inflammatory cascade driving his recurrent events. But targeting the macrophages within the plaque itself—the very cells orchestrating this inflammatory storm—represented an entirely new battlefield in the war against cardiovascular death.
+
+Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?`;
         } else if (userMessage.toLowerCase().includes('short')) {
           mockResult = `**Tension-Resolution #1:** Immune System Failure
 Tension: Traditional chemotherapy had failed Emma repeatedly, with each relapse more aggressive than the last, leaving her immune system devastated and her family desperate.
@@ -230,7 +236,14 @@ LATEST USER MESSAGE: ${userMessage}
 FOLLOW THE COMPLETE PROMPT GUIDELINES:
 
 Training: Attack Point
-After delivering any attack point ask: "Would you like modify this Attack Point, create a new one, or move on to creating tension-resolution points?" If answered 'modify', ask the user "What modifications would you like to make?" and use the answer to modify the existing Attack Point. In this case, keep the number of the Attack Point the same. Only uptick the Attack Point number if a new Attack Point is requested. If answered 'new', create a brand new Attack Point using the same and uptick its number. If answered "move on", move on to delivering tension-resolution points.
+After delivering any attack point ask: "Would you like modify this Attack Point, create a new one, or move on to creating tension-resolution points?" 
+
+IMPORTANT RESPONSE HANDLING:
+- If user says 'modify' or asks for modifications: ask "What modifications would you like to make?" and modify the existing Attack Point keeping the same number.
+- If user says 'new', 'create', 'create a new one', 'new attack point', or similar: create a brand new Attack Point with the next sequential number (e.g., Attack Point #2, #3, etc.). DO NOT ask for modifications.
+- If user says "move on" or "tension-resolution": move on to delivering tension-resolution points.
+
+When creating a NEW attack point, increment the number and create completely new content. Do not modify the existing attack point.
 
 Training: Tension-Resolution Points
 Ask the user if they want a short narrative (3-5 tension-resolution points) and full narrative (8-12 tension-resolution points) or they want to specify the number of tension-resolution points.
