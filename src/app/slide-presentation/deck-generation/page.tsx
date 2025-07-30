@@ -193,7 +193,61 @@ Generate the entire outline without stopping for user input.
               <h2 className="text-xl font-bold text-blue-900 mb-4">
                 MEDSTORY Presentation Outline
               </h2>
-              <div className="text-gray-800 whitespace-pre-wrap">{result}</div>
+              <div className="space-y-4">
+                {(() => {
+                  // First try to split by common slide separators
+                  let slides = result.split(/(?=Slide \d+:)|(?=### Slide \d+:)|(?=## Slide \d+:)/);
+                  
+                  // If we don't have multiple slides, try splitting by separator lines
+                  if (slides.length <= 1) {
+                    slides = result.split(/\n-{3,}\n|\n={3,}\n|\n\*{3,}\n/);
+                  }
+                  
+                  // If we still don't have multiple slides, try splitting by double newlines
+                  if (slides.length <= 1) {
+                    // Extract presentation overview/intro if it exists
+                    const introMatch = result.match(/^(.*?)(Slide \d+:|## Slide \d+:|### Slide \d+:)/s);
+                    const intro = introMatch ? introMatch[1].trim() : '';
+                    
+                    // Split the rest by slide numbers
+                    const slideContent = introMatch ? result.substring(introMatch[1].length) : result;
+                    const slideMatches = slideContent.match(/Slide \d+:.*?(?=Slide \d+:|$)/gs) || [];
+                    
+                    slides = intro ? [intro, ...slideMatches] : slideMatches;
+                  }
+                  
+                  return slides.map((slide, index) => {
+                    if (!slide.trim()) return null;
+                    
+                    // Format the slide content
+                    const formattedSlide = slide.trim();
+                    
+                    // Split the slide content by sections
+                    const sections = formattedSlide.split(/(TEXT:|VISUALS:|SPEAKER NOTES:|REFERENCES:)/g);
+                    
+                    return (
+                      <div 
+                        key={index} 
+                        className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
+                      >
+                        <div className="text-gray-800 whitespace-pre-wrap">
+                          {sections.map((section, sectionIndex) => {
+                            if (section === 'TEXT:' || section === 'VISUALS:' || 
+                                section === 'SPEAKER NOTES:' || section === 'REFERENCES:') {
+                              return (
+                                <span key={sectionIndex} className="font-bold text-blue-700">
+                                  {section}
+                                </span>
+                              );
+                            }
+                            return <span key={sectionIndex}>{section}</span>;
+                          })}
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
             </div>
           </div>
         )}
