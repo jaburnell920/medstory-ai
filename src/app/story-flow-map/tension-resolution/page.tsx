@@ -12,6 +12,7 @@ export default function TensionResolution() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState('');
   const [conversationStarted, setConversationStarted] = useState(false);
+  const [waitingForCustomCSC, setWaitingForCustomCSC] = useState(false);
   const [context, setContext] = useState({
     coreStoryConcept: '',
     audience: '',
@@ -23,7 +24,7 @@ export default function TensionResolution() {
     {
       role: 'assistant',
       content:
-        'What is your Core Story Concept? (The big scientific idea that is driving the story flow as a whole and that the audience must remember, believe in, be persuaded by and that the entire story flow leads up to)',
+        'Do you want to use the currently selected Core Story Concept or provide a new one?\n\nCurrently selected: Plaque inflammation drives CV events. Direct and safe ways to reduce plaque inflammation are needed. Orticumab is a plaque-targeted anti-inflammatory therapy. By inhibiting pro-inflammatory macrophages within plaques, this new approach has the potential to reduce CV risk on top of current standard of care.',
     },
   ]);
 
@@ -33,6 +34,7 @@ export default function TensionResolution() {
     setLoading(false);
     setResult('');
     setConversationStarted(false);
+    setWaitingForCustomCSC(false);
     setContext({
       coreStoryConcept: '',
       audience: '',
@@ -43,16 +45,16 @@ export default function TensionResolution() {
       {
         role: 'assistant',
         content:
-          'What is your Core Story Concept? (The big scientific idea that is driving the story flow as a whole and that the audience must remember, believe in, be persuaded by and that the entire story flow leads up to)',
+          'Do you want to use the currently selected Core Story Concept or provide a new one?\n\nCurrently selected: Plaque inflammation drives CV events. Direct and safe ways to reduce plaque inflammation are needed. Orticumab is a plaque-targeted anti-inflammatory therapy. By inhibiting pro-inflammatory macrophages within plaques, this new approach has the potential to reduce CV risk on top of current standard of care.',
       },
     ]);
   };
 
   const questions = [
-    'What is your Core Story Concept? (The big scientific idea that is driving the story flow as a whole and that the audience must remember, believe in, be persuaded by and that the entire story flow leads up to)',
-    'Who is your Audience? (The type of people in the audience, e.g., PCPs, academics neurologists, cardiologists)',
-    'What is your Intervention Name? (A drug, device, or biotechnology that is given to a person to improve or cure their disease or condition)',
-    'What is the Disease or Condition? (Clinical arena)',
+    'Do you want to use the currently selected Core Story Concept or provide a new one?\n\nCurrently selected: Plaque inflammation drives CV events. Direct and safe ways to reduce plaque inflammation are needed. Orticumab is a plaque-targeted anti-inflammatory therapy. By inhibiting pro-inflammatory macrophages within plaques, this new approach has the potential to reduce CV risk on top of current standard of care.',
+    'Who is your Audience?',
+    'What is your Intervention Name?',
+    'What is the Disease or Condition?',
   ];
 
   // Function to separate content from questions in AI response
@@ -126,7 +128,30 @@ export default function TensionResolution() {
 
     // Handle initial setup questions
     if (!conversationStarted) {
-      if (step === 0) setContext((prev) => ({ ...prev, coreStoryConcept: trimmed }));
+      if (step === 0 && !waitingForCustomCSC) {
+        // Handle Core Story Concept choice
+        if (trimmed.toLowerCase().includes('currently selected') || trimmed.toLowerCase().includes('current')) {
+          setContext((prev) => ({ 
+            ...prev, 
+            coreStoryConcept: 'Plaque inflammation drives CV events. Direct and safe ways to reduce plaque inflammation are needed. Orticumab is a plaque-targeted anti-inflammatory therapy. By inhibiting pro-inflammatory macrophages within plaques, this new approach has the potential to reduce CV risk on top of current standard of care.' 
+          }));
+        } else if (trimmed.toLowerCase().includes('new') || trimmed.toLowerCase().includes('provide')) {
+          // User wants to provide a new one, ask for it
+          setWaitingForCustomCSC(true);
+          setMessages((msgs) => [
+            ...msgs,
+            {
+              role: 'assistant',
+              content: 'Please enter the Core Story Concept you\'d like to use to guide the story flow.',
+            },
+          ]);
+          return;
+        }
+      } else if (step === 0 && waitingForCustomCSC) {
+        // User provided a custom Core Story Concept
+        setContext((prev) => ({ ...prev, coreStoryConcept: trimmed }));
+        setWaitingForCustomCSC(false);
+      }
       if (step === 1) setContext((prev) => ({ ...prev, audience: trimmed }));
       if (step === 2) setContext((prev) => ({ ...prev, interventionName: trimmed }));
 
@@ -182,16 +207,19 @@ export default function TensionResolution() {
         return;
       }
 
-      const nextStep = step + 1;
-      setStep(nextStep);
-      if (nextStep < questions.length) {
-        setMessages((msgs) => [
-          ...msgs,
-          {
-            role: 'assistant',
-            content: questions[nextStep],
-          },
-        ]);
+      // Only advance step if we're not waiting for custom CSC
+      if (!waitingForCustomCSC) {
+        const nextStep = step + 1;
+        setStep(nextStep);
+        if (nextStep < questions.length) {
+          setMessages((msgs) => [
+            ...msgs,
+            {
+              role: 'assistant',
+              content: questions[nextStep],
+            },
+          ]);
+        }
       }
     } else {
       // Handle ongoing conversation
