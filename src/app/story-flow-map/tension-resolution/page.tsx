@@ -12,6 +12,7 @@ export default function TensionResolution() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState('');
   const [attackPoints, setAttackPoints] = useState<string[]>([]);
+  const [persistentAttackPoints, setPersistentAttackPoints] = useState<string[]>([]); // Backup storage for attack points
   const [tensionResolutionPoints, setTensionResolutionPoints] = useState<string[]>([]);
   const [conclusion, setConclusion] = useState('');
   const [references, setReferences] = useState('');
@@ -37,6 +38,7 @@ export default function TensionResolution() {
     setLoading(false);
     setResult('');
     setAttackPoints([]);
+    setPersistentAttackPoints([]); // Clear backup storage too
     setTensionResolutionPoints([]);
     setConclusion('');
     setReferences('');
@@ -62,6 +64,35 @@ export default function TensionResolution() {
     'What is your Intervention Name?',
     'What is the Disease or Condition?',
   ];
+
+  // Helper function to safely update attack points with persistent backup
+  const updateAttackPoints = (newPoints: string[], mode: 'replace' | 'add' | 'modify' = 'replace') => {
+    if (mode === 'add') {
+      // Add new points to existing ones
+      const updatedPoints = [...persistentAttackPoints, ...newPoints];
+      setAttackPoints(updatedPoints);
+      setPersistentAttackPoints(updatedPoints);
+    } else if (mode === 'modify') {
+      // Replace the last attack point with the modified one
+      const updatedPoints = [...persistentAttackPoints];
+      if (updatedPoints.length > 0 && newPoints.length > 0) {
+        updatedPoints[updatedPoints.length - 1] = newPoints[0];
+      }
+      setAttackPoints(updatedPoints);
+      setPersistentAttackPoints(updatedPoints);
+    } else {
+      // Replace all points (default behavior for initial creation)
+      setAttackPoints(newPoints);
+      setPersistentAttackPoints(newPoints);
+    }
+  };
+
+  // Helper function to restore attack points from persistent storage
+  const restoreAttackPoints = () => {
+    if (persistentAttackPoints.length > 0) {
+      setAttackPoints(persistentAttackPoints);
+    }
+  };
 
   // Function to parse and categorize AI response content
   const parseContentResponse = (response: string) => {
@@ -300,7 +331,7 @@ export default function TensionResolution() {
           
           // Update state with parsed content - only add new attack points if found
           if (parsedContent.attackPoints.length > 0) {
-            setAttackPoints(prev => [...prev, ...parsedContent.attackPoints]);
+            updateAttackPoints(parsedContent.attackPoints, 'add');
           }
           if (parsedContent.tensionResolutionPoints.length > 0) {
             setTensionResolutionPoints(parsedContent.tensionResolutionPoints);
@@ -311,6 +342,9 @@ export default function TensionResolution() {
           if (parsedContent.references) {
             setReferences(parsedContent.references);
           }
+
+          // Ensure attack points are preserved after initial setup
+          restoreAttackPoints();
 
           // Keep the old result for backward compatibility
           if (content) {
@@ -382,23 +416,23 @@ export default function TensionResolution() {
         if (parsedContent.attackPoints.length > 0) {
           if (isModifyingAttackPoint) {
             // Replace the last attack point with the modified one
-            setAttackPoints(prev => {
-              const newPoints = [...prev];
-              if (newPoints.length > 0) {
-                newPoints[newPoints.length - 1] = parsedContent.attackPoints[0];
-              }
-              return newPoints;
-            });
+            updateAttackPoints(parsedContent.attackPoints, 'modify');
           } else if (isCreatingNewAttackPoint) {
             // Add new attack points (only when explicitly creating new)
-            setAttackPoints(prev => [...prev, ...parsedContent.attackPoints]);
+            updateAttackPoints(parsedContent.attackPoints, 'add');
           } else {
             // For initial attack point creation or other cases, replace all
-            setAttackPoints(parsedContent.attackPoints);
+            updateAttackPoints(parsedContent.attackPoints, 'replace');
           }
         }
+        
+        // Always restore attack points before updating other content to prevent loss
+        restoreAttackPoints();
+        
         if (parsedContent.tensionResolutionPoints.length > 0) {
           setTensionResolutionPoints(parsedContent.tensionResolutionPoints);
+          // Ensure attack points are still there after setting tension-resolution points
+          restoreAttackPoints();
         }
         if (parsedContent.conclusion) {
           setConclusion(parsedContent.conclusion);
@@ -406,6 +440,9 @@ export default function TensionResolution() {
         if (parsedContent.references) {
           setReferences(parsedContent.references);
         }
+
+        // Final restoration to ensure attack points are never lost
+        restoreAttackPoints();
 
         // Update result if there's substantial content
         if (content && content.length > 50) {
