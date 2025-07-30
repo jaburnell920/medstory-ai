@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
+import Image from 'next/image';
 import PageLayout from '@/app/components/PageLayout';
 import ChatInterface from '@/app/components/ChatInterface';
 
@@ -536,7 +537,15 @@ export default function CreateStoryFlowMap() {
 
   return (
     <PageLayout
-      sectionIcon={<span>🗺️</span>}
+      sectionIcon={
+        <Image
+          src="/core_story_concept_new.png"
+          alt="Story Flow Map"
+          width={72}
+          height={72}
+          className="w-18 h-18"
+        />
+      }
       sectionName="Story Flow"
       taskName="Create story flow map"
     >
