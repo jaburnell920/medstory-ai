@@ -49,9 +49,8 @@ export default function EnterPage() {
 
               <p className="text-base leading-normal text-[#111827] mb-3">
                 <span className="text-[#1c437b] italic">Follow the flow.</span> Work down each
-                section in order; every step refines the narrative, so the final{' '}
-                <span className="font-semibold text-[#04316f]">MEDSTORY</span> Slide Deck is
-                coherent and compelling.
+                section in order; every step refines the narrative, so the final MEDSTORY Slide Deck
+                is coherent and compelling.
               </p>
 
               <p className="text-base leading-normal text-[#111827]">
