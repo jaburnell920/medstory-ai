@@ -10,7 +10,7 @@ export default function TensionResolution() {
   const [step, setStep] = useState(0);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState('');
+  const [results, setResults] = useState<string[]>([]);
   const [conversationStarted, setConversationStarted] = useState(false);
   const [context, setContext] = useState({
     coreStoryConcept: '',
@@ -31,7 +31,7 @@ export default function TensionResolution() {
     setStep(0);
     setInput('');
     setLoading(false);
-    setResult('');
+    setResults([]);
     setConversationStarted(false);
     setContext({
       coreStoryConcept: '',
@@ -50,57 +50,66 @@ export default function TensionResolution() {
 
   // Function to render each section in separate blue boxes
   const renderSeparateBoxes = (content: string) => {
-    // Split the content into sections
     const sections = [];
     
-    // Check for NEW: prefix in content
-    const hasNewContent = content.includes('NEW:');
+    // Split content by the NEW CONTENT separator to handle accumulated content
+    const contentParts = content.split('---NEW CONTENT---');
     
-    // Extract Attack Points (including those with NEW: prefix)
-    const attackPointRegex = /(?:NEW:\s*)?Attack Point #\d+[\s\S]*?(?=(?:NEW:\s*)?Attack Point #\d+|\*\*Tension-Resolution #|Tension-Resolution #|Would you|$)/gi;
-    let attackPointMatch;
-    while ((attackPointMatch = attackPointRegex.exec(content)) !== null) {
-      if (attackPointMatch[0].trim()) {
-        const attackPointContent = attackPointMatch[0].trim();
-        const isNew = attackPointContent.includes('NEW:');
+    contentParts.forEach((part, partIndex) => {
+      if (!part.trim()) return;
+      
+      const isNewContent = partIndex > 0;
+      
+      // Extract Attack Points (including those with NEW: prefix)
+      const attackPointRegex = /(?:NEW:\s*)?Attack Point #\d+[\s\S]*?(?=(?:NEW:\s*)?Attack Point #\d+|\*\*Tension-Resolution #|Tension-Resolution #|\*\*Conclusion|Conclusion|\*\*References|References|Would you|---NEW CONTENT---|$)/gi;
+      let attackPointMatch;
+      while ((attackPointMatch = attackPointRegex.exec(part)) !== null) {
+        if (attackPointMatch[0].trim()) {
+          const attackPointContent = attackPointMatch[0].trim();
+          const hasNewPrefix = attackPointContent.includes('NEW:');
+          sections.push({
+            title: (isNewContent || hasNewPrefix) ? 'New Attack Point' : 'Attack Point',
+            content: hasNewPrefix ? attackPointContent.replace('NEW:', '').trim() : attackPointContent
+          });
+        }
+      }
+      
+      // Extract individual Tension-Resolution Points
+      const tensionResolutionRegex = /(?:\*\*)?Tension-Resolution #\d+(?:\*\*)?:?[\s\S]*?(?=(?:\*\*)?Tension-Resolution #\d+(?:\*\*)?|\*\*Conclusion|Conclusion|\*\*References|References|Would you|---NEW CONTENT---|$)/gi;
+      let match;
+      while ((match = tensionResolutionRegex.exec(part)) !== null) {
+        if (match[0].trim()) {
+          const tensionContent = match[0].trim();
+          // Extract the number from the tension-resolution point
+          const numberMatch = tensionContent.match(/Tension-Resolution #(\d+)/i);
+          const pointNumber = numberMatch ? numberMatch[1] : '';
+          sections.push({
+            title: `Tension-Resolution Point ${pointNumber}`,
+            content: tensionContent
+          });
+        }
+      }
+      
+      // Extract Conclusion
+      const conclusionMatch = part.match(/(?:\*\*)?Conclusion(?:\*\*)?[\s\S]*?(?=\*\*References|References|Would you|---NEW CONTENT---|$)/i);
+      if (conclusionMatch && conclusionMatch[0].trim()) {
         sections.push({
-          title: isNew ? 'New Attack Point' : 'Attack Point',
-          content: isNew ? attackPointContent.replace('NEW:', '').trim() : attackPointContent
+          title: 'Conclusion',
+          content: conclusionMatch[0].trim()
         });
       }
-    }
-    
-    // Extract Tension-Resolution Points
-    const tensionResolutionRegex = /(?:\*\*)?Tension-Resolution #\d+(?:\*\*)?:?[\s\S]*?(?=(?:\*\*)?Tension-Resolution #\d+(?:\*\*)?|\*\*Conclusion|Conclusion|\*\*References|References|Would you|$)/gi;
-    let match;
-    while ((match = tensionResolutionRegex.exec(content)) !== null) {
-      if (match[0].trim()) {
+      
+      // Extract References
+      const referencesMatch = part.match(/(?:\*\*)?References(?:\*\*)?[\s\S]*?(?=Would you|---NEW CONTENT---|$)/i);
+      if (referencesMatch && referencesMatch[0].trim()) {
         sections.push({
-          title: 'Tension-Resolution Point',
-          content: match[0].trim()
+          title: 'References',
+          content: referencesMatch[0].trim()
         });
       }
-    }
+    });
     
-    // Extract Conclusion
-    const conclusionMatch = content.match(/(?:\*\*)?Conclusion(?:\*\*)?[\s\S]*?(?=\*\*References|References|Would you|$)/i);
-    if (conclusionMatch && conclusionMatch[0].trim()) {
-      sections.push({
-        title: 'Conclusion',
-        content: conclusionMatch[0].trim()
-      });
-    }
-    
-    // Extract References
-    const referencesMatch = content.match(/(?:\*\*)?References(?:\*\*)?[\s\S]*?(?=Would you|$)/i);
-    if (referencesMatch && referencesMatch[0].trim()) {
-      sections.push({
-        title: 'References',
-        content: referencesMatch[0].trim()
-      });
-    }
-    
-    // If no sections were found or if there's content that wasn't captured, add the entire content
+    // If no sections were found, add the entire content as one box
     if (sections.length === 0) {
       return (
         <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-4">
@@ -261,7 +270,13 @@ export default function TensionResolution() {
           const { content, question } = parseAIResponse(data.result);
 
           if (content) {
-            setResult(content);
+            setResult(prevResult => {
+              // If there's existing content, append new content with a separator
+              if (prevResult && prevResult.trim()) {
+                return prevResult + '\n\n---NEW CONTENT---\n\n' + content;
+              }
+              return content;
+            });
           }
 
           if (question) {
@@ -320,7 +335,13 @@ export default function TensionResolution() {
 
         // Update result if there's substantial content
         if (content && content.length > 50) {
-          setResult(content);
+          setResult(prevResult => {
+            // If there's existing content, append new content with a separator
+            if (prevResult && prevResult.trim()) {
+              return prevResult + '\n\n---NEW CONTENT---\n\n' + content;
+            }
+            return content;
+          });
         }
 
         // Add AI response to chat
