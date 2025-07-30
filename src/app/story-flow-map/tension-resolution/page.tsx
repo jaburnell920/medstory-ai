@@ -48,80 +48,85 @@ export default function TensionResolution() {
     ]);
   };
 
-  // Function to render each section in separate blue boxes
-  const renderSeparateBoxes = (content: string) => {
+  // Function to extract sections from a content string
+  const extractSections = (content: string) => {
     const sections = [];
     
-    // Split content by the NEW CONTENT separator to handle accumulated content
-    const contentParts = content.split('---NEW CONTENT---');
+    // Check for NEW: prefix in content
+    const hasNewPrefix = content.includes('NEW:');
     
-    contentParts.forEach((part, partIndex) => {
-      if (!part.trim()) return;
-      
-      const isNewContent = partIndex > 0;
-      
-      // Extract Attack Points (including those with NEW: prefix)
-      const attackPointRegex = /(?:NEW:\s*)?Attack Point #\d+[\s\S]*?(?=(?:NEW:\s*)?Attack Point #\d+|\*\*Tension-Resolution #|Tension-Resolution #|\*\*Conclusion|Conclusion|\*\*References|References|Would you|---NEW CONTENT---|$)/gi;
-      let attackPointMatch;
-      while ((attackPointMatch = attackPointRegex.exec(part)) !== null) {
-        if (attackPointMatch[0].trim()) {
-          const attackPointContent = attackPointMatch[0].trim();
-          const hasNewPrefix = attackPointContent.includes('NEW:');
-          sections.push({
-            title: (isNewContent || hasNewPrefix) ? 'New Attack Point' : 'Attack Point',
-            content: hasNewPrefix ? attackPointContent.replace('NEW:', '').trim() : attackPointContent
-          });
-        }
-      }
-      
-      // Extract individual Tension-Resolution Points
-      const tensionResolutionRegex = /(?:\*\*)?Tension-Resolution #\d+(?:\*\*)?:?[\s\S]*?(?=(?:\*\*)?Tension-Resolution #\d+(?:\*\*)?|\*\*Conclusion|Conclusion|\*\*References|References|Would you|---NEW CONTENT---|$)/gi;
-      let match;
-      while ((match = tensionResolutionRegex.exec(part)) !== null) {
-        if (match[0].trim()) {
-          const tensionContent = match[0].trim();
-          // Extract the number from the tension-resolution point
-          const numberMatch = tensionContent.match(/Tension-Resolution #(\d+)/i);
-          const pointNumber = numberMatch ? numberMatch[1] : '';
-          sections.push({
-            title: `Tension-Resolution Point ${pointNumber}`,
-            content: tensionContent
-          });
-        }
-      }
-      
-      // Extract Conclusion
-      const conclusionMatch = part.match(/(?:\*\*)?Conclusion(?:\*\*)?[\s\S]*?(?=\*\*References|References|Would you|---NEW CONTENT---|$)/i);
-      if (conclusionMatch && conclusionMatch[0].trim()) {
+    // Extract Attack Points (including those with NEW: prefix)
+    const attackPointRegex = /(?:NEW:\s*)?Attack Point #\d+[\s\S]*?(?=(?:NEW:\s*)?Attack Point #\d+|\*\*Tension-Resolution #|Tension-Resolution #|\*\*Conclusion|Conclusion|\*\*References|References|Would you|$)/gi;
+    let attackPointMatch;
+    while ((attackPointMatch = attackPointRegex.exec(content)) !== null) {
+      if (attackPointMatch[0].trim()) {
+        const attackPointContent = attackPointMatch[0].trim();
+        const hasNewInContent = attackPointContent.includes('NEW:');
         sections.push({
-          title: 'Conclusion',
-          content: conclusionMatch[0].trim()
+          title: hasNewInContent ? 'New Attack Point' : 'Attack Point',
+          content: hasNewInContent ? attackPointContent.replace('NEW:', '').trim() : attackPointContent
         });
       }
-      
-      // Extract References
-      const referencesMatch = part.match(/(?:\*\*)?References(?:\*\*)?[\s\S]*?(?=Would you|---NEW CONTENT---|$)/i);
-      if (referencesMatch && referencesMatch[0].trim()) {
-        sections.push({
-          title: 'References',
-          content: referencesMatch[0].trim()
-        });
-      }
-    });
-    
-    // If no sections were found, add the entire content as one box
-    if (sections.length === 0) {
-      return (
-        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-4">
-          <pre className="text-gray-800 whitespace-pre-wrap font-sans">{content}</pre>
-        </div>
-      );
     }
+    
+    // Extract individual Tension-Resolution Points
+    const tensionResolutionRegex = /(?:\*\*)?Tension-Resolution #\d+(?:\*\*)?:?[\s\S]*?(?=(?:\*\*)?Tension-Resolution #\d+(?:\*\*)?|\*\*Conclusion|Conclusion|\*\*References|References|Would you|$)/gi;
+    let match;
+    while ((match = tensionResolutionRegex.exec(content)) !== null) {
+      if (match[0].trim()) {
+        const tensionContent = match[0].trim();
+        // Extract the number from the tension-resolution point
+        const numberMatch = tensionContent.match(/Tension-Resolution #(\d+)/i);
+        const pointNumber = numberMatch ? numberMatch[1] : '';
+        sections.push({
+          title: `Tension-Resolution Point ${pointNumber}`,
+          content: tensionContent
+        });
+      }
+    }
+    
+    // Extract Conclusion
+    const conclusionMatch = content.match(/(?:\*\*)?Conclusion(?:\*\*)?[\s\S]*?(?=\*\*References|References|Would you|$)/i);
+    if (conclusionMatch && conclusionMatch[0].trim()) {
+      sections.push({
+        title: 'Conclusion',
+        content: conclusionMatch[0].trim()
+      });
+    }
+    
+    // Extract References
+    const referencesMatch = content.match(/(?:\*\*)?References(?:\*\*)?[\s\S]*?(?=Would you|$)/i);
+    if (referencesMatch && referencesMatch[0].trim()) {
+      sections.push({
+        title: 'References',
+        content: referencesMatch[0].trim()
+      });
+    }
+    
+    // If no sections were found but content exists, add it as a new content section
+    if (sections.length === 0 && content.trim()) {
+      sections.push({
+        title: 'New Content',
+        content: content.trim()
+      });
+    }
+    
+    return sections;
+  };
+  
+  // Function to render all results in separate blue boxes
+  const renderAllResults = () => {
+    if (results.length === 0) {
+      return null;
+    }
+    
+    // Collect all sections from all results
+    const allSections = results.flatMap(result => extractSections(result));
     
     // Render each section in its own blue box
     return (
       <div className="space-y-4">
-        {sections.map((section, index) => (
+        {allSections.map((section, index) => (
           <div key={index} className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-4">
             <h3 className="text-lg font-semibold text-blue-800 mb-2">{section.title}</h3>
             <pre className="text-gray-800 whitespace-pre-wrap font-sans">{section.content}</pre>
@@ -270,13 +275,7 @@ export default function TensionResolution() {
           const { content, question } = parseAIResponse(data.result);
 
           if (content) {
-            setResult(prevResult => {
-              // If there's existing content, append new content with a separator
-              if (prevResult && prevResult.trim()) {
-                return prevResult + '\n\n---NEW CONTENT---\n\n' + content;
-              }
-              return content;
-            });
+            setResults(prevResults => [...prevResults, content]);
           }
 
           if (question) {
@@ -333,15 +332,9 @@ export default function TensionResolution() {
         const data = await res.json();
         const { content, question } = parseAIResponse(data.result);
 
-        // Update result if there's substantial content
+        // Update results if there's substantial content
         if (content && content.length > 50) {
-          setResult(prevResult => {
-            // If there's existing content, append new content with a separator
-            if (prevResult && prevResult.trim()) {
-              return prevResult + '\n\n---NEW CONTENT---\n\n' + content;
-            }
-            return content;
-          });
+          setResults(prevResults => [...prevResults, content]);
         }
 
         // Add AI response to chat
@@ -392,13 +385,13 @@ export default function TensionResolution() {
         </div>
 
         {/* Result Section - Right Side */}
-        {result && (
+        {results.length > 0 && (
           <div className="flex-1 space-y-6">
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md space-y-6">
               <h2 className="text-xl font-bold text-blue-900">
                 Attack Point & Tension-Resolution Points
               </h2>
-              {renderSeparateBoxes(result)}
+              {renderAllResults()}
             </div>
           </div>
         )}
