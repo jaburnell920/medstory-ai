@@ -600,7 +600,7 @@ export default function TensionResolution() {
     <PageLayout
       sectionIcon={
         <Image
-          src="/story_flow_map_chat.png"
+          src="/core_story_concept_new.png"
           alt="Story Flow Map"
           width={72}
           height={72}
