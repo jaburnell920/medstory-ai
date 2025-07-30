@@ -158,7 +158,7 @@ Generate the entire outline without stopping for user input.
     <PageLayout
       sectionIcon={
         <Image
-          src="/medstory_slide_deck_chat.png"
+          src="/slide_presentation_new.png"
           alt="Core Story Chat"
           width={72}
           height={72}

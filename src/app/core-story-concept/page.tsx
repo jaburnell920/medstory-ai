@@ -32,18 +32,18 @@ export default function CoreStoryConcept() {
   const [concepts, setConcepts] = useState<CoreStoryConcept[]>([]);
   const [selectedConcept, setSelectedConcept] = useState<string>('');
   const [nextConceptNumber, setNextConceptNumber] = useState<number>(1);
-  const [currentlyModifyingConcept, setCurrentlyModifyingConcept] = useState<CoreStoryConcept | null>(null);
-
+  const [currentlyModifyingConcept, setCurrentlyModifyingConcept] =
+    useState<CoreStoryConcept | null>(null);
 
   // Load saved concepts on component mount and clear generated results on page refresh
   useEffect(() => {
     // Load saved concepts from localStorage only for the saved page functionality
     // Don't display them immediately on page load - they should only appear after generation
     const savedConcepts = localStorage.getItem('coreStoryConceptsData');
-    
+
     if (savedConcepts) {
       const conceptsData = JSON.parse(savedConcepts);
-      
+
       // Set the next concept number based on existing saved concepts
       if (conceptsData.length > 0) {
         const maxConceptNumber = Math.max(
@@ -367,7 +367,9 @@ export default function CoreStoryConcept() {
         setConcepts((prevConcepts) => {
           const updatedConcepts = [...prevConcepts];
           if (currentlyModifyingConcept) {
-            const conceptIndex = updatedConcepts.findIndex(c => c.id === currentlyModifyingConcept.id);
+            const conceptIndex = updatedConcepts.findIndex(
+              (c) => c.id === currentlyModifyingConcept.id
+            );
             if (conceptIndex !== -1) {
               updatedConcepts[conceptIndex] = {
                 ...updatedConcepts[conceptIndex],
@@ -504,7 +506,7 @@ export default function CoreStoryConcept() {
     <PageLayout
       sectionIcon={
         <Image
-          src="/core_story_chat.png"
+          src="/core_story_concept_new.png"
           alt="Core Story Chat"
           width={72}
           height={72}
@@ -576,25 +578,27 @@ export default function CoreStoryConcept() {
                       />
                       <div className="flex-1">
                         <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
-                          {concept.content ? concept.content
-                            .replace(
-                              /^(\*\*)?TENSION(\*\*)?:?\s*$/gim,
-                              '<div class="font-bold text-blue-800 text-base mt-6 mb-4">TENSION</div>'
-                            )
-                            .replace(
-                              /^(\*\*)?RESOLUTION(\*\*)?:?\s*$/gim,
-                              '<div class="font-bold text-blue-800 text-base mt-6 mb-4">RESOLUTION</div>'
-                            )
-                            .replace(
-                              /Core Story Concept Candidate #\d+/g,
-                              () =>
-                                `<div class="font-bold text-blue-800 text-lg mb-4">Core Story Concept Candidate #${concept.conceptNumber}</div>`
-                            )
-                            .replace(/##/g, '') // Remove all occurrences of ##
-                            .split('\n')
-                            .map((line, i) => (
-                              <div key={i} dangerouslySetInnerHTML={{ __html: line }} />
-                            )) : 'No content available'}
+                          {concept.content
+                            ? concept.content
+                                .replace(
+                                  /^(\*\*)?TENSION(\*\*)?:?\s*$/gim,
+                                  '<div class="font-bold text-blue-800 text-base mt-6 mb-4">TENSION</div>'
+                                )
+                                .replace(
+                                  /^(\*\*)?RESOLUTION(\*\*)?:?\s*$/gim,
+                                  '<div class="font-bold text-blue-800 text-base mt-6 mb-4">RESOLUTION</div>'
+                                )
+                                .replace(
+                                  /Core Story Concept Candidate #\d+/g,
+                                  () =>
+                                    `<div class="font-bold text-blue-800 text-lg mb-4">Core Story Concept Candidate #${concept.conceptNumber}</div>`
+                                )
+                                .replace(/##/g, '') // Remove all occurrences of ##
+                                .split('\n')
+                                .map((line, i) => (
+                                  <div key={i} dangerouslySetInnerHTML={{ __html: line }} />
+                                ))
+                            : 'No content available'}
                         </div>
                       </div>
                     </div>
