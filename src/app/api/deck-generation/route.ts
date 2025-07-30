@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
         {
           role: 'system',
           content:
-            'You are a world-class expert in presentation design, medical storytelling, generative AI prompting, PowerPoint design, live presentation coaching, TED Talk-style speaking, narrative storytelling structure, cognitive and behavioral psychology, persuasive science/business communication, visual data storytelling and infographic design, and stoic philosophy for clarity, simplicity, and purpose.',
+            'You are a world-class expert in generative AI prompting, PowerPoint design, live presentation coaching, TED Talk-style speaking, narrative storytelling structure, cognitive and behavioral psychology, persuasive science/business communication, visual data storytelling and infographic design, and stoic philosophy for clarity, simplicity, and purpose.',
         },
         {
           role: 'user',
