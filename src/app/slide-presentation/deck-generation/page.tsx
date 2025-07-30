@@ -26,7 +26,7 @@ export default function DeckGenerationPage() {
     {
       role: 'assistant',
       content:
-        'Got it - you need me to generate an outline for a MEDSTORY® presentation deck. First I will need a few bits of information to generate your optimized presentation deck. This should not take long - just 8 quick questions and we will be on our way.\n\n1. ' +
+        'Got it - you need me to generate an outline for a MEDSTORY® presentation deck. First I\'ll need a few bits of information to generate your optimized presentation deck. This shouldn\'t take long - just 8 quick questions and we\'ll be on our way.\n\n1. ' +
         questions[0],
     },
   ]);
@@ -49,7 +49,7 @@ export default function DeckGenerationPage() {
       {
         role: 'assistant',
         content:
-          'Got it - you need me to generate an outline for a MEDSTORY® presentation deck. First I will need a few bits of information to generate your optimized presentation deck. This should not take long - just 8 quick questions and we will be on our way.\n\n1. ' +
+          'Got it - you need me to generate an outline for a MEDSTORY® presentation deck. First I\'ll need a few bits of information to generate your optimized presentation deck. This shouldn\'t take long - just 8 quick questions and we\'ll be on our way.\n\n1. ' +
           questions[0],
       },
     ]);
@@ -80,7 +80,7 @@ export default function DeckGenerationPage() {
         {
           role: 'assistant' as const,
           content:
-            'Thanks for that info. Give me a moment and your presentation outline will be ready shortly',
+            'Thanks for that info. Give me a moment and your presentation outline will be ready shortly...',
         },
       ]);
       setShowFinalMessage(true);
@@ -92,15 +92,15 @@ export default function DeckGenerationPage() {
       // Create the detailed prompt for the AI
       const detailedPrompt = `
 I want you to act as a world-class expert in:
-- generative AI prompting
-- PowerPoint design
-- live presentation coaching
-- TED Talk-style speaking
-- narrative storytelling structure
-- cognitive and behavioral psychology
-- persuasive science/business communication
-- visual data storytelling and infographic design
-- stoic philosophy for clarity, simplicity, and purpose
+generative AI prompting
+PowerPoint design
+live presentation coaching
+TED Talk-style speaking
+narrative storytelling structure
+cognitive and behavioral psychology
+persuasive science/business communication
+visual data storytelling and infographic design
+stoic philosophy for clarity, simplicity, and purpose
 
 Based on the following answers, generate a complete, persuasive, memorable PowerPoint presentation outline:
 
@@ -114,17 +114,20 @@ Based on the following answers, generate a complete, persuasive, memorable Power
 8. Speaker Notes: ${updatedAnswers[7]}
 9. Visual Style Reference: ${updatedAnswers[8]}
 
-Create a slide-by-slide outline using these guidelines:
-- Each slide should be formatted in sections separated by blank lines
-- First section: TEXT (bullets max 5, or floating text max 2)
-- Second section: VISUALS (detailed description)
-- Third section: SPEAKER NOTES (25-150 words, conversational)
-- Fourth section: REFERENCES (numbered, format: Smith E, et al. N Eng J Med. 2024;345:50-61)
-- Slide titles should express main idea in less than 15 words
-- Design to grab attention in first 30 seconds
-- Use visual and emotional anchors for memory retention
-- Align with scientific principles of attention, motivation, and persuasion
-- Make valuable, novel, and easy to share
+Each slide should be formatted in sections which are separated by blank lines. First section is TEXT followed by either bullets or floating text. Second section is VISUALS followed by detailed description of the visuals. Third section is SPEAKER NOTES which should be between 25 and 150 words. Fourth section is REFERENCES with the numbered references. Insert blank lines after the last line of each section. Add a separator line after each slide.
+Slide title - should express the main idea of the slide fully but in less than 15 words. Do not include the words "tension" "tension point" "resolution" or "resolution point" in the slides title.
+Slide text - either bullets (maximum 5) or floating text (maximum 2). Make sure all text is supported by references that are listed in the footnote.
+Suggested visuals - make the visual directly associate with one of the bullets or with one of the floating text. Make sure that all information presented in the visuals is supported by references that are listed in the footnote.
+Speaker notes (if user indicated to include these in questions above). Speaker notes should be conversational and between 50 and 150 words. These should go into details if necessary to fully explain all the text and visuals on the slide but without going into excessive detail.
+Footnote references - number these sequentially and use the following format: Smith E, et al. N Eng J Med. 2024;345:50-61. For each slide, number the references starting at 1. It's OK to have the same reference on different slides in different positions in the reference list.
+If a story flow map is provided, use this for the narrative arc of the presentation deck.
+If a story flow map is not provided, create narrative arc that includes a compelling, curiosity-generating attack point followed by multiple tension points each of which is resolved and then smoothly transitions to next tension point, and concludes with a summary slide containing the big idea of the presentation, delivers insight, and ends with clarity and emotional payoff
+
+Design the presentation to:
+Grab attention in the first 30 seconds
+Use visual and emotional anchors for memory retention
+Align with scientific principles of attention, motivation, and persuasion
+Make the talk feel valuable, novel, and easy to share with others
 
 Generate the entire outline without stopping for user input.
       `;
