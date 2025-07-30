@@ -30,8 +30,9 @@ export default function CreateStoryFlowMap() {
 
   // Initialize with confirmation question
   useEffect(() => {
-    const initialMessage = "Just to confirm, would you like me to use the currently selected attack point, the most recent story flow outline, and the currently selected Core Story Concept to create the story flow map?";
-    
+    const initialMessage =
+      'Just to confirm, would you like me to use the currently selected attack point, the most recent story flow outline, and the currently selected Core Story Concept to create the story flow map?';
+
     setMessages([
       {
         role: 'assistant',
@@ -43,46 +44,47 @@ export default function CreateStoryFlowMap() {
   // Function to check if required data exists in localStorage
   const checkMemoryForRequiredData = (): boolean => {
     if (typeof window === 'undefined') return false;
-    
+
     try {
       // Check for Core Story Concept data
       const coreStoryConceptData = localStorage.getItem('selectedCoreStoryConceptData');
       let hasCoreStoryConcept = false;
-      
+
       if (coreStoryConceptData) {
         const conceptData = JSON.parse(coreStoryConceptData);
-        hasCoreStoryConcept = conceptData && conceptData.content && conceptData.content.trim().length > 0;
+        hasCoreStoryConcept =
+          conceptData && conceptData.content && conceptData.content.trim().length > 0;
       }
-      
+
       // Check for Story Flow Outline data (attack points and tension-resolution points)
       const storyFlowData = localStorage.getItem('storyFlowData');
       const attackPointsData = localStorage.getItem('attackPoints');
       const tensionResolutionData = localStorage.getItem('tensionResolutionPoints');
-      
+
       let hasStoryFlowOutline = false;
-      
+
       // Check if any story flow outline data exists
       if (storyFlowData) {
         try {
           const flowData = JSON.parse(storyFlowData);
-          hasStoryFlowOutline = flowData && (
-            (flowData.attackPoints && flowData.attackPoints.length > 0) ||
-            (flowData.tensionResolutionPoints && flowData.tensionResolutionPoints.length > 0)
-          );
-        } catch (e) {
+          hasStoryFlowOutline =
+            flowData &&
+            ((flowData.attackPoints && flowData.attackPoints.length > 0) ||
+              (flowData.tensionResolutionPoints && flowData.tensionResolutionPoints.length > 0));
+        } catch {
           // If parsing fails, check individual items
         }
       }
-      
+
       // Fallback: check individual localStorage items
       if (!hasStoryFlowOutline) {
         const hasAttackPoints = attackPointsData && JSON.parse(attackPointsData).length > 0;
-        const hasTensionResolution = tensionResolutionData && JSON.parse(tensionResolutionData).length > 0;
-        hasStoryFlowOutline = hasAttackPoints || hasTensionResolution;
+        const hasTensionResolution =
+          tensionResolutionData && JSON.parse(tensionResolutionData).length > 0;
+        hasStoryFlowOutline = Boolean(hasAttackPoints) || Boolean(hasTensionResolution);
       }
-      
+
       return hasCoreStoryConcept && hasStoryFlowOutline;
-      
     } catch (error) {
       console.error('Error checking memory for required data:', error);
       return false;
@@ -99,23 +101,28 @@ export default function CreateStoryFlowMap() {
     setInput(''); // Clear input
 
     const response = userMessage.toLowerCase();
-    
+
     if (step === 0) {
       // Handle initial confirmation
-      if (response.includes('yes') || response.includes('confirm') || response.includes('proceed')) {
+      if (
+        response.includes('yes') ||
+        response.includes('confirm') ||
+        response.includes('proceed')
+      ) {
         // User confirmed - check if data exists in memory
         const hasRequiredData = checkMemoryForRequiredData();
-        
+
         if (hasRequiredData) {
           // Proceed to create story flow map
           setMessages([
             ...newMessages,
             {
               role: 'assistant',
-              content: 'Thank you for confirming. I will now create your story flow map using the selected data.',
+              content:
+                'Thank you for confirming. I will now create your story flow map using the selected data.',
             },
           ]);
-          
+
           setLoading(true);
           await createStoryFlowMap();
         } else {
@@ -124,7 +131,8 @@ export default function CreateStoryFlowMap() {
             ...newMessages,
             {
               role: 'assistant',
-              content: 'I diplomatically suggest that you complete the Core Story Concept and Story Flow Outline sections of MEDSTORYAI and then return here to view and edit the Story Flow Map.',
+              content:
+                'I diplomatically suggest that you complete the Core Story Concept and Story Flow Outline sections of MEDSTORYAI and then return here to view and edit the Story Flow Map.',
             },
           ]);
         }
@@ -134,7 +142,8 @@ export default function CreateStoryFlowMap() {
           ...newMessages,
           {
             role: 'assistant',
-            content: 'I understand. I diplomatically suggest that you complete the Core Story Concept and Story Flow Outline sections of MEDSTORYAI and then return here to view and edit the Story Flow Map.',
+            content:
+              'I understand. I diplomatically suggest that you complete the Core Story Concept and Story Flow Outline sections of MEDSTORYAI and then return here to view and edit the Story Flow Map.',
           },
         ]);
       }
@@ -169,24 +178,24 @@ export default function CreateStoryFlowMap() {
     try {
       // Get data from localStorage
       const memoryData = getDataFromMemory();
-      
+
       const response = await fetch('/api/story-flow-map', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           action: 'create',
-          memoryData 
+          memoryData,
         }),
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         setStoryFlowData(data.storyFlowData);
         setShowMap(true);
         setStep(1);
-        
-        setMessages(prev => [
+
+        setMessages((prev) => [
           ...prev,
           {
             role: 'assistant',
@@ -195,11 +204,12 @@ export default function CreateStoryFlowMap() {
         ]);
       } else {
         toast.error('Failed to create story flow map');
-        setMessages(prev => [
+        setMessages((prev) => [
           ...prev,
           {
             role: 'assistant',
-            content: 'I encountered an error creating the story flow map. Please ensure you have completed the Core Story Concept and Story Flow Outline sections first.',
+            content:
+              'I encountered an error creating the story flow map. Please ensure you have completed the Core Story Concept and Story Flow Outline sections first.',
           },
         ]);
       }
@@ -214,21 +224,21 @@ export default function CreateStoryFlowMap() {
   // Function to get data from localStorage
   const getDataFromMemory = () => {
     if (typeof window === 'undefined') return null;
-    
+
     try {
       // Get Core Story Concept
       const coreStoryConceptData = localStorage.getItem('selectedCoreStoryConceptData');
       let coreStoryConcept = '';
-      
+
       if (coreStoryConceptData) {
         const conceptData = JSON.parse(coreStoryConceptData);
         coreStoryConcept = conceptData?.content || '';
       }
-      
+
       // Get Story Flow Outline data
       let attackPoints = [];
       let tensionResolutionPoints = [];
-      
+
       // Try to get from consolidated storyFlowData first
       const storyFlowData = localStorage.getItem('storyFlowData');
       if (storyFlowData) {
@@ -236,11 +246,11 @@ export default function CreateStoryFlowMap() {
           const flowData = JSON.parse(storyFlowData);
           attackPoints = flowData.attackPoints || [];
           tensionResolutionPoints = flowData.tensionResolutionPoints || [];
-        } catch (e) {
+        } catch {
           // If parsing fails, try individual items
         }
       }
-      
+
       // Fallback: get from individual localStorage items
       if (attackPoints.length === 0) {
         const attackPointsData = localStorage.getItem('attackPoints');
@@ -248,20 +258,19 @@ export default function CreateStoryFlowMap() {
           attackPoints = JSON.parse(attackPointsData);
         }
       }
-      
+
       if (tensionResolutionPoints.length === 0) {
         const tensionResolutionData = localStorage.getItem('tensionResolutionPoints');
         if (tensionResolutionData) {
           tensionResolutionPoints = JSON.parse(tensionResolutionData);
         }
       }
-      
+
       return {
         coreStoryConcept,
         attackPoints,
-        tensionResolutionPoints
+        tensionResolutionPoints,
       };
-      
     } catch (error) {
       console.error('Error getting data from memory:', error);
       return null;
@@ -273,19 +282,19 @@ export default function CreateStoryFlowMap() {
       const response = await fetch('/api/story-flow-map', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          action: 'modify', 
+        body: JSON.stringify({
+          action: 'modify',
           modifications,
-          currentData: storyFlowData 
+          currentData: storyFlowData,
         }),
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         setStoryFlowData(data.storyFlowData);
-        
-        setMessages(prev => [
+
+        setMessages((prev) => [
           ...prev,
           {
             role: 'assistant',
@@ -308,17 +317,17 @@ export default function CreateStoryFlowMap() {
     if (!storyFlowData || !showMap) return null;
 
     const { storyPoints } = storyFlowData;
-    
+
     // Calculate positions based on requirements
     // AP at (0, AP tension value)
     // Tension points at (x, tension value) starting from x=10, increasing by 20
     // Resolution points at (x+10, resolution value)
     // CSC at next x coordinate with y=25
-    
-    const tensionResolutionPairs = storyPoints.filter(p => p.label !== 'AP' && p.label !== 'CSC');
+
+    const tensionResolutionPairs = storyPoints.filter((p) => p.label !== 'AP' && p.label !== 'CSC');
     const svgWidth = Math.max(800, 10 + tensionResolutionPairs.length * 20 + 100);
     const svgHeight = 180;
-    
+
     // Scale factor to fit values in SVG (values are 0-100, we want them in reasonable SVG coordinates)
     const yScale = (svgHeight - 80) / 100; // Leave 40px margin top and bottom
 
@@ -329,26 +338,42 @@ export default function CreateStoryFlowMap() {
           <svg width={svgWidth} height={svgHeight} className="w-full">
             {/* Light gray background */}
             <rect width="100%" height="100%" fill="#f5f5f5" />
-            
+
             {/* Y-axis label - two lines: "Story" above "Tension" */}
-            <text x="25" y="45" fontSize="14" fontWeight="bold" fill="black" textAnchor="middle">Story</text>
-            <text x="25" y="60" fontSize="14" fontWeight="bold" fill="black" textAnchor="middle">Tension</text>
-            
+            <text x="25" y="45" fontSize="14" fontWeight="bold" fill="black" textAnchor="middle">
+              Story
+            </text>
+            <text x="25" y="60" fontSize="14" fontWeight="bold" fill="black" textAnchor="middle">
+              Tension
+            </text>
+
             {/* X-axis label */}
-            <text x={svgWidth / 2} y={svgHeight - 10} fontSize="14" fontWeight="bold" fill="black" textAnchor="middle">Story Progress</text>
-            
+            <text
+              x={svgWidth / 2}
+              y={svgHeight - 10}
+              fontSize="14"
+              fontWeight="bold"
+              fill="black"
+              textAnchor="middle"
+            >
+              Story Progress
+            </text>
+
             {/* Render all circles and connections */}
             {(() => {
-              const circles = [];
-              const lines = [];
-              let previousX = 0, previousY = 0;
-              
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const circles: any[] = [];
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const lines: any[] = [];
+              let previousX = 0,
+                previousY = 0;
+
               storyPoints.forEach((point, index) => {
                 if (point.label === 'AP') {
                   // Attack Point at (0, AP tension value) - but we need to offset for visibility
                   const x = 60; // Offset from left edge
-                  const y = svgHeight - 40 - (point.tensionValue * yScale);
-                  
+                  const y = svgHeight - 40 - point.tensionValue * yScale;
+
                   circles.push(
                     <g key={`ap-${index}`}>
                       <circle
@@ -370,15 +395,14 @@ export default function CreateStoryFlowMap() {
                       </text>
                     </g>
                   );
-                  
+
                   previousX = x + 30; // Right edge of circle
                   previousY = y;
-                  
                 } else if (point.label === 'CSC') {
                   // Core Story Concept at next x coordinate with y=25
                   const x = 60 + 10 + tensionResolutionPairs.length * 20 + 10;
-                  const y = svgHeight - 40 - (25 * yScale);
-                  
+                  const y = svgHeight - 40 - 25 * yScale;
+
                   circles.push(
                     <g key={`csc-${index}`}>
                       <circle
@@ -400,7 +424,7 @@ export default function CreateStoryFlowMap() {
                       </text>
                     </g>
                   );
-                  
+
                   // Connection line from previous point to CSC
                   if (previousX && previousY) {
                     lines.push(
@@ -415,15 +439,14 @@ export default function CreateStoryFlowMap() {
                       />
                     );
                   }
-                  
                 } else {
                   // Tension-Resolution pairs
                   const pairIndex = parseInt(point.label) - 1;
                   const tensionX = 60 + 10 + pairIndex * 20;
                   const resolutionX = tensionX + 10;
-                  const tensionY = svgHeight - 40 - (point.tensionValue * yScale);
-                  const resolutionY = svgHeight - 40 - (point.resolutionValue * yScale);
-                  
+                  const tensionY = svgHeight - 40 - point.tensionValue * yScale;
+                  const resolutionY = svgHeight - 40 - point.resolutionValue * yScale;
+
                   // Tension circle (dark red)
                   circles.push(
                     <g key={`tension-${index}`}>
@@ -446,7 +469,7 @@ export default function CreateStoryFlowMap() {
                       </text>
                     </g>
                   );
-                  
+
                   // Resolution circle (blue)
                   circles.push(
                     <g key={`resolution-${index}`}>
@@ -469,7 +492,7 @@ export default function CreateStoryFlowMap() {
                       </text>
                     </g>
                   );
-                  
+
                   // Connection line from previous point to tension
                   if (previousX && previousY) {
                     lines.push(
@@ -484,7 +507,7 @@ export default function CreateStoryFlowMap() {
                       />
                     );
                   }
-                  
+
                   // Connection line from tension to resolution
                   lines.push(
                     <line
@@ -497,12 +520,12 @@ export default function CreateStoryFlowMap() {
                       strokeWidth="3"
                     />
                   );
-                  
+
                   previousX = resolutionX + 30; // Right edge of resolution circle
                   previousY = resolutionY;
                 }
               });
-              
+
               return [...lines, ...circles];
             })()}
           </svg>
@@ -513,6 +536,7 @@ export default function CreateStoryFlowMap() {
 
   return (
     <PageLayout
+      sectionIcon={<span>🗺️</span>}
       sectionName="Story Flow"
       taskName="Create story flow map"
     >
@@ -530,11 +554,7 @@ export default function CreateStoryFlowMap() {
         </div>
 
         {/* Story Flow Map - Right Side */}
-        {showMap && (
-          <div className="flex-1">
-            {renderStoryFlowMap()}
-          </div>
-        )}
+        {showMap && <div className="flex-1">{renderStoryFlowMap()}</div>}
       </div>
     </PageLayout>
   );
