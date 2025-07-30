@@ -1,15 +1,314 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import Image from 'next/image';
+import { toast } from 'react-hot-toast';
+import PageLayout from '@/app/components/PageLayout';
+import ChatInterface from '@/app/components/ChatInterface';
 
 export default function TensionResolution() {
-  const router = useRouter();
+  const [step, setStep] = useState(0);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState('');
+  const [conversationStarted, setConversationStarted] = useState(false);
+  const [waitingForCustomCSC, setWaitingForCustomCSC] = useState(false);
+  const [context, setContext] = useState({
+    coreStoryConcept: '',
+    audience: '',
+    interventionName: '',
+    diseaseCondition: '',
+  });
 
-  useEffect(() => {
-    // Redirect to the main story flow map page
-    router.replace('/story-flow-map');
-  }, [router]);
+  const [messages, setMessages] = useState<{ role: 'assistant' | 'user'; content: string }[]>([
+    {
+      role: 'assistant',
+      content:
+        'Do you want to use the currently selected Core Story Concept or provide a new one?\n\nCurrently selected: Plaque inflammation drives CV events. Direct and safe ways to reduce plaque inflammation are needed. Orticumab is a plaque-targeted anti-inflammatory therapy. By inhibiting pro-inflammatory macrophages within plaques, this new approach has the potential to reduce CV risk on top of current standard of care.',
+    },
+  ]);
 
-  return null;
+  const handleReset = () => {
+    setStep(0);
+    setInput('');
+    setLoading(false);
+    setResult('');
+    setConversationStarted(false);
+    setWaitingForCustomCSC(false);
+    setContext({
+      coreStoryConcept: '',
+      audience: '',
+      interventionName: '',
+      diseaseCondition: '',
+    });
+    setMessages([
+      {
+        role: 'assistant',
+        content:
+          'Do you want to use the currently selected Core Story Concept or provide a new one?\n\nCurrently selected: Plaque inflammation drives CV events. Direct and safe ways to reduce plaque inflammation are needed. Orticumab is a plaque-targeted anti-inflammatory therapy. By inhibiting pro-inflammatory macrophages within plaques, this new approach has the potential to reduce CV risk on top of current standard of care.',
+      },
+    ]);
+  };
+
+  const questions = [
+    'Do you want to use the currently selected Core Story Concept or provide a new one?\n\nCurrently selected: Plaque inflammation drives CV events. Direct and safe ways to reduce plaque inflammation are needed. Orticumab is a plaque-targeted anti-inflammatory therapy. By inhibiting pro-inflammatory macrophages within plaques, this new approach has the potential to reduce CV risk on top of current standard of care.',
+    'Who is your Audience?',
+    'What is your Intervention Name?',
+    'What is the Disease or Condition?',
+  ];
+
+  // Function to separate content from questions in AI response
+  const parseAIResponse = (response: string) => {
+    // Look for questions that should appear in chat
+    const questionPatterns = [
+      /Would you like.*?\?/gi,
+      /Do you want.*?\?/gi,
+      /What.*?would you like.*?\?/gi,
+      /How.*?would you like.*?\?/gi,
+      /Which.*?would you prefer.*?\?/gi,
+      /are you satisfied.*?\?/gi,
+      /What modifications.*?\?/gi,
+    ];
+
+    let content = response;
+    let question = '';
+
+    // Split response into lines to better handle formatting
+    const lines = response.split('\n');
+    const contentLines = [];
+    let foundQuestion = false;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+
+      // Check if this line contains a question
+      let isQuestion = false;
+      for (const pattern of questionPatterns) {
+        if (pattern.test(line)) {
+          question = line;
+          isQuestion = true;
+          foundQuestion = true;
+          break;
+        }
+      }
+
+      // If we haven't found a question yet, or this isn't a question line, add to content
+      if (!isQuestion && !foundQuestion) {
+        contentLines.push(lines[i]);
+      }
+    }
+
+    // If no question found in individual lines, check the entire response
+    if (!question) {
+      for (const pattern of questionPatterns) {
+        const matches = response.match(pattern);
+        if (matches && matches.length > 0) {
+          question = matches[matches.length - 1];
+          content = response.replace(question, '').trim();
+          break;
+        }
+      }
+    } else {
+      content = contentLines.join('\n').trim();
+    }
+
+    return { content: content.trim(), question: question.trim() };
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+
+    const userMsg = { role: 'user' as const, content: input };
+    const newMessages = [...messages, userMsg];
+    setMessages(newMessages);
+    setInput('');
+
+    const trimmed = input.trim();
+
+    // Handle initial setup questions
+    if (!conversationStarted) {
+      if (step === 0 && !waitingForCustomCSC) {
+        // Handle Core Story Concept choice
+        if (trimmed.toLowerCase().includes('currently selected') || trimmed.toLowerCase().includes('current')) {
+          setContext((prev) => ({ 
+            ...prev, 
+            coreStoryConcept: 'Plaque inflammation drives CV events. Direct and safe ways to reduce plaque inflammation are needed. Orticumab is a plaque-targeted anti-inflammatory therapy. By inhibiting pro-inflammatory macrophages within plaques, this new approach has the potential to reduce CV risk on top of current standard of care.' 
+          }));
+        } else if (trimmed.toLowerCase().includes('new') || trimmed.toLowerCase().includes('provide')) {
+          // User wants to provide a new one, ask for it
+          setWaitingForCustomCSC(true);
+          setMessages((msgs) => [
+            ...msgs,
+            {
+              role: 'assistant',
+              content: 'Please enter the Core Story Concept you\'d like to use to guide the story flow.',
+            },
+          ]);
+          return;
+        }
+      } else if (step === 0 && waitingForCustomCSC) {
+        // User provided a custom Core Story Concept
+        setContext((prev) => ({ ...prev, coreStoryConcept: trimmed }));
+        setWaitingForCustomCSC(false);
+      }
+      if (step === 1) setContext((prev) => ({ ...prev, audience: trimmed }));
+      if (step === 2) setContext((prev) => ({ ...prev, interventionName: trimmed }));
+
+      if (step === 3) {
+        setContext((prev) => ({ ...prev, diseaseCondition: trimmed }));
+        setMessages([
+          ...newMessages,
+          {
+            role: 'assistant',
+            content: 'Creating your Story Flow Outline',
+          },
+        ]);
+        setLoading(true);
+
+        try {
+          const res = await fetch('/api/tension-resolution', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'start',
+              coreStoryConcept: context.coreStoryConcept,
+              audience: context.audience,
+              interventionName: context.interventionName,
+              diseaseCondition: trimmed,
+            }),
+          });
+
+          const data = await res.json();
+          const { content, question } = parseAIResponse(data.result);
+
+          if (content) {
+            setResult(content);
+          }
+
+          if (question) {
+            setMessages((msgs) => [
+              ...msgs.slice(0, -1), // Remove "Creating..." message
+              {
+                role: 'assistant',
+                content: question,
+              },
+            ]);
+          }
+
+          setConversationStarted(true);
+        } catch (err) {
+          toast.error('Something went wrong.');
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
+
+        return;
+      }
+
+      // Only advance step if we're not waiting for custom CSC
+      if (!waitingForCustomCSC) {
+        const nextStep = step + 1;
+        setStep(nextStep);
+        if (nextStep < questions.length) {
+          setMessages((msgs) => [
+            ...msgs,
+            {
+              role: 'assistant',
+              content: questions[nextStep],
+            },
+          ]);
+        }
+      }
+    } else {
+      // Handle ongoing conversation
+      setLoading(true);
+
+      try {
+        const res = await fetch('/api/tension-resolution', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'continue',
+            coreStoryConcept: context.coreStoryConcept,
+            audience: context.audience,
+            interventionName: context.interventionName,
+            diseaseCondition: context.diseaseCondition,
+            userMessage: trimmed,
+            conversationHistory: newMessages,
+          }),
+        });
+
+        const data = await res.json();
+        const { content, question } = parseAIResponse(data.result);
+
+        // Update result if there's substantial content
+        if (content && content.length > 50) {
+          setResult(content);
+        }
+
+        // Add AI response to chat
+        const responseContent = question || data.result;
+        setMessages((msgs) => [
+          ...msgs,
+          {
+            role: 'assistant',
+            content: responseContent,
+          },
+        ]);
+      } catch (err) {
+        toast.error('Something went wrong.');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  return (
+    <PageLayout
+      sectionIcon={
+        <Image
+          src="/story_flow_map_chat.png"
+          alt="Story Flow Map"
+          width={72}
+          height={72}
+          className="w-18 h-18"
+        />
+      }
+      sectionName="Story Flow Map"
+      taskName="Create story flow outline"
+    >
+      <div className="flex flex-col lg:flex-row gap-4">
+        {/* Chat Interface - Left Side */}
+        <div className="w-full lg:w-3/5">
+          <ChatInterface
+            messages={messages}
+            input={input}
+            setInput={setInput}
+            onSubmit={handleSubmit}
+            loading={loading}
+            showInput={!conversationStarted ? step <= questions.length - 1 : true}
+            placeholder="Type your response..."
+            onReset={handleReset}
+          />
+        </div>
+
+        {/* Result Section - Right Side */}
+        {result && (
+          <div className="flex-1 space-y-6">
+            <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md space-y-6">
+              <h2 className="text-xl font-bold text-blue-900">
+                Attack Point & Tension-Resolution Points
+              </h2>
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <pre className="text-gray-800 whitespace-pre-wrap font-sans">{result}</pre>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </PageLayout>
+  );
 }
