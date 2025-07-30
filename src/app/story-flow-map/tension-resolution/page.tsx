@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import PageLayout from '@/app/components/PageLayout';
@@ -24,13 +24,39 @@ export default function TensionResolution() {
     diseaseCondition: '',
   });
 
-  const [messages, setMessages] = useState<{ role: 'assistant' | 'user'; content: string }[]>([
-    {
-      role: 'assistant',
-      content:
-        'Do you want to use the currently selected Core Story Concept or provide a new one?\n\nCurrently selected: Plaque inflammation drives CV events. Direct and safe ways to reduce plaque inflammation are needed. Orticumab is a plaque-targeted anti-inflammatory therapy. By inhibiting pro-inflammatory macrophages within plaques, this new approach has the potential to reduce CV risk on top of current standard of care.',
-    },
-  ]);
+  const [messages, setMessages] = useState<{ role: 'assistant' | 'user'; content: string }[]>([]);
+
+  // Initialize messages with core story concept from localStorage
+  useEffect(() => {
+    // Check if we're in a browser environment
+    if (typeof window !== 'undefined') {
+      const savedCoreStoryConceptData = localStorage.getItem('selectedCoreStoryConceptData');
+      let initialMessage = '';
+
+      if (savedCoreStoryConceptData) {
+        try {
+          const conceptData = JSON.parse(savedCoreStoryConceptData);
+          if (conceptData && conceptData.content) {
+            // initialMessage += '\n\nCurrently selected: ' + conceptData.content;
+            initialMessage =
+              'Do you want to use the currently selected Core Story Concept or provide a new one?';
+          }
+        } catch (error) {
+          console.error('Error parsing core story concept from localStorage:', error);
+        }
+      } else {
+        initialMessage =
+          'There is no Core Story Concept saved in memory. Please provide a new one, or visit the Create Core Story Concept Options page and then come back.';
+      }
+
+      setMessages([
+        {
+          role: 'assistant',
+          content: initialMessage,
+        },
+      ]);
+    }
+  }, []);
 
   const handleReset = () => {
     setStep(0);
@@ -49,21 +75,60 @@ export default function TensionResolution() {
       interventionName: '',
       diseaseCondition: '',
     });
-    setMessages([
-      {
-        role: 'assistant',
-        content:
-          'Do you want to use the currently selected Core Story Concept or provide a new one?\n\nCurrently selected: Plaque inflammation drives CV events. Direct and safe ways to reduce plaque inflammation are needed. Orticumab is a plaque-targeted anti-inflammatory therapy. By inhibiting pro-inflammatory macrophages within plaques, this new approach has the potential to reduce CV risk on top of current standard of care.',
-      },
-    ]);
+    // Reset messages with core story concept from localStorage
+    if (typeof window !== 'undefined') {
+      const savedCoreStoryConceptData = localStorage.getItem('selectedCoreStoryConceptData');
+      let initialMessage =
+        'Do you want to use the currently selected Core Story Concept or provide a new one? jb';
+
+      if (savedCoreStoryConceptData) {
+        try {
+          const conceptData = JSON.parse(savedCoreStoryConceptData);
+          if (conceptData && conceptData.content) {
+            initialMessage += '\n\nCurrently selected: ' + conceptData.content;
+          }
+        } catch (error) {
+          console.error('Error parsing core story concept from localStorage:', error);
+        }
+      }
+
+      setMessages([
+        {
+          role: 'assistant',
+          content: initialMessage,
+        },
+      ]);
+    }
   };
 
-  const questions = [
-    'Do you want to use the currently selected Core Story Concept or provide a new one?\n\nCurrently selected: Plaque inflammation drives CV events. Direct and safe ways to reduce plaque inflammation are needed. Orticumab is a plaque-targeted anti-inflammatory therapy. By inhibiting pro-inflammatory macrophages within plaques, this new approach has the potential to reduce CV risk on top of current standard of care.',
+  // Initialize with default questions
+  const [questions, setQuestions] = useState([
+    'Do you want to use the currently selected Core Story Concept or provide a new one? ay',
     'Who is your Audience?',
     'What is your Intervention Name?',
     'What is the Disease or Condition?',
-  ];
+  ]);
+
+  // Update the first question with core story concept from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedCoreStoryConceptData = localStorage.getItem('selectedCoreStoryConceptData');
+
+      if (savedCoreStoryConceptData) {
+        try {
+          const conceptData = JSON.parse(savedCoreStoryConceptData);
+          if (conceptData && conceptData.content) {
+            setQuestions((prevQuestions) => [
+              prevQuestions[0] + '\n\nCurrently selected: ' + conceptData.content,
+              ...prevQuestions.slice(1),
+            ]);
+          }
+        } catch (error) {
+          console.error('Error parsing core story concept from localStorage:', error);
+        }
+      }
+    }
+  }, []);
 
   // Helper function to safely update attack points with persistent backup
   const updateAttackPoints = (
@@ -273,11 +338,71 @@ export default function TensionResolution() {
           trimmed.toLowerCase().includes('currently selected') ||
           trimmed.toLowerCase().includes('current')
         ) {
-          setContext((prev) => ({
-            ...prev,
-            coreStoryConcept:
-              'Plaque inflammation drives CV events. Direct and safe ways to reduce plaque inflammation are needed. Orticumab is a plaque-targeted anti-inflammatory therapy. By inhibiting pro-inflammatory macrophages within plaques, this new approach has the potential to reduce CV risk on top of current standard of care.',
-          }));
+          // Get core story concept from localStorage
+          if (typeof window !== 'undefined') {
+            const savedCoreStoryConceptData = localStorage.getItem('selectedCoreStoryConceptData');
+
+            if (savedCoreStoryConceptData) {
+              try {
+                const conceptData = JSON.parse(savedCoreStoryConceptData);
+                if (conceptData && conceptData.content) {
+                  setContext((prev) => ({
+                    ...prev,
+                    coreStoryConcept: conceptData.content,
+                  }));
+                } else {
+                  // If no content found, set empty string and inform user
+                  setContext((prev) => ({
+                    ...prev,
+                    coreStoryConcept: '',
+                  }));
+
+                  setMessages((msgs) => [
+                    ...msgs,
+                    {
+                      role: 'assistant',
+                      content: 'No saved Core Story Concept found. Please create a new one.',
+                    },
+                  ]);
+                  setStep(-1); // Special step to handle manual CSC input
+                  return;
+                }
+              } catch (error) {
+                console.error('Error parsing core story concept from localStorage:', error);
+                // Handle error by asking for a new core story concept
+                setContext((prev) => ({
+                  ...prev,
+                  coreStoryConcept: '',
+                }));
+
+                setMessages((msgs) => [
+                  ...msgs,
+                  {
+                    role: 'assistant',
+                    content: 'Error loading saved Core Story Concept. Please create a new one.',
+                  },
+                ]);
+                setStep(-1); // Special step to handle manual CSC input
+                return;
+              }
+            } else {
+              // No saved concept found
+              setContext((prev) => ({
+                ...prev,
+                coreStoryConcept: '',
+              }));
+
+              setMessages((msgs) => [
+                ...msgs,
+                {
+                  role: 'assistant',
+                  content: 'No saved Core Story Concept found. Please create a new one.',
+                },
+              ]);
+              setStep(-1); // Special step to handle manual CSC input
+              return;
+            }
+          }
         } else {
           // User wants to provide new one, ask for it
           setMessages((msgs) => [
