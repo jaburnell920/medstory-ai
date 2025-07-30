@@ -109,6 +109,42 @@ function parseTensionResolutionPoints(points: string[]): StoryPoint[] {
   return storyPoints;
 }
 
+// Function to create story flow data from memory data
+function createStoryFlowDataFromMemory(memoryData: any): StoryFlowMapData {
+  const { coreStoryConcept, attackPoints, tensionResolutionPoints } = memoryData;
+  
+  // Use the first attack point if available
+  const attackPoint = attackPoints && attackPoints.length > 0 ? attackPoints[0] : '';
+  
+  // Parse tension-resolution points
+  const parsedPoints = parseTensionResolutionPoints(tensionResolutionPoints || []);
+  
+  // Add Attack Point
+  const attackPointData: StoryPoint = {
+    label: 'AP',
+    tension: attackPoint,
+    resolution: '',
+    tensionValue: assignTensionValue(attackPoint),
+    resolutionValue: 0,
+  };
+  
+  // Add Core Story Concept
+  const cscData: StoryPoint = {
+    label: 'CSC',
+    tension: '',
+    resolution: coreStoryConcept,
+    tensionValue: 0,
+    resolutionValue: 25, // Fixed at 25 as per requirements
+  };
+  
+  return {
+    attackPoint,
+    tensionResolutionPoints: tensionResolutionPoints || [],
+    coreStoryConcept,
+    storyPoints: [attackPointData, ...parsedPoints, cscData],
+  };
+}
+
 // Mock data for testing when localStorage data is not available
 function getMockStoryFlowData(): StoryFlowMapData {
   const mockAttackPoint = "In the pediatric ICU, 8-year-old Emma's leukemia cells had survived every conventional treatment. Her oncologist prepared to discuss palliative care, but hidden within Emma's immune system lay engineered T-cells waiting to launch a precision strike.";
@@ -153,12 +189,19 @@ function getMockStoryFlowData(): StoryFlowMapData {
 
 export async function POST(request: NextRequest) {
   try {
-    const { action, modifications, currentData } = await request.json();
+    const { action, modifications, currentData, memoryData } = await request.json();
     
     if (action === 'create') {
-      // For now, we'll use mock data since we don't have access to localStorage on the server
-      // In a real implementation, this would retrieve data from a database or session storage
-      const storyFlowData = getMockStoryFlowData();
+      let storyFlowData;
+      
+      // If memory data is provided, use it; otherwise fall back to mock data
+      if (memoryData && memoryData.coreStoryConcept && 
+          (memoryData.attackPoints?.length > 0 || memoryData.tensionResolutionPoints?.length > 0)) {
+        storyFlowData = createStoryFlowDataFromMemory(memoryData);
+      } else {
+        // Fall back to mock data for testing
+        storyFlowData = getMockStoryFlowData();
+      }
       
       return NextResponse.json({
         success: true,
