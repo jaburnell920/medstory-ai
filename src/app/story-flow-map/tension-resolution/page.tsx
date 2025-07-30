@@ -23,7 +23,7 @@ export default function TensionResolution() {
     {
       role: 'assistant',
       content:
-        'What is your Core Story Concept? (The big scientific idea that is driving the story flow as a whole and that the audience must remember, believe in, be persuaded by and that the entire story flow leads up to)',
+        'Do you want to use the currently selected Core Story Concept or provide a new one?\n\nCurrently selected: Plaque inflammation drives CV events. Direct and safe ways to reduce plaque inflammation are needed. Orticumab is a plaque-targeted anti-inflammatory therapy. By inhibiting pro-inflammatory macrophages within plaques, this new approach has the potential to reduce CV risk on top of current standard of care.',
     },
   ]);
 
@@ -43,16 +43,16 @@ export default function TensionResolution() {
       {
         role: 'assistant',
         content:
-          'What is your Core Story Concept? (The big scientific idea that is driving the story flow as a whole and that the audience must remember, believe in, be persuaded by and that the entire story flow leads up to)',
+          'Do you want to use the currently selected Core Story Concept or provide a new one?\n\nCurrently selected: Plaque inflammation drives CV events. Direct and safe ways to reduce plaque inflammation are needed. Orticumab is a plaque-targeted anti-inflammatory therapy. By inhibiting pro-inflammatory macrophages within plaques, this new approach has the potential to reduce CV risk on top of current standard of care.',
       },
     ]);
   };
 
   const questions = [
-    'What is your Core Story Concept? (The big scientific idea that is driving the story flow as a whole and that the audience must remember, believe in, be persuaded by and that the entire story flow leads up to)',
-    'Who is your Audience? (The type of people in the audience, e.g., PCPs, academics neurologists, cardiologists)',
-    'What is your Intervention Name? (A drug, device, or biotechnology that is given to a person to improve or cure their disease or condition)',
-    'What is the Disease or Condition? (Clinical arena)',
+    'Do you want to use the currently selected Core Story Concept or provide a new one?\n\nCurrently selected: Plaque inflammation drives CV events. Direct and safe ways to reduce plaque inflammation are needed. Orticumab is a plaque-targeted anti-inflammatory therapy. By inhibiting pro-inflammatory macrophages within plaques, this new approach has the potential to reduce CV risk on top of current standard of care.',
+    'Who is your Audience?',
+    'What is your Intervention Name?',
+    'What is the Disease or Condition?',
   ];
 
   // Function to separate content from questions in AI response
@@ -126,7 +126,36 @@ export default function TensionResolution() {
 
     // Handle initial setup questions
     if (!conversationStarted) {
-      if (step === 0) setContext((prev) => ({ ...prev, coreStoryConcept: trimmed }));
+      if (step === 0) {
+        // Handle Core Story Concept selection
+        if (trimmed.toLowerCase().includes('currently selected') || trimmed.toLowerCase().includes('current')) {
+          setContext((prev) => ({ ...prev, coreStoryConcept: 'Plaque inflammation drives CV events. Direct and safe ways to reduce plaque inflammation are needed. Orticumab is a plaque-targeted anti-inflammatory therapy. By inhibiting pro-inflammatory macrophages within plaques, this new approach has the potential to reduce CV risk on top of current standard of care.' }));
+        } else {
+          // User wants to provide new one, ask for it
+          setMessages((msgs) => [
+            ...msgs,
+            {
+              role: 'assistant',
+              content: 'Please enter the Core Story Concept you\'d like to use to guide the story flow.',
+            },
+          ]);
+          setStep(-1); // Special step to handle manual CSC input
+          return;
+        }
+      }
+      if (step === -1) {
+        // Handle manual Core Story Concept input
+        setContext((prev) => ({ ...prev, coreStoryConcept: trimmed }));
+        setStep(1); // Move to audience question
+        setMessages((msgs) => [
+          ...msgs,
+          {
+            role: 'assistant',
+            content: questions[1],
+          },
+        ]);
+        return;
+      }
       if (step === 1) setContext((prev) => ({ ...prev, audience: trimmed }));
       if (step === 2) setContext((prev) => ({ ...prev, interventionName: trimmed }));
 
@@ -261,7 +290,7 @@ export default function TensionResolution() {
             setInput={setInput}
             onSubmit={handleSubmit}
             loading={loading}
-            showInput={!conversationStarted ? step <= questions.length - 1 : true}
+            showInput={!conversationStarted ? step <= questions.length - 1 || step === -1 : true}
             placeholder="Type your response..."
             onReset={handleReset}
           />
