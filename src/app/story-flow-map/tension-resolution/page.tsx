@@ -11,6 +11,7 @@ export default function TensionResolution() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState('');
+  const [attackPoints, setAttackPoints] = useState<string[]>([]);
   const [conversationStarted, setConversationStarted] = useState(false);
   const [context, setContext] = useState({
     coreStoryConcept: '',
@@ -32,6 +33,7 @@ export default function TensionResolution() {
     setInput('');
     setLoading(false);
     setResult('');
+    setAttackPoints([]);
     setConversationStarted(false);
     setContext({
       coreStoryConcept: '',
@@ -67,6 +69,10 @@ export default function TensionResolution() {
       /are you satisfied.*?\?/gi,
       /What modifications.*?\?/gi,
     ];
+
+    // Check if this is an attack point
+    const attackPointPattern = /^Attack Point #\d+/m;
+    const isAttackPoint = attackPointPattern.test(response);
 
     let content = response;
     let question = '';
@@ -110,7 +116,11 @@ export default function TensionResolution() {
       content = contentLines.join('\n').trim();
     }
 
-    return { content: content.trim(), question: question.trim() };
+    return { 
+      content: content.trim(), 
+      question: question.trim(),
+      isAttackPoint
+    };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -184,10 +194,15 @@ export default function TensionResolution() {
           });
 
           const data = await res.json();
-          const { content, question } = parseAIResponse(data.result);
+          const { content, question, isAttackPoint } = parseAIResponse(data.result);
 
           if (content) {
-            setResult(content);
+            if (isAttackPoint) {
+              setAttackPoints([content]);
+              setResult(content);
+            } else {
+              setResult(content);
+            }
           }
 
           if (question) {
@@ -242,11 +257,32 @@ export default function TensionResolution() {
         });
 
         const data = await res.json();
-        const { content, question } = parseAIResponse(data.result);
+        const { content, question, isAttackPoint } = parseAIResponse(data.result);
 
-        // Update result if there's substantial content
-        if (content && content.length > 50) {
-          setResult(content);
+        // Check if user wants to create a new attack point
+        const isNewAttackPointRequest = trimmed.toLowerCase().includes('new one') || 
+                                       trimmed.toLowerCase().includes('create a new');
+
+        // Update result based on content type and user request
+        if (content) {
+          if (isAttackPoint) {
+            if (isNewAttackPointRequest) {
+              // Add the new attack point to the array instead of replacing
+              setAttackPoints(prev => [...prev, content]);
+            } else {
+              // For modifications, replace the last attack point
+              if (attackPoints.length > 0) {
+                setAttackPoints(prev => [...prev.slice(0, -1), content]);
+              } else {
+                setAttackPoints([content]);
+              }
+            }
+          }
+          
+          // Always update the result to show the latest content
+          if (content.length > 50) {
+            setResult(content);
+          }
         }
 
         // Add AI response to chat
@@ -297,15 +333,30 @@ export default function TensionResolution() {
         </div>
 
         {/* Result Section - Right Side */}
-        {result && (
+        {(result || attackPoints.length > 0) && (
           <div className="flex-1 space-y-6">
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md space-y-6">
               <h2 className="text-xl font-bold text-blue-900">
                 Attack Point & Tension-Resolution Points
               </h2>
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <pre className="text-gray-800 whitespace-pre-wrap font-sans">{result}</pre>
-              </div>
+              
+              {/* Display all attack points */}
+              {attackPoints.length > 0 && (
+                <div className="space-y-4">
+                  {attackPoints.map((attackPoint, index) => (
+                    <div key={index} className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                      <pre className="text-gray-800 whitespace-pre-wrap font-sans">{attackPoint}</pre>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* Display tension-resolution points if they exist and are not attack points */}
+              {result && !attackPoints.includes(result) && (
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <pre className="text-gray-800 whitespace-pre-wrap font-sans">{result}</pre>
+                </div>
+              )}
             </div>
           </div>
         )}
