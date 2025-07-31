@@ -31,7 +31,8 @@ export default function TensionResolution() {
     // Check if we're in a browser environment
     if (typeof window !== 'undefined') {
       const savedCoreStoryConceptData = localStorage.getItem('selectedCoreStoryConceptData');
-      let initialMessage = '';
+      let initialMessage =
+        'Do you want to use the currently selected Core Story Concept or provide a new one?';
 
       if (savedCoreStoryConceptData) {
         try {
