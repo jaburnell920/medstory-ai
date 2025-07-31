@@ -80,7 +80,7 @@ export default function TensionResolution() {
     if (typeof window !== 'undefined') {
       const savedCoreStoryConceptData = localStorage.getItem('selectedCoreStoryConceptData');
       let initialMessage =
-        'Do you want to use the currently selected Core Story Concept or provide a new one? jb';
+        'Do you want to use the currently selected Core Story Concept or provide a new one?';
 
       if (savedCoreStoryConceptData) {
         try {
