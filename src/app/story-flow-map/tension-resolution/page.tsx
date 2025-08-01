@@ -543,12 +543,11 @@ export default function TensionResolution() {
         // Parse the content to extract different sections
         const parsedContent = parseContentResponse(data.result);
 
-        // Determine if this is a modification or new creation based on user input
-        const isModifyingAttackPoint = trimmed.toLowerCase().includes('modif');
-        // const isCreatingNewAttackPoint = trimmed.toLowerCase().includes('new') || trimmed.toLowerCase().includes('create');
+        // Determine if this is a modification or new creation based on user input and AI response
+        const previousAIMessage = messages.length >= 2 ? messages[messages.length - 2] : null;
 
         if (parsedContent.attackPoints.length > 0) {
-          if (isModifyingAttackPoint) {
+          if (previousAIMessage && previousAIMessage.content.includes('modif')) {
             updateAttackPoints(parsedContent.attackPoints, 'modify');
           } else {
             // Default to 'add' so Attack Point #1, #2, etc., accumulate
