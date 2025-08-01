@@ -133,7 +133,8 @@ export default function TensionResolution() {
 
   // Helper function to clean attack points by removing unwanted strings
   const cleanAttackPoint = (attackPoint: string): string => {
-    const unwantedString = "Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?";
+    const unwantedString =
+      'Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?';
     return attackPoint.replace(unwantedString, '').trim();
   };
 
@@ -143,8 +144,10 @@ export default function TensionResolution() {
     mode: 'replace' | 'add' | 'modify' = 'replace'
   ) => {
     // Clean all new points before processing
-    const cleanedNewPoints = newPoints.map(point => cleanAttackPoint(point)).filter(point => point.length > 0);
-    
+    const cleanedNewPoints = newPoints
+      .map((point) => cleanAttackPoint(point))
+      .filter((point) => point.length > 0);
+
     if (mode === 'add') {
       const updatedPoints = [...persistentAttackPoints, ...cleanedNewPoints];
       setAttackPoints(updatedPoints);
@@ -490,7 +493,8 @@ export default function TensionResolution() {
 
           // Update state with parsed content - only add new attack points if found
           if (parsedContent.attackPoints.length > 0) {
-            updateAttackPoints(parsedContent.attackPoints, 'add');
+            const cleaned = parsedContent.attackPoints.map(cleanAttackPoint);
+            updateAttackPoints(cleaned, 'add');
           }
           if (parsedContent.tensionResolutionPoints.length > 0) {
             setTensionResolutionPoints(parsedContent.tensionResolutionPoints);
@@ -581,11 +585,12 @@ export default function TensionResolution() {
         const previousAIMessage = messages.length >= 2 ? messages[messages.length - 2] : null;
 
         if (parsedContent.attackPoints.length > 0) {
+          const cleaned = parsedContent.attackPoints.map(cleanAttackPoint);
           if (previousAIMessage && previousAIMessage.content.includes('modif')) {
-            updateAttackPoints(parsedContent.attackPoints, 'modify');
+            updateAttackPoints(cleaned, 'modify');
           } else {
             // Default to 'add' so Attack Point #1, #2, etc., accumulate
-            updateAttackPoints(parsedContent.attackPoints, 'add');
+            updateAttackPoints(cleaned, 'add');
           }
         }
 
