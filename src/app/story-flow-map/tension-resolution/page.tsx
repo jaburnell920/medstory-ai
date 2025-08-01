@@ -154,21 +154,29 @@ export default function TensionResolution() {
       .map((point) => cleanAttackPoint(point))
       .filter((point) => point.length > 0);
 
+    let finalPoints: string[] = [];
+
     if (mode === 'add') {
-      const updatedPoints = [...persistentAttackPoints, ...cleanedNewPoints];
-      setAttackPoints(updatedPoints);
-      setPersistentAttackPoints(updatedPoints);
+      finalPoints = [...persistentAttackPoints, ...cleanedNewPoints];
+      setAttackPoints(finalPoints);
+      setPersistentAttackPoints(finalPoints);
     } else if (mode === 'modify') {
-      const updatedPoints = [...persistentAttackPoints];
-      if (updatedPoints.length > 0 && cleanedNewPoints.length > 0) {
+      finalPoints = [...persistentAttackPoints];
+      if (finalPoints.length > 0 && cleanedNewPoints.length > 0) {
         // Replace last attack point with the modified version
-        updatedPoints[updatedPoints.length - 1] = cleanedNewPoints[0];
+        finalPoints[finalPoints.length - 1] = cleanedNewPoints[0];
       }
-      setAttackPoints(updatedPoints);
-      setPersistentAttackPoints(updatedPoints);
+      setAttackPoints(finalPoints);
+      setPersistentAttackPoints(finalPoints);
     } else {
-      setAttackPoints(cleanedNewPoints);
-      setPersistentAttackPoints(cleanedNewPoints);
+      finalPoints = cleanedNewPoints;
+      setAttackPoints(finalPoints);
+      setPersistentAttackPoints(finalPoints);
+    }
+
+    // Auto-select the latest (most recent) attack point
+    if (finalPoints.length > 0) {
+      setSelectedAttackPoint(finalPoints[finalPoints.length - 1]);
     }
   };
 
@@ -176,6 +184,8 @@ export default function TensionResolution() {
   const restoreAttackPoints = () => {
     if (persistentAttackPoints.length > 0) {
       setAttackPoints(persistentAttackPoints);
+      // Auto-select the latest (most recent) attack point
+      setSelectedAttackPoint(persistentAttackPoints[persistentAttackPoints.length - 1]);
     }
   };
 
