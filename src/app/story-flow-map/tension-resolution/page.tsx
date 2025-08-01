@@ -131,26 +131,38 @@ export default function TensionResolution() {
     }
   }, []);
 
+  // Helper function to clean attack points by removing unwanted strings
+  const cleanAttackPoint = (attackPoint: string): string => {
+    const unwantedString =
+      'Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?';
+    return attackPoint.replace(unwantedString, '').trim();
+  };
+
   // Helper function to safely update attack points with persistent backup
   const updateAttackPoints = (
     newPoints: string[],
     mode: 'replace' | 'add' | 'modify' = 'replace'
   ) => {
+    // Clean all new points before processing
+    const cleanedNewPoints = newPoints
+      .map((point) => cleanAttackPoint(point))
+      .filter((point) => point.length > 0);
+
     if (mode === 'add') {
-      const updatedPoints = [...persistentAttackPoints, ...newPoints];
+      const updatedPoints = [...persistentAttackPoints, ...cleanedNewPoints];
       setAttackPoints(updatedPoints);
       setPersistentAttackPoints(updatedPoints);
     } else if (mode === 'modify') {
       const updatedPoints = [...persistentAttackPoints];
-      if (updatedPoints.length > 0 && newPoints.length > 0) {
+      if (updatedPoints.length > 0 && cleanedNewPoints.length > 0) {
         // Replace last attack point with the modified version
-        updatedPoints[updatedPoints.length - 1] = newPoints[0];
+        updatedPoints[updatedPoints.length - 1] = cleanedNewPoints[0];
       }
       setAttackPoints(updatedPoints);
       setPersistentAttackPoints(updatedPoints);
     } else {
-      setAttackPoints(newPoints);
-      setPersistentAttackPoints(newPoints);
+      setAttackPoints(cleanedNewPoints);
+      setPersistentAttackPoints(cleanedNewPoints);
     }
   };
 
@@ -180,7 +192,10 @@ export default function TensionResolution() {
         if (currentSection && currentContent.length > 0) {
           // Save previous section
           if (currentSection === 'attack') {
-            attackPointsFound.push(currentContent.join('\n').trim());
+            const cleanedAttackPoint = cleanAttackPoint(currentContent.join('\n').trim());
+            if (cleanedAttackPoint) {
+              attackPointsFound.push(cleanedAttackPoint);
+            }
           }
         }
         currentSection = 'attack';
@@ -193,7 +208,10 @@ export default function TensionResolution() {
         if (currentSection && currentContent.length > 0) {
           // Save previous section
           if (currentSection === 'attack') {
-            attackPointsFound.push(currentContent.join('\n').trim());
+            const cleanedAttackPoint = cleanAttackPoint(currentContent.join('\n').trim());
+            if (cleanedAttackPoint) {
+              attackPointsFound.push(cleanedAttackPoint);
+            }
           } else if (currentSection === 'tension') {
             tensionResolutionPointsFound.push(currentContent.join('\n').trim());
           }
@@ -208,7 +226,10 @@ export default function TensionResolution() {
         if (currentSection && currentContent.length > 0) {
           // Save previous section
           if (currentSection === 'attack') {
-            attackPointsFound.push(currentContent.join('\n').trim());
+            const cleanedAttackPoint = cleanAttackPoint(currentContent.join('\n').trim());
+            if (cleanedAttackPoint) {
+              attackPointsFound.push(cleanedAttackPoint);
+            }
           } else if (currentSection === 'tension') {
             tensionResolutionPointsFound.push(currentContent.join('\n').trim());
           }
@@ -223,7 +244,10 @@ export default function TensionResolution() {
         if (currentSection && currentContent.length > 0) {
           // Save previous section
           if (currentSection === 'attack') {
-            attackPointsFound.push(currentContent.join('\n').trim());
+            const cleanedAttackPoint = cleanAttackPoint(currentContent.join('\n').trim());
+            if (cleanedAttackPoint) {
+              attackPointsFound.push(cleanedAttackPoint);
+            }
           } else if (currentSection === 'tension') {
             tensionResolutionPointsFound.push(currentContent.join('\n').trim());
           } else if (currentSection === 'conclusion') {
@@ -244,7 +268,10 @@ export default function TensionResolution() {
     // Save the last section
     if (currentSection && currentContent.length > 0) {
       if (currentSection === 'attack') {
-        attackPointsFound.push(currentContent.join('\n').trim());
+        const cleanedAttackPoint = cleanAttackPoint(currentContent.join('\n').trim());
+        if (cleanedAttackPoint) {
+          attackPointsFound.push(cleanedAttackPoint);
+        }
       } else if (currentSection === 'tension') {
         tensionResolutionPointsFound.push(currentContent.join('\n').trim());
       } else if (currentSection === 'conclusion') {
@@ -466,7 +493,8 @@ export default function TensionResolution() {
 
           // Update state with parsed content - only add new attack points if found
           if (parsedContent.attackPoints.length > 0) {
-            updateAttackPoints(parsedContent.attackPoints, 'add');
+            const cleaned = parsedContent.attackPoints.map(cleanAttackPoint);
+            updateAttackPoints(cleaned, 'add');
           }
           if (parsedContent.tensionResolutionPoints.length > 0) {
             setTensionResolutionPoints(parsedContent.tensionResolutionPoints);
@@ -557,11 +585,12 @@ export default function TensionResolution() {
         const previousAIMessage = messages.length >= 2 ? messages[messages.length - 2] : null;
 
         if (parsedContent.attackPoints.length > 0) {
+          const cleaned = parsedContent.attackPoints.map(cleanAttackPoint);
           if (previousAIMessage && previousAIMessage.content.includes('modif')) {
-            updateAttackPoints(parsedContent.attackPoints, 'modify');
+            updateAttackPoints(cleaned, 'modify');
           } else {
             // Default to 'add' so Attack Point #1, #2, etc., accumulate
-            updateAttackPoints(parsedContent.attackPoints, 'add');
+            updateAttackPoints(cleaned, 'add');
           }
         }
 
