@@ -549,9 +549,9 @@ export default function CreateStoryFlowMap() {
       sectionName="Story Flow"
       taskName="Create story flow map"
     >
-      <div className="flex flex-col lg:flex-row gap-4">
+      <div className="flex gap-4 h-full">
         {/* Chat Interface - Left Side */}
-        <div className="w-full lg:w-3/5">
+        <div className="w-3/5 h-full">
           <ChatInterface
             messages={messages}
             input={input}
@@ -562,8 +562,19 @@ export default function CreateStoryFlowMap() {
           />
         </div>
 
-        {/* Story Flow Map - Right Side */}
-        {showMap && <div className="flex-1">{renderStoryFlowMap()}</div>}
+        {/* Story Flow Map - Right Side - Fixed */}
+        <div className="flex-1 h-full">
+          {showMap ? (
+            <div className="h-full">{renderStoryFlowMap()}</div>
+          ) : (
+            <div></div>
+            // <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex items-center justify-center">
+            //   <p className="text-gray-500 text-center">
+            //     Story Flow Map will appear here once generated
+            //   </p>
+            // </div>
+          )}
+        </div>
       </div>
     </PageLayout>
   );

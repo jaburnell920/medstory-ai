@@ -274,7 +274,6 @@ export default function LandmarkPublicationsPage() {
 
   return (
     <PageLayout
-      initialResultsLoaded={initialResultsLoaded}
       sectionIcon={
         <Image
           src="/scientific_investigation_chat.png"
@@ -295,9 +294,9 @@ export default function LandmarkPublicationsPage() {
         </span>
       }
     >
-      <div className="flex flex-col lg:flex-row gap-2">
+      <div className="flex gap-4 h-full">
         {/* Chat Interface - Left Side */}
-        <div className="w-full lg:w-3/5">
+        <div className="w-3/5 h-full">
           <ChatInterface
             messages={messages}
             input={input}
@@ -310,11 +309,11 @@ export default function LandmarkPublicationsPage() {
           />
         </div>
 
-        {/* Result Section - Right Side */}
-        {studies.length > 0 && (
-          <div className="flex-1 space-y-4" ref={resultRef}>
-            <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md">
-              <div className="flex justify-between items-center mb-4">
+        {/* Result Section - Right Side - Fixed */}
+        <div className="flex-1 h-full">
+          {studies.length > 0 ? (
+            <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex flex-col">
+              <div className="flex justify-between items-center mb-4 flex-shrink-0">
                 <h2 className="text-xl font-bold text-blue-900">Landmark Publications</h2>
                 <div className="flex items-center gap-3">
                   <span className="text-sm text-gray-600">{selectedStudies.size} selected</span>
@@ -328,7 +327,7 @@ export default function LandmarkPublicationsPage() {
                   )}
                 </div>
               </div>
-              <div className="space-y-4">
+              <div className="space-y-4 overflow-y-auto flex-1">
                 {studies.map((study) => (
                   <div
                     key={study.id}
@@ -367,8 +366,15 @@ export default function LandmarkPublicationsPage() {
                 ))}
               </div>
             </div>
-          </div>
-        )}
+          ) : (
+            <div></div>
+            // <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex items-center justify-center">
+            //   <p className="text-gray-500 text-center">
+            //     Landmark Publications will appear here once generated
+            //   </p>
+            // </div>
+          )}
+        </div>
       </div>
     </PageLayout>
   );
