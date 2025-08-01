@@ -506,7 +506,7 @@ export default function CoreStoryConcept() {
     <PageLayout
       sectionIcon={
         <Image
-          src="/core_story_chat.png"
+          src="/csc_icon.png"
           alt="Core Story Chat"
           width={72}
           height={72}
