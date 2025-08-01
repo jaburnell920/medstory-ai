@@ -104,10 +104,10 @@ export default function TensionResolution() {
 
   // Initialize with default questions
   const [questions, setQuestions] = useState([
-    'Do you want to use the currently selected Core Story Concept or provide a new one? ay',
-    'Who is your Audience?',
-    'What is your Intervention Name?',
-    'What is the Disease or Condition?',
+    'Do you want to use the currently selected Core Story Concept or provide a new one?',
+    'Who is your audience?',
+    'What is your intervention name?',
+    'What is the disease or condition?',
   ]);
 
   // Update the first question with core story concept from localStorage
