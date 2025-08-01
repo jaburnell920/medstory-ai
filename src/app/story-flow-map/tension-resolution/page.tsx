@@ -494,6 +494,16 @@ export default function TensionResolution() {
                 content: question,
               },
             ]);
+          } else {
+            // Add the attack point follow-up question after Story Flow Outline is created
+            setMessages((msgs) => [
+              ...msgs.slice(0, -1), // Remove "Creating..." message
+              {
+                role: 'assistant',
+                content:
+                  'Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?',
+              },
+            ]);
           }
 
           setConversationStarted(true);
