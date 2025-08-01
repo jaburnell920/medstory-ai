@@ -197,43 +197,54 @@ Generate the entire outline without stopping for user input.
                 {(() => {
                   // First try to split by common slide separators
                   let slides = result.split(/(?=Slide \d+:)|(?=### Slide \d+:)|(?=## Slide \d+:)/);
-                  
+
                   // If we don't have multiple slides, try splitting by separator lines
                   if (slides.length <= 1) {
                     slides = result.split(/\n-{3,}\n|\n={3,}\n|\n\*{3,}\n/);
                   }
-                  
+
                   // If we still don't have multiple slides, try splitting by double newlines
                   if (slides.length <= 1) {
                     // Extract presentation overview/intro if it exists
-                    const introMatch = result.match(/^(.*?)(Slide \d+:|## Slide \d+:|### Slide \d+:)/s);
+                    const introMatch = result.match(
+                      /^(.*?)(Slide \d+:|## Slide \d+:|### Slide \d+:)/s
+                    );
                     const intro = introMatch ? introMatch[1].trim() : '';
-                    
+
                     // Split the rest by slide numbers
-                    const slideContent = introMatch ? result.substring(introMatch[1].length) : result;
-                    const slideMatches = slideContent.match(/Slide \d+:.*?(?=Slide \d+:|$)/gs) || [];
-                    
+                    const slideContent = introMatch
+                      ? result.substring(introMatch[1].length)
+                      : result;
+                    const slideMatches =
+                      slideContent.match(/Slide \d+:.*?(?=Slide \d+:|$)/gs) || [];
+
                     slides = intro ? [intro, ...slideMatches] : slideMatches;
                   }
-                  
+
                   return slides.map((slide, index) => {
                     if (!slide.trim()) return null;
-                    
+
                     // Format the slide content
                     const formattedSlide = slide.trim();
-                    
+
                     // Split the slide content by sections
-                    const sections = formattedSlide.split(/(TEXT:|VISUALS:|SPEAKER NOTES:|REFERENCES:)/g);
-                    
+                    const sections = formattedSlide.split(
+                      /(TEXT:|VISUALS:|SPEAKER NOTES:|REFERENCES:)/g
+                    );
+
                     return (
-                      <div 
-                        key={index} 
+                      <div
+                        key={index}
                         className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
                       >
                         <div className="text-gray-800 whitespace-pre-wrap">
                           {sections.map((section, sectionIndex) => {
-                            if (section === 'TEXT:' || section === 'VISUALS:' || 
-                                section === 'SPEAKER NOTES:' || section === 'REFERENCES:') {
+                            if (
+                              section === 'TEXT:' ||
+                              section === 'VISUALS:' ||
+                              section === 'SPEAKER NOTES:' ||
+                              section === 'REFERENCES:'
+                            ) {
                               return (
                                 <span key={sectionIndex} className="font-bold text-blue-700">
                                   {section}
@@ -250,11 +261,12 @@ Generate the entire outline without stopping for user input.
               </div>
             </div>
           ) : (
-            <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex items-center justify-center">
-              <p className="text-gray-500 text-center">
-                MEDSTORY Presentation Outline will appear here once generated
-              </p>
-            </div>
+            <div></div>
+            // <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex items-center justify-center">
+            //   <p className="text-gray-500 text-center">
+            //     MEDSTORY Presentation Outline will appear here once generated
+            //   </p>
+            // </div>
           )}
         </div>
       </div>

@@ -152,7 +152,9 @@ export default function Dashboard() {
         <div className="flex-1 h-full">
           {result ? (
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex flex-col">
-              <h2 className="text-xl font-bold text-blue-900 mb-4 flex-shrink-0">Core Story Concept Candidates</h2>
+              <h2 className="text-xl font-bold text-blue-900 mb-4 flex-shrink-0">
+                Core Story Concept Candidates
+              </h2>
               <div className="space-y-6 overflow-y-auto flex-1">
                 {result.split('\n\n').map((block, i) => (
                   <div key={i} className="bg-blue-50 p-4 rounded-lg border border-blue-200">
@@ -162,11 +164,12 @@ export default function Dashboard() {
               </div>
             </div>
           ) : (
-            <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex items-center justify-center">
-              <p className="text-gray-500 text-center">
-                Core Story Concept Candidates will appear here once generated
-              </p>
-            </div>
+            <div></div>
+            // <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex items-center justify-center">
+            //   <p className="text-gray-500 text-center">
+            //     Core Story Concept Candidates will appear here once generated
+            //   </p>
+            // </div>
           )}
         </div>
       </div>

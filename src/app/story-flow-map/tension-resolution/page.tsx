@@ -17,7 +17,7 @@ export default function TensionResolution() {
   const [conclusion, setConclusion] = useState('');
   const [references, setReferences] = useState('');
   const [conversationStarted, setConversationStarted] = useState(false);
-  
+
   // State for selections and saving
   const [selectedAttackPoint, setSelectedAttackPoint] = useState<string>('');
   const [selectedTensionPoints, setSelectedTensionPoints] = useState<Set<string>>(new Set());
@@ -391,16 +391,18 @@ export default function TensionResolution() {
       id: `tension-resolution-${Date.now()}`,
       timestamp: new Date().toISOString(),
       context: context,
-      selectedAttackPoint: selectedAttackPoint ? {
-        index: parseInt(selectedAttackPoint),
-        content: attackPoints[parseInt(selectedAttackPoint)]
-      } : null,
-      selectedTensionPoints: Array.from(selectedTensionPoints).map(index => ({
+      selectedAttackPoint: selectedAttackPoint
+        ? {
+            index: parseInt(selectedAttackPoint),
+            content: attackPoints[parseInt(selectedAttackPoint)],
+          }
+        : null,
+      selectedTensionPoints: Array.from(selectedTensionPoints).map((index) => ({
         index: parseInt(index),
-        content: tensionResolutionPoints[parseInt(index)]
+        content: tensionResolutionPoints[parseInt(index)],
       })),
       conclusion: conclusion,
-      references: references
+      references: references,
     };
 
     // Save to localStorage
@@ -753,11 +755,11 @@ export default function TensionResolution() {
 
         {/* Result Section - Right Side - Fixed */}
         <div className="flex-1 h-full">
-          {(attackPoints.length > 0 ||
-            tensionResolutionPoints.length > 0 ||
-            conclusion ||
-            references ||
-            result) ? (
+          {attackPoints.length > 0 ||
+          tensionResolutionPoints.length > 0 ||
+          conclusion ||
+          references ||
+          result ? (
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex flex-col">
               <div className="flex justify-between items-center mb-4 flex-shrink-0">
                 <h2 className="text-xl font-bold text-blue-900">Story Flow Outline</h2>
@@ -797,7 +799,10 @@ export default function TensionResolution() {
                           Attack Point #{index + 1}
                         </h3>
                         <pre className="text-gray-800 whitespace-pre-wrap font-sans">
-                          {attackPoint.replace(/^\*{0,2}Attack Point #\d+\*{0,2}:?\s*\n?/i, '')}{' '}
+                          {attackPoint.replace(
+                            /^\*{0,2}Attack Point #\d+\*{0,2}:?\s*\n?/i,
+                            ''
+                          )}{' '}
                         </pre>
                       </div>
                     </div>
@@ -859,11 +864,12 @@ export default function TensionResolution() {
               </div>
             </div>
           ) : (
-            <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex items-center justify-center">
-              <p className="text-gray-500 text-center">
-                Story Flow Outline will appear here once generated
-              </p>
-            </div>
+            <div></div>
+            // <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex items-center justify-center">
+            //   <p className="text-gray-500 text-center">
+            //     Story Flow Outline will appear here once generated
+            //   </p>
+            // </div>
           )}
         </div>
       </div>

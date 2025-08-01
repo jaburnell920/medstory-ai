@@ -367,11 +367,12 @@ export default function LandmarkPublicationsPage() {
               </div>
             </div>
           ) : (
-            <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex items-center justify-center">
-              <p className="text-gray-500 text-center">
-                Landmark Publications will appear here once generated
-              </p>
-            </div>
+            <div></div>
+            // <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex items-center justify-center">
+            //   <p className="text-gray-500 text-center">
+            //     Landmark Publications will appear here once generated
+            //   </p>
+            // </div>
           )}
         </div>
       </div>
