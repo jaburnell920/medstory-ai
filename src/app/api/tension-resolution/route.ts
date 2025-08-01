@@ -1,13 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-const openai = process.env.OPENAI_API_KEY ? new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-}) : null;
+const openai = process.env.OPENAI_API_KEY
+  ? new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    })
+  : null;
 
 export async function POST(request: NextRequest) {
   try {
-    const { coreStoryConcept, audience, interventionName, diseaseCondition, action, userMessage, conversationHistory } = await request.json();
+    const {
+      coreStoryConcept,
+      audience,
+      interventionName,
+      diseaseCondition,
+      action,
+      userMessage,
+      conversationHistory,
+    } = await request.json();
 
     if (action === 'start') {
       // Mock response for testing when no OpenAI API key is available
@@ -62,7 +72,7 @@ Attack point text should be ≤100 words.
 
 Return only the filledout template—no commentary.
 
-After delivering any attack point ask: "Would you like modify this Attack Point, create a new one, or move on to creating tension-resolution points?" If answered 'modify', ask the user "What modifications would you like to make?" and use the answer to modify the existing Attack Point. In this case, keep the number of the Attack Point the same. Only uptick the Attack Point number if a new Attack Point is requested. If answered 'new', create a brand new Attack Point using the same and uptick its number. If answered "move on", move on to delivering tension-resolution points.
+After delivering any attack point ask: "Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?" If answered 'modify', ask the user "What modifications would you like to make?" and use the answer to modify the existing Attack Point. In this case, keep the number of the Attack Point the same. Only uptick the Attack Point number if a new Attack Point is requested. If answered 'new', create a brand new Attack Point using the same and uptick its number. If answered "move on", move on to delivering tension-resolution points.
 
 Training: Tension-Resolution Points
 You are a scientific story architect hired to turn raw ideas into narrative blueprints that grip practicing physicians from the first sentence to the final insight. The tension-resolution points must: 
@@ -161,15 +171,20 @@ Please start with the Attack Point phase.`,
 
       const result = completion.choices[0]?.message?.content || 'No response generated.';
       return NextResponse.json({ result });
-
     } else if (action === 'continue') {
       // Mock response for testing when no OpenAI API key is available
       if (!openai) {
         let mockResult = '';
-        
-        if (userMessage.toLowerCase().includes('move on') || userMessage.toLowerCase().includes('tension')) {
+
+        if (
+          userMessage.toLowerCase().includes('move on') ||
+          userMessage.toLowerCase().includes('tension')
+        ) {
           mockResult = `Would you like a short narrative (3-5 tension-resolution points), full narrative (8-12 tension-resolution points), or would you like to specify the number of tension-resolution points?`;
-        } else if (userMessage.toLowerCase().includes('new') || userMessage.toLowerCase().includes('create')) {
+        } else if (
+          userMessage.toLowerCase().includes('new') ||
+          userMessage.toLowerCase().includes('create')
+        ) {
           mockResult = `Attack Point #2
 
 In the cardiac catheterization lab, Dr. Sarah Chen stared at the angiogram of her 52-year-old patient—three stents, optimal medical therapy, yet another acute coronary syndrome just six months later. The culprit lesion showed no significant stenosis, but the plaque was angry, inflamed, and primed to rupture again. Traditional lipid-lowering had failed to silence the inflammatory cascade driving his recurrent events. But targeting the macrophages within the plaque itself—the very cells orchestrating this inflammatory storm—represented an entirely new battlefield in the war against cardiovascular death.
@@ -209,14 +224,15 @@ Would you like me to write a script based on the above story flow outline that w
         } else {
           mockResult = `What modifications would you like to make to the Attack Point?`;
         }
-        
+
         return NextResponse.json({ result: mockResult });
       }
 
       // Build conversation context
       const conversationContext = conversationHistory
-        .map((msg: { role: 'user' | 'assistant'; content: string }) =>
-          `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
+        .map(
+          (msg: { role: 'user' | 'assistant'; content: string }) =>
+            `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
         )
         .join('\n\n');
 
@@ -236,7 +252,7 @@ LATEST USER MESSAGE: ${userMessage}
 FOLLOW THE COMPLETE PROMPT GUIDELINES:
 
 Training: Attack Point
-After delivering any attack point ask: "Would you like modify this Attack Point, create a new one, or move on to creating tension-resolution points?" 
+After delivering any attack point ask: "Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?" 
 
 IMPORTANT RESPONSE HANDLING:
 - If user says 'modify' or asks for modifications: ask "What modifications would you like to make?" and modify the existing Attack Point keeping the same number.
@@ -278,7 +294,8 @@ Respond appropriately to the user's latest message, following the conversation f
         messages: [
           {
             role: 'system',
-            content: 'You are a cinematic scientific storyteller helping create compelling clinical narratives. Follow the guidelines exactly as specified and maintain conversation flow.',
+            content:
+              'You are a cinematic scientific storyteller helping create compelling clinical narratives. Follow the guidelines exactly as specified and maintain conversation flow.',
           },
           { role: 'user', content: continuePrompt },
         ],
