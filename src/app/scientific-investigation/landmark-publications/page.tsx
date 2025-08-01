@@ -33,8 +33,7 @@ export default function LandmarkPublicationsPage() {
     {
       role: 'assistant',
       content:
-        'OK, before we get started, please provide the information below. (Please answer each question one at a time):\n\n1. ' +
-        questions[0],
+        'OK, before we get started, please provide the information below.\n\n1. ' + questions[0],
     },
   ]);
   const [loading, setLoading] = useState(false);
@@ -176,8 +175,7 @@ export default function LandmarkPublicationsPage() {
       {
         role: 'assistant',
         content:
-          'OK, before we get started, please provide the information below. (Please answer each question one at a time):\n\n1. ' +
-          questions[0],
+          'OK, before we get started, please provide the information below.\n\n1. ' + questions[0],
       },
     ]);
     setLoading(false);
