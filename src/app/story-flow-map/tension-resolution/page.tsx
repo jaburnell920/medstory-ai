@@ -736,9 +736,9 @@ export default function TensionResolution() {
         </span>
       }
     >
-      <div className="flex flex-col lg:flex-row gap-4">
+      <div className="flex gap-4 h-full">
         {/* Chat Interface - Left Side */}
-        <div className="w-full lg:w-3/5">
+        <div className="w-3/5 h-full">
           <ChatInterface
             messages={messages}
             input={input}
@@ -751,15 +751,15 @@ export default function TensionResolution() {
           />
         </div>
 
-        {/* Result Section - Right Side */}
-        {(attackPoints.length > 0 ||
-          tensionResolutionPoints.length > 0 ||
-          conclusion ||
-          references ||
-          result) && (
-          <div className="flex-1 space-y-6">
-            <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md space-y-6">
-              <div className="flex justify-between items-center">
+        {/* Result Section - Right Side - Fixed */}
+        <div className="flex-1 h-full">
+          {(attackPoints.length > 0 ||
+            tensionResolutionPoints.length > 0 ||
+            conclusion ||
+            references ||
+            result) ? (
+            <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex flex-col">
+              <div className="flex justify-between items-center mb-4 flex-shrink-0">
                 <h2 className="text-xl font-bold text-blue-900">Story Flow Outline</h2>
                 <div className="flex items-center gap-3">
                   <span className="text-sm text-gray-600">
@@ -776,88 +776,96 @@ export default function TensionResolution() {
                 </div>
               </div>
 
-              {/* Attack Points */}
-              {attackPoints.map((attackPoint, index) => (
-                <div
-                  key={`attack-${index}`}
-                  className="bg-blue-50 p-4 rounded-lg border border-blue-200"
-                >
-                  <div className="flex items-start gap-3">
-                    <input
-                      type="radio"
-                      id={`attack-${index}`}
-                      name="attackPoint"
-                      checked={selectedAttackPoint === index.toString()}
-                      onChange={() => handleAttackPointSelection(index)}
-                      className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                    />
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-blue-800 mb-2">
-                        Attack Point #{index + 1}
-                      </h3>
-                      <pre className="text-gray-800 whitespace-pre-wrap font-sans">
-                        {attackPoint.replace(/^\*{0,2}Attack Point #\d+\*{0,2}:?\s*\n?/i, '')}{' '}
-                      </pre>
+              <div className="space-y-6 overflow-y-auto flex-1">
+                {/* Attack Points */}
+                {attackPoints.map((attackPoint, index) => (
+                  <div
+                    key={`attack-${index}`}
+                    className="bg-blue-50 p-4 rounded-lg border border-blue-200"
+                  >
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="radio"
+                        id={`attack-${index}`}
+                        name="attackPoint"
+                        checked={selectedAttackPoint === index.toString()}
+                        onChange={() => handleAttackPointSelection(index)}
+                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                      />
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                          Attack Point #{index + 1}
+                        </h3>
+                        <pre className="text-gray-800 whitespace-pre-wrap font-sans">
+                          {attackPoint.replace(/^\*{0,2}Attack Point #\d+\*{0,2}:?\s*\n?/i, '')}{' '}
+                        </pre>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
 
-              {/* Tension-Resolution Points */}
-              {tensionResolutionPoints.map((point, index) => (
-                <div
-                  key={`tension-${index}`}
-                  className="bg-blue-50 p-4 rounded-lg border border-blue-200"
-                >
-                  <div className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      id={`tension-${index}`}
-                      checked={selectedTensionPoints.has(index.toString())}
-                      onChange={(e) => handleTensionPointSelection(index, e.target.checked)}
-                      className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-blue-800 mb-2">
-                        Tension-Resolution #{index + 1}
-                      </h3>
-                      <pre className="text-gray-800 whitespace-pre-wrap font-sans">
-                        {point.replace(/^\*?\*?Tension-Resolution #\d+.*?\n?/i, '')}
-                      </pre>
+                {/* Tension-Resolution Points */}
+                {tensionResolutionPoints.map((point, index) => (
+                  <div
+                    key={`tension-${index}`}
+                    className="bg-blue-50 p-4 rounded-lg border border-blue-200"
+                  >
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        id={`tension-${index}`}
+                        checked={selectedTensionPoints.has(index.toString())}
+                        onChange={(e) => handleTensionPointSelection(index, e.target.checked)}
+                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                          Tension-Resolution #{index + 1}
+                        </h3>
+                        <pre className="text-gray-800 whitespace-pre-wrap font-sans">
+                          {point.replace(/^\*?\*?Tension-Resolution #\d+.*?\n?/i, '')}
+                        </pre>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
 
-              {/* Conclusion */}
-              {conclusion && (
-                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                  <h3 className="text-lg font-semibold text-blue-800 mb-2">Conclusion</h3>
-                  <pre className="text-gray-800 whitespace-pre-wrap font-sans">{conclusion}</pre>
-                </div>
-              )}
-
-              {/* References */}
-              {references && (
-                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                  <h3 className="text-lg font-semibold text-blue-800 mb-2">References</h3>
-                  <pre className="text-gray-800 whitespace-pre-wrap font-sans">{references}</pre>
-                </div>
-              )}
-
-              {/* Fallback for old result format */}
-              {result &&
-                attackPoints.length === 0 &&
-                tensionResolutionPoints.length === 0 &&
-                !conclusion &&
-                !references && (
+                {/* Conclusion */}
+                {conclusion && (
                   <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                    <pre className="text-gray-800 whitespace-pre-wrap font-sans">{result}</pre>
+                    <h3 className="text-lg font-semibold text-blue-800 mb-2">Conclusion</h3>
+                    <pre className="text-gray-800 whitespace-pre-wrap font-sans">{conclusion}</pre>
                   </div>
                 )}
+
+                {/* References */}
+                {references && (
+                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <h3 className="text-lg font-semibold text-blue-800 mb-2">References</h3>
+                    <pre className="text-gray-800 whitespace-pre-wrap font-sans">{references}</pre>
+                  </div>
+                )}
+
+                {/* Fallback for old result format */}
+                {result &&
+                  attackPoints.length === 0 &&
+                  tensionResolutionPoints.length === 0 &&
+                  !conclusion &&
+                  !references && (
+                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                      <pre className="text-gray-800 whitespace-pre-wrap font-sans">{result}</pre>
+                    </div>
+                  )}
+              </div>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex items-center justify-center">
+              <p className="text-gray-500 text-center">
+                Story Flow Outline will appear here once generated
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </PageLayout>
   );

@@ -514,7 +514,6 @@ export default function CoreStoryConcept() {
         />
       }
       sectionName="Core Story Concept"
-      initialResultsLoaded={true}
       taskName={
         <span
           onClick={handleTitleClick}
@@ -525,9 +524,9 @@ export default function CoreStoryConcept() {
         </span>
       }
     >
-      <div className="flex flex-col lg:flex-row gap-4">
+      <div className="flex gap-4 h-full">
         {/* Chat Interface - Left Side */}
-        <div className="w-full lg:w-3/5">
+        <div className="w-3/5 h-full">
           <ChatInterface
             messages={messages}
             input={input}
@@ -540,11 +539,11 @@ export default function CoreStoryConcept() {
           />
         </div>
 
-        {/* Result Section - Right Side */}
-        {concepts.length > 0 && (
-          <div className="flex-1 space-y-4">
-            <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md">
-              <div className="flex justify-between items-center mb-4">
+        {/* Result Section - Right Side - Fixed */}
+        <div className="flex-1 h-full">
+          {concepts.length > 0 ? (
+            <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex flex-col">
+              <div className="flex justify-between items-center mb-4 flex-shrink-0">
                 <h2 className="text-xl font-bold text-blue-900">Core Story Concepts</h2>
                 <div className="flex items-center gap-3">
                   <span className="text-sm text-gray-600">
@@ -561,7 +560,7 @@ export default function CoreStoryConcept() {
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-4 overflow-y-auto flex-1">
                 {concepts.map((concept) => (
                   <div
                     key={concept.id}
@@ -606,8 +605,14 @@ export default function CoreStoryConcept() {
                 ))}
               </div>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex items-center justify-center">
+              <p className="text-gray-500 text-center">
+                Core Story Concepts will appear here once generated
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </PageLayout>
   );

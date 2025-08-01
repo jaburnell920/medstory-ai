@@ -306,7 +306,6 @@ export default function TopPublicationsPage() {
 
   return (
     <PageLayout
-      initialResultsLoaded={initialKeyPointsLoaded}
       sectionIcon={
         <Image
           src="/stakeholder_interviews_chat.png"
@@ -327,9 +326,9 @@ export default function TopPublicationsPage() {
         </span>
       }
     >
-      <div className="flex flex-col lg:flex-row gap-4">
+      <div className="flex gap-4 h-full">
         {/* Chat Interface - Left Side */}
-        <div className="w-full lg:w-3/5">
+        <div className="w-3/5 h-full">
           <ChatInterface
             messages={messages}
             input={input}
@@ -348,11 +347,11 @@ export default function TopPublicationsPage() {
           />
         </div>
 
-        {/* Key Points Section - Right Side */}
-        {interviewEnded && keyPoints.length > 0 && (
-          <div className="flex-1 space-y-6" ref={keyPointsRef}>
-            <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md">
-              <div className="flex justify-between items-center mb-4">
+        {/* Key Points Section - Right Side - Fixed */}
+        <div className="flex-1 h-full">
+          {interviewEnded && keyPoints.length > 0 ? (
+            <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex flex-col">
+              <div className="flex justify-between items-center mb-4 flex-shrink-0">
                 <h2 className="text-xl font-bold text-blue-900">Key Points from Interview</h2>
                 <div className="flex items-center gap-3">
                   <span className="text-sm text-gray-600">{selectedKeyPoints.size} selected</span>
@@ -366,7 +365,7 @@ export default function TopPublicationsPage() {
                   )}
                 </div>
               </div>
-              <div className="space-y-4">
+              <div className="space-y-4 overflow-y-auto flex-1">
                 {keyPoints.map((point) => (
                   <div
                     key={point.id}
@@ -392,8 +391,17 @@ export default function TopPublicationsPage() {
                 ))}
               </div>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex items-center justify-center">
+              <p className="text-gray-500 text-center">
+                {interviewEnded 
+                  ? "No key points were extracted from the interview"
+                  : "Key points will appear here after the interview ends"
+                }
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </PageLayout>
   );
