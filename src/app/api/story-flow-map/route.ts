@@ -265,7 +265,21 @@ export async function POST(request: NextRequest) {
       // Simple modification logic - in a real implementation, this would use AI to interpret modifications
       const modificationLower = modifications.toLowerCase();
 
-      if (modificationLower.includes('add') && modificationLower.includes('point')) {
+      if (modificationLower.includes('attack point') || modificationLower.includes('ap')) {
+        // Update the attack point instead of adding a new one
+        // Find the attack point in the storyPoints array
+        const apIndex = modifiedData.storyPoints.findIndex((point: StoryPoint) => point.label === 'AP');
+        
+        if (apIndex !== -1) {
+          // Update the existing attack point with the new content
+          const newAttackPoint = 'Updated attack point based on user request: ' + modifications;
+          modifiedData.storyPoints[apIndex].tension = newAttackPoint;
+          modifiedData.storyPoints[apIndex].tensionValue = assignTensionValue(newAttackPoint);
+          
+          // Also update the attackPoint field in the main data object
+          modifiedData.attackPoint = newAttackPoint;
+        }
+      } else if (modificationLower.includes('add') && modificationLower.includes('point')) {
         // Add a new tension-resolution point
         const newPoint: StoryPoint = {
           label: (modifiedData.storyPoints.length - 1).toString(), // -1 to account for CSC
