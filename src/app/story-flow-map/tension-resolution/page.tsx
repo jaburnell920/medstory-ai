@@ -17,6 +17,10 @@ export default function TensionResolution() {
   const [conclusion, setConclusion] = useState('');
   const [references, setReferences] = useState('');
   const [conversationStarted, setConversationStarted] = useState(false);
+  
+  // State for selections and saving
+  const [selectedAttackPoint, setSelectedAttackPoint] = useState<string>('');
+  const [selectedTensionPoints, setSelectedTensionPoints] = useState<Set<string>>(new Set());
   const [context, setContext] = useState({
     coreStoryConcept: '',
     audience: '',
@@ -70,6 +74,8 @@ export default function TensionResolution() {
     setConclusion('');
     setReferences('');
     setConversationStarted(false);
+    setSelectedAttackPoint('');
+    setSelectedTensionPoints(new Set());
     setContext({
       coreStoryConcept: '',
       audience: '',
@@ -345,6 +351,69 @@ export default function TensionResolution() {
     }
 
     return { content: content.trim(), question: question.trim() };
+  };
+
+  // Handle attack point selection (radio button)
+  const handleAttackPointSelection = (attackPointIndex: number) => {
+    setSelectedAttackPoint(attackPointIndex.toString());
+  };
+
+  // Handle tension resolution point selection (checkbox)
+  const handleTensionPointSelection = (tensionPointIndex: number, checked: boolean) => {
+    const newSelected = new Set(selectedTensionPoints);
+    if (checked) {
+      newSelected.add(tensionPointIndex.toString());
+    } else {
+      newSelected.delete(tensionPointIndex.toString());
+    }
+    setSelectedTensionPoints(newSelected);
+  };
+
+  // Handle saving selected items
+  const handleSaveSelected = () => {
+    if (!selectedAttackPoint && selectedTensionPoints.size === 0) {
+      toast.error('Please select at least one item to save.');
+      return;
+    }
+
+    // Prepare data to save
+    const saveData = {
+      id: `tension-resolution-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      context: context,
+      selectedAttackPoint: selectedAttackPoint ? {
+        index: parseInt(selectedAttackPoint),
+        content: attackPoints[parseInt(selectedAttackPoint)]
+      } : null,
+      selectedTensionPoints: Array.from(selectedTensionPoints).map(index => ({
+        index: parseInt(index),
+        content: tensionResolutionPoints[parseInt(index)]
+      })),
+      conclusion: conclusion,
+      references: references
+    };
+
+    // Save to localStorage
+    const existingSaved = localStorage.getItem('savedTensionResolutionData');
+    let savedData = [];
+    if (existingSaved) {
+      try {
+        savedData = JSON.parse(existingSaved);
+      } catch (error) {
+        console.error('Error parsing saved data:', error);
+      }
+    }
+
+    savedData.push(saveData);
+    localStorage.setItem('savedTensionResolutionData', JSON.stringify(savedData));
+
+    const totalSelected = (selectedAttackPoint ? 1 : 0) + selectedTensionPoints.size;
+    toast.success(`${totalSelected} item(s) saved successfully!`);
+  };
+
+  // Handle clicking on title to access saved page
+  const handleTitleClick = () => {
+    window.location.href = '/story-flow-map/tension-resolution/saved';
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -647,7 +716,15 @@ export default function TensionResolution() {
         />
       }
       sectionName="Story Flow Map"
-      taskName="Create story flow outline"
+      taskName={
+        <span
+          onClick={handleTitleClick}
+          className="cursor-pointer hover:text-blue-600 transition-colors"
+          title="Click to view saved tension-resolution outlines"
+        >
+          Create story flow outline
+        </span>
+      }
     >
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Chat Interface - Left Side */}
@@ -672,7 +749,22 @@ export default function TensionResolution() {
           result) && (
           <div className="flex-1 space-y-6">
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md space-y-6">
-              <h2 className="text-xl font-bold text-blue-900">Story Flow Outline</h2>
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-bold text-blue-900">Story Flow Outline</h2>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-600">
+                    {(selectedAttackPoint ? 1 : 0) + selectedTensionPoints.size} selected
+                  </span>
+                  {(selectedAttackPoint || selectedTensionPoints.size > 0) && (
+                    <button
+                      onClick={handleSaveSelected}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                    >
+                      Save Selected
+                    </button>
+                  )}
+                </div>
+              </div>
 
               {/* Attack Points */}
               {attackPoints.map((attackPoint, index) => (
@@ -680,12 +772,24 @@ export default function TensionResolution() {
                   key={`attack-${index}`}
                   className="bg-blue-50 p-4 rounded-lg border border-blue-200"
                 >
-                  <h3 className="text-lg font-semibold text-blue-800 mb-2">
-                    Attack Point #{index + 1}
-                  </h3>
-                  <pre className="text-gray-800 whitespace-pre-wrap font-sans">
-                    {attackPoint.replace(/^\*{0,2}Attack Point #\d+\*{0,2}:?\s*\n?/i, '')}{' '}
-                  </pre>
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="radio"
+                      id={`attack-${index}`}
+                      name="attackPoint"
+                      checked={selectedAttackPoint === index.toString()}
+                      onChange={() => handleAttackPointSelection(index)}
+                      className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    />
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                        Attack Point #{index + 1}
+                      </h3>
+                      <pre className="text-gray-800 whitespace-pre-wrap font-sans">
+                        {attackPoint.replace(/^\*{0,2}Attack Point #\d+\*{0,2}:?\s*\n?/i, '')}{' '}
+                      </pre>
+                    </div>
+                  </div>
                 </div>
               ))}
 
@@ -695,12 +799,23 @@ export default function TensionResolution() {
                   key={`tension-${index}`}
                   className="bg-blue-50 p-4 rounded-lg border border-blue-200"
                 >
-                  <h3 className="text-lg font-semibold text-blue-800 mb-2">
-                    Tension-Resolution #{index + 1}
-                  </h3>
-                  <pre className="text-gray-800 whitespace-pre-wrap font-sans">
-                    {point.replace(/^\*?\*?Tension-Resolution #\d+.*?\n?/i, '')}
-                  </pre>
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      id={`tension-${index}`}
+                      checked={selectedTensionPoints.has(index.toString())}
+                      onChange={(e) => handleTensionPointSelection(index, e.target.checked)}
+                      className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                        Tension-Resolution #{index + 1}
+                      </h3>
+                      <pre className="text-gray-800 whitespace-pre-wrap font-sans">
+                        {point.replace(/^\*?\*?Tension-Resolution #\d+.*?\n?/i, '')}
+                      </pre>
+                    </div>
+                  </div>
                 </div>
               ))}
 
