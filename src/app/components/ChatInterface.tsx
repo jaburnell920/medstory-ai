@@ -36,6 +36,7 @@ export default function ChatInterface({
   onEndInterview,
   interviewEnded = false,
 }: ChatInterfaceProps) {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const [dots, setDots] = useState('.');
 
   // Loading dots animation
@@ -52,6 +53,14 @@ export default function ChatInterface({
       return () => clearInterval(interval);
     }
   }, [loading]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   // Clear input when loading state changes to true
   useEffect(() => {
@@ -85,97 +94,99 @@ export default function ChatInterface({
   };
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Chat Messages - Scrollable */}
-      <div className="flex-1 space-y-4 overflow-y-auto">
-        {messages.map((m, i) => (
-          <div key={i} className="w-full">
-            {m.role === 'assistant' ? (
-              <div className="w-full bg-white rounded-md shadow-md overflow-hidden">
-                <div className="bg-[#fab31c] text-white px-4 py-2">
-                  <span className="text-white">MEDSTORY</span>
-                  <span className="text-white font-bold">AI</span>
+    <div className="flex flex-col lg:flex-row gap-4 h-full">
+      {/* Chat Area - Left Side */}
+      <div className="w-full lg:w-3/4 flex flex-col min-h-0">
+        <div className="flex-1 space-y-4 overflow-y-auto">
+          {messages.map((m, i) => (
+            <div key={i} className="w-full">
+              {m.role === 'assistant' ? (
+                <div className="w-full bg-white rounded-md shadow-md overflow-hidden">
+                  <div className="bg-[#fab31c] text-white px-4 py-2">
+                    <span className="text-white">MEDSTORY</span>
+                    <span className="text-white font-bold">AI</span>
+                  </div>
+                  <div className="px-4 py-3 whitespace-pre-wrap text-gray-800">
+                    {formatContent(m.content)}
+                    {loading && i === messages.length - 1 && m.role === 'assistant' && (
+                      <span>{dots}</span>
+                    )}
+                  </div>
                 </div>
-                <div className="px-4 py-3 whitespace-pre-wrap text-gray-800">
-                  {formatContent(m.content)}
-                  {loading && i === messages.length - 1 && m.role === 'assistant' && (
-                    <span>{dots}</span>
-                  )}
+              ) : (
+                <div className="w-full bg-white rounded-md shadow-md overflow-hidden">
+                  <div className="bg-[#115dae] text-white px-4 py-2">YOU</div>
+                  <div className="px-4 py-3 whitespace-pre-wrap text-gray-800">{m.content}</div>
                 </div>
-              </div>
-            ) : (
-              <div className="w-full bg-white rounded-md shadow-md overflow-hidden">
-                <div className="bg-[#115dae] text-white px-4 py-2">YOU</div>
-                <div className="px-4 py-3 whitespace-pre-wrap text-gray-800">{m.content}</div>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+              )}
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
 
-      {/* Input Area - Fixed at bottom */}
-      <div className="flex-shrink-0 pt-4">
-        {showInput && (
-          <>
-            <form onSubmit={onSubmit} className="flex space-x-2">
-              <div className="flex-1 relative">
-                <input
-                  type="text"
-                  className="w-full border rounded px-4 py-2 text-black shadow-md"
-                  value={input}
-                  onChange={(e) => {
-                    // If AI is thinking and user starts typing, clear the input first
-                    if (loading && input === '') {
-                      // This ensures the first character typed replaces the empty input
-                      setInput(e.target.value);
-                    } else {
-                      setInput(e.target.value);
-                    }
-                  }}
-                  onFocus={() => {
-                    // Clear input when user focuses on the input field while AI is thinking
-                    if (loading) {
-                      setInput('');
-                    }
-                  }}
-                  placeholder={getPlaceholder()}
-                  disabled={interviewEnded}
-                />
-              </div>
-              <button
-                type="submit"
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed"
-                disabled={loading || interviewEnded || !input.trim()}
-              >
-                Send
-              </button>
-            </form>
-
-            {onReset && (
-              <div className="flex justify-start pt-4 space-x-4">
+        <div className="flex-shrink-0 pt-4">
+          {showInput && (
+            <>
+              <form onSubmit={onSubmit} className="flex space-x-2">
+                <div className="flex-1 relative">
+                  <input
+                    type="text"
+                    className="w-full border rounded px-4 py-2 text-black shadow-md"
+                    value={input}
+                    onChange={(e) => {
+                      // If AI is thinking and user starts typing, clear the input first
+                      if (loading && input === '') {
+                        // This ensures the first character typed replaces the empty input
+                        setInput(e.target.value);
+                      } else {
+                        setInput(e.target.value);
+                      }
+                    }}
+                    onFocus={() => {
+                      // Clear input when user focuses on the input field while AI is thinking
+                      if (loading) {
+                        setInput('');
+                      }
+                    }}
+                    placeholder={getPlaceholder()}
+                    disabled={interviewEnded}
+                  />
+                </div>
                 <button
-                  type="button"
-                  onClick={onReset}
-                  className="flex items-center px-4 py-2 bg-[#d3875f] text-white rounded-lg hover:bg-[#773f21] transition-colors duration-200 font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
-                  disabled={interviewEnded}
+                  type="submit"
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  disabled={loading || interviewEnded || !input.trim()}
                 >
-                  START OVER
+                  Send
                 </button>
+              </form>
 
-                {onEndInterview && !interviewEnded && (
+              {onReset && (
+                <div className="flex justify-start pt-24 space-x-4">
                   <button
                     type="button"
-                    onClick={onEndInterview}
-                    className="flex items-center px-4 py-2 bg-[#115dae] text-white rounded-lg hover:bg-[#0a3b7a] transition-colors duration-200 font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
-                    disabled={loading}
+                    onClick={onReset}
+                    className="flex items-center px-4 py-2 bg-[#d3875f] text-white rounded-lg hover:bg-[#773f21] transition-colors duration-200 font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    disabled={interviewEnded}
                   >
-                    END INTERVIEW
+                    START OVER
                   </button>
-                )}
-              </div>
-            )}
-          </>
-        )}
+
+                  {onEndInterview && !interviewEnded && (
+                    <button
+                      type="button"
+                      onClick={onEndInterview}
+                      className="flex items-center px-4 py-2 bg-[#115dae] text-white rounded-lg hover:bg-[#0a3b7a] transition-colors duration-200 font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
+                      disabled={loading}
+                    >
+                      END INTERVIEW
+                    </button>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
