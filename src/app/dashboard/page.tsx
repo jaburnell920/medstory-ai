@@ -29,10 +29,13 @@ export default function Dashboard() {
   // Scroll to results section when result changes
   useEffect(() => {
     if (result) {
-      // Use a small delay to ensure content is rendered
+      // Use a longer delay to ensure content is fully rendered
       const timer = setTimeout(() => {
-        document.getElementById('results-section')?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
+        const resultsContainer = document.querySelector('#results-section .overflow-y-auto');
+        if (resultsContainer) {
+          resultsContainer.scrollTop = resultsContainer.scrollHeight;
+        }
+      }, 300);
       return () => clearTimeout(timer);
     }
   }, [result]);
@@ -144,9 +147,9 @@ export default function Dashboard() {
       sectionName="Story Flow Map"
       taskName="Create story flow outline"
     >
-      <div className="flex gap-4 h-full">
+      <div className="flex gap-2 h-full">
         {/* Chat Interface - Left Side */}
-        <div className="w-3/5 h-full">
+        <div className="w-1/2 h-full">
           <ChatInterface
             messages={messages}
             input={input}
@@ -159,8 +162,8 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* Result Section - Right Side - Fixed */}
-        <div className="flex-1 h-full" id="results-section">
+        {/* Result Section - Right Side - Wider */}
+        <div className="w-1/2 h-full" id="results-section">
           {result ? (
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex flex-col">
               <h2 className="text-xl font-bold text-blue-900 mb-4 flex-shrink-0">

@@ -55,20 +55,29 @@ export default function ChatInterface({
   }, [loading]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesEndRef.current) {
+      const parentContainer = messagesEndRef.current.parentElement;
+      if (parentContainer) {
+        parentContainer.scrollTop = parentContainer.scrollHeight;
+      }
+    }
   };
 
   useEffect(() => {
-    scrollToBottom();
+    // Use a small delay to ensure content is rendered
+    const timer = setTimeout(() => {
+      scrollToBottom();
+    }, 200);
+    return () => clearTimeout(timer);
   }, [messages]);
 
-  // Also scroll to bottom when a new message is added or when loading changes
+  // Also scroll to bottom when loading changes
   useEffect(() => {
     if (!loading) {
-      // Scroll after a short delay to ensure content is rendered
+      // Scroll after a delay to ensure content is rendered
       const timer = setTimeout(() => {
         scrollToBottom();
-      }, 100);
+      }, 300);
       return () => clearTimeout(timer);
     }
   }, [loading]);

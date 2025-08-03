@@ -46,9 +46,16 @@ export default function LandmarkPublicationsPage() {
 
   // Scroll to results when they are generated or updated
   useEffect(() => {
-    if (resultRef.current && result && studies.length > 0) {
-      resultRef.current.scrollIntoView({ behavior: 'smooth' });
-      setInitialResultsLoaded(true);
+    if (result && studies.length > 0) {
+      // Use a longer delay to ensure content is fully rendered
+      const timer = setTimeout(() => {
+        const resultsContainer = document.querySelector('#results-section .overflow-y-auto');
+        if (resultsContainer) {
+          resultsContainer.scrollTop = resultsContainer.scrollHeight;
+        }
+        setInitialResultsLoaded(true);
+      }, 300);
+      return () => clearTimeout(timer);
     }
   }, [result, studies]);
 
@@ -294,9 +301,9 @@ export default function LandmarkPublicationsPage() {
         </span>
       }
     >
-      <div className="flex gap-4 h-full">
+      <div className="flex gap-2 h-full">
         {/* Chat Interface - Left Side */}
-        <div className="w-3/5 h-full">
+        <div className="w-1/2 h-full">
           <ChatInterface
             messages={messages}
             input={input}
@@ -309,8 +316,8 @@ export default function LandmarkPublicationsPage() {
           />
         </div>
 
-        {/* Result Section - Right Side - Fixed */}
-        <div className="flex-1 h-full" ref={resultRef}>
+        {/* Result Section - Right Side - Wider */}
+        <div className="w-1/2 h-full" id="results-section">
           {studies.length > 0 ? (
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex flex-col">
               <div className="flex justify-between items-center mb-4 flex-shrink-0">

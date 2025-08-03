@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import PageLayout from '@/app/components/PageLayout';
@@ -34,10 +34,16 @@ export default function TensionResolution() {
   // Scroll to results section when content changes
   useEffect(() => {
     if (attackPoints.length > 0 || tensionResolutionPoints.length > 0 || conclusion || references || result) {
-      // Use a small delay to ensure content is rendered
+      // Use a longer delay to ensure content is fully rendered
       const timer = setTimeout(() => {
-        document.getElementById('results-section')?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
+        const resultsContainer = document.querySelector('#results-section .overflow-y-auto');
+        if (resultsContainer) {
+          resultsContainer.scrollTop = resultsContainer.scrollHeight;
+        } else {
+          // Fallback to scrolling the entire section into view
+          document.getElementById('results-section')?.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 300);
       return () => clearTimeout(timer);
     }
   }, [attackPoints, tensionResolutionPoints, conclusion, references, result]);
@@ -750,9 +756,9 @@ export default function TensionResolution() {
         </span>
       }
     >
-      <div className="flex gap-4 h-full">
+      <div className="flex gap-2 h-full">
         {/* Chat Interface - Left Side */}
-        <div className="w-3/5 h-full">
+        <div className="w-1/2 h-full">
           <ChatInterface
             messages={messages}
             input={input}
@@ -765,8 +771,8 @@ export default function TensionResolution() {
           />
         </div>
 
-        {/* Result Section - Right Side - Fixed */}
-        <div className="flex-1 h-full" id="results-section">
+        {/* Result Section - Right Side - Wider */}
+        <div className="w-1/2 h-full" id="results-section">
           {attackPoints.length > 0 ||
           tensionResolutionPoints.length > 0 ||
           conclusion ||
