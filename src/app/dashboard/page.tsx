@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import PageLayout from '@/app/components/PageLayout';
@@ -25,6 +25,17 @@ export default function Dashboard() {
       content: 'What drug or intervention are you exploring today?',
     },
   ]);
+  
+  // Scroll to results section when result changes
+  useEffect(() => {
+    if (result) {
+      // Use a small delay to ensure content is rendered
+      const timer = setTimeout(() => {
+        document.getElementById('results-section')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [result]);
 
   const handleReset = () => {
     setStep(0);
@@ -149,7 +160,7 @@ export default function Dashboard() {
         </div>
 
         {/* Result Section - Right Side - Fixed */}
-        <div className="flex-1 h-full">
+        <div className="flex-1 h-full" id="results-section">
           {result ? (
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex flex-col">
               <h2 className="text-xl font-bold text-blue-900 mb-4 flex-shrink-0">

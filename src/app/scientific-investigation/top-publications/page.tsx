@@ -29,13 +29,16 @@ export default function TopPublicationsPage() {
   const [initialKeyPointsLoaded, setInitialKeyPointsLoaded] = useState(false);
   const keyPointsRef = useRef<HTMLDivElement | null>(null);
 
-  // Only scroll to key points when they are first generated, not on checkbox changes
+  // Scroll to key points when they are generated or updated
   useEffect(() => {
-    if (keyPointsRef.current && interviewEnded && keyPoints.length > 0 && !initialKeyPointsLoaded) {
-      keyPointsRef.current.scrollIntoView({ behavior: 'smooth' });
-      setInitialKeyPointsLoaded(true);
+    if (interviewEnded && keyPoints.length > 0) {
+      // Use a small delay to ensure content is rendered
+      const timer = setTimeout(() => {
+        document.getElementById('results-section')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+      return () => clearTimeout(timer);
     }
-  }, [interviewEnded, keyPoints, initialKeyPointsLoaded]);
+  }, [interviewEnded, keyPoints]);
 
   // Handle clicking on title to access saved page
   const handleTitleClick = () => {
@@ -348,7 +351,7 @@ export default function TopPublicationsPage() {
         </div>
 
         {/* Key Points Section - Right Side - Fixed */}
-        <div className="flex-1 h-full">
+        <div className="flex-1 h-full" id="results-section">
           {interviewEnded && keyPoints.length > 0 ? (
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex flex-col">
               <div className="flex justify-between items-center mb-4 flex-shrink-0">

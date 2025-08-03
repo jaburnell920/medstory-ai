@@ -92,6 +92,17 @@ export default function CoreStoryConcept() {
       content: 'What is the disease state?',
     },
   ]);
+  
+  // Scroll to results section when concepts change
+  useEffect(() => {
+    if (concepts.length > 0) {
+      // Use a small delay to ensure content is rendered
+      const timer = setTimeout(() => {
+        document.getElementById('results-section')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [concepts]);
 
   const handleReset = () => {
     setStep(0);
@@ -540,7 +551,7 @@ export default function CoreStoryConcept() {
         </div>
 
         {/* Result Section - Right Side - Fixed */}
-        <div className="flex-1 h-full">
+        <div className="flex-1 h-full" id="results-section">
           {concepts.length > 0 ? (
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex flex-col">
               <div className="flex justify-between items-center mb-4 flex-shrink-0">

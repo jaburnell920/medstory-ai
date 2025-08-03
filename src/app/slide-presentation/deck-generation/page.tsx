@@ -36,8 +36,12 @@ export default function DeckGenerationPage() {
   const resultRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (resultRef.current) {
-      resultRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (resultRef.current && result) {
+      // Add a small delay to ensure content is rendered before scrolling
+      const timer = setTimeout(() => {
+        resultRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+      return () => clearTimeout(timer);
     }
   }, [result]);
 
@@ -187,7 +191,7 @@ Generate the entire outline without stopping for user input.
         </div>
 
         {/* Result Section - Right Side - Fixed */}
-        <div className="flex-1 h-full">
+        <div className="flex-1 h-full" ref={resultRef}>
           {result ? (
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex flex-col">
               <h2 className="text-xl font-bold text-blue-900 mb-4 flex-shrink-0">

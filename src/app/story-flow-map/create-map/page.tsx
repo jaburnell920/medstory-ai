@@ -28,6 +28,17 @@ export default function CreateStoryFlowMap() {
   const [storyFlowData, setStoryFlowData] = useState<StoryFlowMapData | null>(null);
   const [showMap, setShowMap] = useState(false);
   const [messages, setMessages] = useState<{ role: 'assistant' | 'user'; content: string }[]>([]);
+  
+  // Scroll to results section when showMap changes
+  useEffect(() => {
+    if (showMap && storyFlowData) {
+      // Use a small delay to ensure content is rendered
+      const timer = setTimeout(() => {
+        document.getElementById('results-section')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showMap, storyFlowData]);
 
   // Initialize with confirmation question
   useEffect(() => {
@@ -563,7 +574,7 @@ export default function CreateStoryFlowMap() {
         </div>
 
         {/* Story Flow Map - Right Side - Fixed */}
-        <div className="flex-1 h-full">
+        <div className="flex-1 h-full" id="results-section">
           {showMap ? (
             <div className="h-full">{renderStoryFlowMap()}</div>
           ) : (

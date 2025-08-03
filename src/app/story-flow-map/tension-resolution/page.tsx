@@ -29,6 +29,18 @@ export default function TensionResolution() {
   });
 
   const [messages, setMessages] = useState<{ role: 'assistant' | 'user'; content: string }[]>([]);
+  const resultsSectionRef = useRef<HTMLDivElement | null>(null);
+
+  // Scroll to results section when content changes
+  useEffect(() => {
+    if (attackPoints.length > 0 || tensionResolutionPoints.length > 0 || conclusion || references || result) {
+      // Use a small delay to ensure content is rendered
+      const timer = setTimeout(() => {
+        document.getElementById('results-section')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [attackPoints, tensionResolutionPoints, conclusion, references, result]);
 
   // Initialize messages with core story concept from localStorage
   useEffect(() => {
@@ -754,7 +766,7 @@ export default function TensionResolution() {
         </div>
 
         {/* Result Section - Right Side - Fixed */}
-        <div className="flex-1 h-full">
+        <div className="flex-1 h-full" id="results-section">
           {attackPoints.length > 0 ||
           tensionResolutionPoints.length > 0 ||
           conclusion ||

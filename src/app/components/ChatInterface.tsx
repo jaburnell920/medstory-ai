@@ -62,6 +62,17 @@ export default function ChatInterface({
     scrollToBottom();
   }, [messages]);
 
+  // Also scroll to bottom when a new message is added or when loading changes
+  useEffect(() => {
+    if (!loading) {
+      // Scroll after a short delay to ensure content is rendered
+      const timer = setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
+
   // Clear input when loading state changes to true
   useEffect(() => {
     if (loading) {

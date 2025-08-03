@@ -44,13 +44,13 @@ export default function LandmarkPublicationsPage() {
   const [initialResultsLoaded, setInitialResultsLoaded] = useState(false);
   const resultRef = useRef<HTMLDivElement | null>(null);
 
-  // Only scroll to results when they are first generated, not on checkbox changes
+  // Scroll to results when they are generated or updated
   useEffect(() => {
-    if (resultRef.current && result && studies.length > 0 && !initialResultsLoaded) {
+    if (resultRef.current && result && studies.length > 0) {
       resultRef.current.scrollIntoView({ behavior: 'smooth' });
       setInitialResultsLoaded(true);
     }
-  }, [result, studies, initialResultsLoaded]);
+  }, [result, studies]);
 
   // Load selected studies from session storage on component mount
   useEffect(() => {
@@ -310,7 +310,7 @@ export default function LandmarkPublicationsPage() {
         </div>
 
         {/* Result Section - Right Side - Fixed */}
-        <div className="flex-1 h-full">
+        <div className="flex-1 h-full" ref={resultRef}>
           {studies.length > 0 ? (
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex flex-col">
               <div className="flex justify-between items-center mb-4 flex-shrink-0">
