@@ -3,23 +3,26 @@ import OpenAI from 'openai';
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  
+
   // Check if OpenAI API key is configured
   if (!process.env.OPENAI_API_KEY) {
-    return NextResponse.json({ 
-      error: 'OpenAI API key not configured. Please add OPENAI_API_KEY to your .env.local file.' 
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: 'OpenAI API key not configured. Please add OPENAI_API_KEY to your .env.local file.',
+      },
+      { status: 500 }
+    );
   }
-  
+
   // Check if this is a key points extraction request
   if (body.prompt) {
     const { prompt, max_tokens } = body;
-    
+
     try {
       const openai = new OpenAI({
         apiKey: process.env.OPENAI_API_KEY,
       });
-      
+
       const chatCompletion = await openai.chat.completions.create({
         model: 'gpt-4',
         messages: [
@@ -41,7 +44,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to extract key points' }, { status: 500 });
     }
   }
-  
+
   // Core story concept functionality with new prompt
   const { disease, drug, audience, length, messages } = body;
 
@@ -51,7 +54,7 @@ export async function POST(req: NextRequest) {
       const openai = new OpenAI({
         apiKey: process.env.OPENAI_API_KEY,
       });
-      
+
       const chatCompletion = await openai.chat.completions.create({
         model: 'gpt-4',
         messages: [
@@ -75,9 +78,15 @@ A Core Story Concept is a sticky scientific insight that:
 
 Use the following to find an optimal Core Story Concept: 
 1. Mine for novelty – scan the mechanism of action, pivotal trials, and unmet needs to surface little-known truths that ${drug} makes actionable. Write for busy specialists—active voice, vivid verbs, zero fluff. Avoid clichés and marketing jargon.
+2. If there are saved message highlights from an expert interview, give these moderately heavy
+weight in formulating the Core Story Concept.
 
-2. Use the following title: "Core Story Concept Candidate #X" where X is the number of the current core story concept, then add a blank line after this. 
-3. Following the title, distill each truth into a memorable mini-narrative that is structured in the form of a tension section which is ${length} and a resolution section which is ${length}. The resolution pays off the tension in hand-in-glove fashion that makes perfect sense. Do not display the number of words in the tension and resolution section – just use the words "TENSION" and "RESOLUTION".
+3. Use the following title: "Core Story Concept Candidate #X" where X is the number of the current core story concept, then add a blank line after this. 
+4. Following the title, distill each truth into a memorable mini-narrative that is structured in the form of
+a tension section which is ${length} number of words and a resolution section which is ${length}
+number of words. The resolution pays off the tension in hand-in-glove fashion that makes perfect
+sense. Do not display the number of words in the tension and resolution section – just use the words
+“TENSION” and “RESOLUTION”.
 
 Return only the concepts in the template above.`,
           },
@@ -123,13 +132,14 @@ Create a Core Story Concept using the guidelines above.
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
-    
+
     const chatCompletion = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [
         {
           role: 'system',
-          content: 'You are an AI specializing in medical storytelling and narrative development for pharmaceutical products. Your task is to generate structured Core Story Concepts for a specified drug treating a particular disease state.',
+          content:
+            'You are an AI specializing in medical storytelling and narrative development for pharmaceutical products. Your task is to generate structured Core Story Concepts for a specified drug treating a particular disease state.',
         },
         {
           role: 'user',
