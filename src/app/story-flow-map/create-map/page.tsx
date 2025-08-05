@@ -31,8 +31,18 @@ export default function CreateStoryFlowMap() {
 
   // Initialize with confirmation question
   useEffect(() => {
-    const initialMessage =
-      'Just to confirm, would you like me to use the currently selected attack point, the most recent story flow outline, and the currently selected Core Story Concept to create the story flow map?';
+    // Check if required data exists in localStorage
+    const { hasCoreStoryConcept, hasStoryFlowOutline } = checkMemoryForRequiredData();
+    
+    let initialMessage = '';
+    
+    if (!hasCoreStoryConcept) {
+      initialMessage = 'To create a Story Flow Map, I need you to create a Core Story Concept. Please go to the Core Story Concept section of MEDSTORYAI to do this then return here and I\'ll be happy to generate the Story Flow Map. Thanks.';
+    } else if (!hasStoryFlowOutline) {
+      initialMessage = 'To create a Story Flow Map, I need you to create a Story Flow Outline first. Please go to the Story Flow section of MEDSTORYAI to do this then return here and I\'ll be happy to generate the Story Flow Map. Thanks.';
+    } else {
+      initialMessage = 'Just to confirm, would you like me to use the currently selected attack point, the most recent story flow outline, and the currently selected Core Story Concept to create the story flow map?';
+    }
 
     setMessages([
       {
@@ -43,8 +53,8 @@ export default function CreateStoryFlowMap() {
   }, []);
 
   // Function to check if required data exists in localStorage
-  const checkMemoryForRequiredData = (): boolean => {
-    if (typeof window === 'undefined') return false;
+  const checkMemoryForRequiredData = (): { hasCoreStoryConcept: boolean; hasStoryFlowOutline: boolean } => {
+    if (typeof window === 'undefined') return { hasCoreStoryConcept: false, hasStoryFlowOutline: false };
 
     try {
       // Check for Core Story Concept data
@@ -85,10 +95,10 @@ export default function CreateStoryFlowMap() {
         hasStoryFlowOutline = Boolean(hasAttackPoints) || Boolean(hasTensionResolution);
       }
 
-      return hasCoreStoryConcept && hasStoryFlowOutline;
+      return { hasCoreStoryConcept, hasStoryFlowOutline };
     } catch (error) {
       console.error('Error checking memory for required data:', error);
-      return false;
+      return { hasCoreStoryConcept: false, hasStoryFlowOutline: false };
     }
   };
 
@@ -111,32 +121,46 @@ export default function CreateStoryFlowMap() {
         response.includes('proceed')
       ) {
         // User confirmed - check if data exists in memory
-        const hasRequiredData = checkMemoryForRequiredData();
+        const { hasCoreStoryConcept, hasStoryFlowOutline } = checkMemoryForRequiredData();
 
-        if (hasRequiredData) {
-          // Proceed to create story flow map
+        if (!hasCoreStoryConcept) {
+          // No Core Story Concept in memory
           setMessages([
             ...newMessages,
             {
               role: 'assistant',
               content:
-                'Thank you for confirming. I will now create your story flow map using the selected data.',
+                'To create a Story Flow Map, I need you to create a Core Story Concept. Please go to the Core Story Concept section of MEDSTORYAI to do this then return here and I\'ll be happy to generate the Story Flow Map. Thanks.',
             },
           ]);
-
-          setLoading(true);
-          await createStoryFlowMap();
-        } else {
-          // No data in memory - suggest completing prerequisites
-          setMessages([
-            ...newMessages,
-            {
-              role: 'assistant',
-              content:
-                'I diplomatically suggest that you complete the Core Story Concept and Story Flow Outline sections of MEDSTORYAI and then return here to view and edit the Story Flow Map.',
-            },
-          ]);
+          return;
         }
+
+        if (!hasStoryFlowOutline) {
+          // No Story Flow Outline in memory
+          setMessages([
+            ...newMessages,
+            {
+              role: 'assistant',
+              content:
+                'To create a Story Flow Map, I need you to create a Story Flow Outline first. Please go to the Story Flow section of MEDSTORYAI to do this then return here and I\'ll be happy to generate the Story Flow Map. Thanks.',
+            },
+          ]);
+          return;
+        }
+
+        // Both Core Story Concept and Story Flow Outline exist
+        setMessages([
+          ...newMessages,
+          {
+            role: 'assistant',
+            content:
+              'Thank you for confirming. I will now create your story flow map using the selected data.',
+          },
+        ]);
+
+        setLoading(true);
+        await createStoryFlowMap();
       } else {
         // User declined - suggest completing prerequisites
         setMessages([
@@ -196,11 +220,14 @@ export default function CreateStoryFlowMap() {
         setShowMap(true);
         setStep(1);
 
+        // Create a table of the current story points without the tension/resolution values
+        const storyPointsTable = createStoryPointsTable(data.storyFlowData.storyPoints);
+
         setMessages((prev) => [
           ...prev,
           {
             role: 'assistant',
-            content: 'Would you like to modify this Story Flow Map?',
+            content: `Here is your Story Flow Map based on the selected data.\n\n${storyPointsTable}\n\nWould you like to modify this Story Flow Map?`,
           },
         ]);
       } else {
@@ -295,11 +322,14 @@ export default function CreateStoryFlowMap() {
       if (data.success) {
         setStoryFlowData(data.storyFlowData);
 
+        // Create a table of the current story points without the tension/resolution values
+        const storyPointsTable = createStoryPointsTable(data.storyFlowData.storyPoints);
+
         setMessages((prev) => [
           ...prev,
           {
             role: 'assistant',
-            content: `I have updated the Story Flow Map based on your request: "${modifications}". The map has been redrawn with the current information. Would you like to modify this Story Flow Map?`,
+            content: `I have updated the Story Flow Map based on your request: "${modifications}". The map has been redrawn with the current information.\n\n${storyPointsTable}\n\nWould you like to modify this Story Flow Map?`,
           },
         ]);
         setStep(1);
@@ -312,6 +342,23 @@ export default function CreateStoryFlowMap() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Helper function to create a table of story points without tension/resolution values
+  const createStoryPointsTable = (storyPoints: StoryPoint[]): string => {
+    let tableContent = '| # | Tension | Resolution |\n|---|---------|------------|\n';
+    
+    storyPoints.forEach(point => {
+      if (point.label === 'AP') {
+        tableContent += `| AP | ${point.tension} | |\n`;
+      } else if (point.label === 'CSC') {
+        tableContent += `| CSC | | ${point.resolution} |\n`;
+      } else {
+        tableContent += `| ${point.label} | ${point.tension} | ${point.resolution} |\n`;
+      }
+    });
+    
+    return tableContent;
   };
 
   const renderStoryFlowMap = () => {
