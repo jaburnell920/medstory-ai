@@ -33,22 +33,25 @@ export default function CreateStoryFlowMap() {
   useEffect(() => {
     // Only run this effect on the client side
     if (typeof window === 'undefined') return;
-    
+
     // Check if required data exists in localStorage
     const { hasCoreStoryConcept, hasStoryFlowOutline } = checkMemoryForRequiredData();
-    
+
     // Log the state for debugging
     console.log('Initial check - Core Story Concept exists:', hasCoreStoryConcept);
     console.log('Initial check - Story Flow Outline exists:', hasStoryFlowOutline);
-    
+
     let initialMessage = '';
-    
+
     if (!hasCoreStoryConcept) {
-      initialMessage = 'To create a Story Flow Map, I need you to create a Core Story Concept. Please go to the Core Story Concept section of MEDSTORYAI to do this then return here and I\'ll be happy to generate the Story Flow Map. Thanks.';
+      initialMessage =
+        "To create a Story Flow Map, I need you to create a Core Story Concept. Please go to the Core Story Concept section of MEDSTORYAI to do this then return here and I'll be happy to generate the Story Flow Map. Thanks.";
     } else if (!hasStoryFlowOutline) {
-      initialMessage = 'To create a Story Flow Map, I need you to create a Story Flow Outline first. Please go to the Story Flow section of MEDSTORYAI to do this then return here and I\'ll be happy to generate the Story Flow Map. Thanks.';
+      initialMessage =
+        "To create a Story Flow Map, I need you to create a Story Flow Outline first. Please go to the Story Flow section of MEDSTORYAI to do this then return here and I'll be happy to generate the Story Flow Map. Thanks.";
     } else {
-      initialMessage = 'Just to confirm, would you like me to use the currently selected attack point, the most recent story flow outline, and the currently selected Core Story Concept to create the story flow map?';
+      initialMessage =
+        'Just to confirm, would you like me to use the currently selected attack point, the most recent story flow outline, and the currently selected Core Story Concept to create the story flow map?';
     }
 
     setMessages([
@@ -60,8 +63,12 @@ export default function CreateStoryFlowMap() {
   }, []);
 
   // Function to check if required data exists in localStorage
-  const checkMemoryForRequiredData = (): { hasCoreStoryConcept: boolean; hasStoryFlowOutline: boolean } => {
-    if (typeof window === 'undefined') return { hasCoreStoryConcept: false, hasStoryFlowOutline: false };
+  const checkMemoryForRequiredData = (): {
+    hasCoreStoryConcept: boolean;
+    hasStoryFlowOutline: boolean;
+  } => {
+    if (typeof window === 'undefined')
+      return { hasCoreStoryConcept: false, hasStoryFlowOutline: false };
 
     try {
       // Check all localStorage keys for debugging
@@ -70,20 +77,21 @@ export default function CreateStoryFlowMap() {
         const key = localStorage.key(i);
         console.log(`- ${key}`);
       }
-      
+
       // Check for Core Story Concept data - try multiple possible keys
-      const coreStoryConceptData = localStorage.getItem('selectedCoreStoryConceptData') || 
-                                  localStorage.getItem('coreStoryConcept') || 
-                                  localStorage.getItem('selectedCoreStoryConcept');
+      const coreStoryConceptData =
+        localStorage.getItem('selectedCoreStoryConceptData') ||
+        localStorage.getItem('coreStoryConcept') ||
+        localStorage.getItem('selectedCoreStoryConcept');
       console.log('Core Story Concept data from localStorage:', coreStoryConceptData);
-      
+
       let hasCoreStoryConcept = false;
 
       if (coreStoryConceptData) {
         try {
           const conceptData = JSON.parse(coreStoryConceptData);
           console.log('Parsed Core Story Concept data:', conceptData);
-          
+
           // Check different possible structures
           if (conceptData && typeof conceptData === 'object') {
             if (conceptData.content && conceptData.content.trim().length > 0) {
@@ -96,7 +104,7 @@ export default function CreateStoryFlowMap() {
           } else if (typeof conceptData === 'string' && conceptData.trim().length > 0) {
             hasCoreStoryConcept = true;
           }
-          
+
           console.log('Has Core Story Concept:', hasCoreStoryConcept);
         } catch (e) {
           console.error('Error parsing Core Story Concept data:', e);
@@ -113,7 +121,7 @@ export default function CreateStoryFlowMap() {
       const attackPointsData = localStorage.getItem('attackPoints');
       const tensionResolutionData = localStorage.getItem('tensionResolutionPoints');
       const savedTensionResolutionData = localStorage.getItem('savedTensionResolutionData');
-      
+
       console.log('Story Flow data from localStorage:', storyFlowData);
       console.log('Attack Points data from localStorage:', attackPointsData);
       console.log('Tension Resolution data from localStorage:', tensionResolutionData);
@@ -142,7 +150,7 @@ export default function CreateStoryFlowMap() {
         let hasAttackPoints = false;
         let hasTensionResolution = false;
         let hasSavedTensionResolution = false;
-        
+
         if (attackPointsData) {
           try {
             const attackPoints = JSON.parse(attackPointsData);
@@ -157,7 +165,7 @@ export default function CreateStoryFlowMap() {
             }
           }
         }
-        
+
         if (tensionResolutionData) {
           try {
             const tensionResolution = JSON.parse(tensionResolutionData);
@@ -166,48 +174,69 @@ export default function CreateStoryFlowMap() {
           } catch (e) {
             console.error('Error parsing Tension Resolution data:', e);
             // If it's not valid JSON, check if it's a non-empty string
-            if (typeof tensionResolutionData === 'string' && tensionResolutionData.trim().length > 0) {
+            if (
+              typeof tensionResolutionData === 'string' &&
+              tensionResolutionData.trim().length > 0
+            ) {
               hasTensionResolution = true;
               console.log('Tension Resolution is a non-empty string');
             }
           }
         }
-        
+
         // Check for saved tension resolution data
         if (savedTensionResolutionData) {
           try {
             const savedData = JSON.parse(savedTensionResolutionData);
             console.log('Parsed Saved Tension Resolution data:', savedData);
-            
+
             // Check if it's an array
             if (Array.isArray(savedData) && savedData.length > 0) {
               // Use the first item in the array
               const firstItem = savedData[0];
-              hasSavedTensionResolution = firstItem && 
-                ((firstItem.attackPoint && firstItem.attackPoint.trim && firstItem.attackPoint.trim().length > 0) || 
-                 (firstItem.tensionResolutionPoints && firstItem.tensionResolutionPoints.length > 0) ||
-                 (firstItem.selectedAttackPoint && firstItem.selectedAttackPoint.content && firstItem.selectedAttackPoint.content.trim().length > 0) ||
-                 (firstItem.selectedTensionPoints && firstItem.selectedTensionPoints.length > 0));
+              hasSavedTensionResolution =
+                firstItem &&
+                ((firstItem.attackPoint &&
+                  firstItem.attackPoint.trim &&
+                  firstItem.attackPoint.trim().length > 0) ||
+                  (firstItem.tensionResolutionPoints &&
+                    firstItem.tensionResolutionPoints.length > 0) ||
+                  (firstItem.selectedAttackPoint &&
+                    firstItem.selectedAttackPoint.content &&
+                    firstItem.selectedAttackPoint.content.trim().length > 0) ||
+                  (firstItem.selectedTensionPoints && firstItem.selectedTensionPoints.length > 0));
             } else {
               // Check if it has the expected structure with attack points or tension-resolution points
-              hasSavedTensionResolution = savedData && 
-                ((savedData.attackPoint && savedData.attackPoint.trim && savedData.attackPoint.trim().length > 0) || 
-                 (savedData.tensionResolutionPoints && savedData.tensionResolutionPoints.length > 0) ||
-                 (savedData.selectedAttackPoint && savedData.selectedAttackPoint.content && savedData.selectedAttackPoint.content.trim().length > 0) ||
-                 (savedData.selectedTensionPoints && savedData.selectedTensionPoints.length > 0));
+              hasSavedTensionResolution =
+                savedData &&
+                ((savedData.attackPoint &&
+                  savedData.attackPoint.trim &&
+                  savedData.attackPoint.trim().length > 0) ||
+                  (savedData.tensionResolutionPoints &&
+                    savedData.tensionResolutionPoints.length > 0) ||
+                  (savedData.selectedAttackPoint &&
+                    savedData.selectedAttackPoint.content &&
+                    savedData.selectedAttackPoint.content.trim().length > 0) ||
+                  (savedData.selectedTensionPoints && savedData.selectedTensionPoints.length > 0));
             }
             console.log('Has Saved Tension Resolution:', hasSavedTensionResolution);
           } catch (e) {
             console.error('Error parsing Saved Tension Resolution data:', e);
             // If it's not valid JSON, check if it's a non-empty string
-            if (typeof savedTensionResolutionData === 'string' && savedTensionResolutionData.trim().length > 0) {
+            if (
+              typeof savedTensionResolutionData === 'string' &&
+              savedTensionResolutionData.trim().length > 0
+            ) {
               hasSavedTensionResolution = true;
               console.log('Saved Tension Resolution is a non-empty string');
             }
           }
         }
-        
-        hasStoryFlowOutline = Boolean(hasAttackPoints) || Boolean(hasTensionResolution) || Boolean(hasSavedTensionResolution);
+
+        hasStoryFlowOutline =
+          Boolean(hasAttackPoints) ||
+          Boolean(hasTensionResolution) ||
+          Boolean(hasSavedTensionResolution);
         console.log('Has Story Flow Outline from individual items:', hasStoryFlowOutline);
       }
 
@@ -220,7 +249,7 @@ export default function CreateStoryFlowMap() {
 
       console.log('Final result - Has Core Story Concept:', hasCoreStoryConcept);
       console.log('Final result - Has Story Flow Outline:', hasStoryFlowOutline);
-      
+
       return { hasCoreStoryConcept, hasStoryFlowOutline };
     } catch (error) {
       console.error('Error checking memory for required data:', error);
@@ -260,7 +289,7 @@ export default function CreateStoryFlowMap() {
             {
               role: 'assistant',
               content:
-                'To create a Story Flow Map, I need you to create a Core Story Concept. Please go to the Core Story Concept section of MEDSTORYAI to do this then return here and I\'ll be happy to generate the Story Flow Map. Thanks.',
+                "To create a Story Flow Map, I need you to create a Core Story Concept. Please go to the Core Story Concept section of MEDSTORYAI to do this then return here and I'll be happy to generate the Story Flow Map. Thanks.",
             },
           ]);
           return;
@@ -274,12 +303,12 @@ export default function CreateStoryFlowMap() {
             {
               role: 'assistant',
               content:
-                'To create a Story Flow Map, I need you to create a Story Flow Outline first. Please go to the Story Flow section of MEDSTORYAI to do this then return here and I\'ll be happy to generate the Story Flow Map. Thanks.',
+                "To create a Story Flow Map, I need you to create a Story Flow Outline first. Please go to the Story Flow section of MEDSTORYAI to do this then return here and I'll be happy to generate the Story Flow Map. Thanks.",
             },
           ]);
           return;
         }
-        
+
         console.log('Both Core Story Concept and Story Flow Outline found, proceeding...');
 
         // Both Core Story Concept and Story Flow Outline exist
@@ -388,9 +417,10 @@ export default function CreateStoryFlowMap() {
 
     try {
       // Get Core Story Concept
-      const coreStoryConceptData = localStorage.getItem('selectedCoreStoryConceptData') || 
-                                  localStorage.getItem('coreStoryConcept') || 
-                                  localStorage.getItem('selectedCoreStoryConcept');
+      const coreStoryConceptData =
+        localStorage.getItem('selectedCoreStoryConceptData') ||
+        localStorage.getItem('coreStoryConcept') ||
+        localStorage.getItem('selectedCoreStoryConcept');
       let coreStoryConcept = '';
 
       if (coreStoryConceptData) {
@@ -433,42 +463,73 @@ export default function CreateStoryFlowMap() {
           try {
             const savedData = JSON.parse(savedTensionResolutionData);
             console.log('Parsed savedTensionResolutionData for getDataFromMemory:', savedData);
-            
+
             // Handle array structure
             if (Array.isArray(savedData) && savedData.length > 0) {
               const firstItem = savedData[0];
-              
+
               // Check for attack point
               if (attackPoints.length === 0 && firstItem.selectedAttackPoint) {
-                attackPoints = [firstItem.selectedAttackPoint.content || firstItem.selectedAttackPoint];
+                attackPoints = [
+                  firstItem.selectedAttackPoint.content || firstItem.selectedAttackPoint,
+                ];
                 console.log('Got attack point from array:', attackPoints);
               }
-              
+
               // Check for tension-resolution points
-              if (tensionResolutionPoints.length === 0 && firstItem.selectedTensionPoints && firstItem.selectedTensionPoints.length > 0) {
-                tensionResolutionPoints = firstItem.selectedTensionPoints.map(point => point.content || point);
+              if (
+                tensionResolutionPoints.length === 0 &&
+                firstItem.selectedTensionPoints &&
+                firstItem.selectedTensionPoints.length > 0
+              ) {
+                interface SelectedTensionPoint {
+                  content?: string;
+                }
+
+                tensionResolutionPoints = firstItem.selectedTensionPoints.map(
+                  (point: SelectedTensionPoint | string) =>
+                    typeof point === 'string' ? point : point.content || point
+                );
                 console.log('Got tension points from array:', tensionResolutionPoints);
               }
             } else {
               // Handle non-array structure
               // Check for attack point
               if (attackPoints.length === 0 && savedData.selectedAttackPoint) {
-                attackPoints = [savedData.selectedAttackPoint.content || savedData.selectedAttackPoint];
+                attackPoints = [
+                  savedData.selectedAttackPoint.content || savedData.selectedAttackPoint,
+                ];
               } else if (attackPoints.length === 0 && savedData.attackPoint) {
                 attackPoints = [savedData.attackPoint];
               }
-              
+
               // Check for tension-resolution points
-              if (tensionResolutionPoints.length === 0 && savedData.selectedTensionResolutionPoints) {
+              if (
+                tensionResolutionPoints.length === 0 &&
+                savedData.selectedTensionResolutionPoints
+              ) {
                 tensionResolutionPoints = savedData.selectedTensionResolutionPoints;
               } else if (tensionResolutionPoints.length === 0 && savedData.selectedTensionPoints) {
-                tensionResolutionPoints = savedData.selectedTensionPoints.map(point => point.content || point);
-              } else if (tensionResolutionPoints.length === 0 && savedData.tensionResolutionPoints) {
+                interface TensionPoint {
+                  content?: string;
+                }
+
+                tensionResolutionPoints = savedData.selectedTensionPoints.map(
+                  (point: TensionPoint | string) =>
+                    typeof point === 'string' ? point : point.content || point
+                );
+              } else if (
+                tensionResolutionPoints.length === 0 &&
+                savedData.tensionResolutionPoints
+              ) {
                 tensionResolutionPoints = savedData.tensionResolutionPoints;
               }
             }
-            
-            console.log('Got data from savedTensionResolutionData:', { attackPoints, tensionResolutionPoints });
+
+            console.log('Got data from savedTensionResolutionData:', {
+              attackPoints,
+              tensionResolutionPoints,
+            });
           } catch (e) {
             console.error('Error parsing Saved Tension Resolution data:', e);
           }
@@ -557,8 +618,8 @@ export default function CreateStoryFlowMap() {
   // Helper function to create a table of story points without tension/resolution values
   const createStoryPointsTable = (storyPoints: StoryPoint[]): string => {
     let tableContent = '| # | Tension | Resolution |\n|---|---------|------------|\n';
-    
-    storyPoints.forEach(point => {
+
+    storyPoints.forEach((point) => {
       if (point.label === 'AP') {
         tableContent += `| AP | ${point.tension} | |\n`;
       } else if (point.label === 'CSC') {
@@ -567,7 +628,7 @@ export default function CreateStoryFlowMap() {
         tableContent += `| ${point.label} | ${point.tension} | ${point.resolution} |\n`;
       }
     });
-    
+
     return tableContent;
   };
 
