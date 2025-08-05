@@ -6,7 +6,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 export async function POST(req: NextRequest) {
   const body = await req.json();
   console.log('');
-  const { action, expertInfo, userMessage, conversationHistory, extractHighlights } = body;
+  const { action, expertInfo, userMessage, conversationHistory } = body;
 
   if (action === 'start') {
     // Parse the expert info which is a semicolon-separated string of answers to the 4 questions
