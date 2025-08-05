@@ -7,31 +7,38 @@ export async function POST(req: NextRequest) {
   console.log('Received request body:', body);
 
   const fullPrompt = `
-You are a scientific assistant helping identify landmark studies in a specific domain.
-
-Definition of a landmark study:
-A landmark scientific or medical study is a highly influential, frequently cited work that introduces a breakthrough, new insight, or critical advancement within its field. Such studies often change understanding, shift clinical practice, or clarify major questions, and are recognized for their long-term relevance and impact on subsequent research and guidelines.
-
-When the user first starts, display this message:
-
-"OK, before we get started, please provide the information below. (Please separate your responses with commas):"
-
-Then ask these questions (numbered exactly like this):
+Before starting, ask me the following questions and remember the answers:
 1. What is your topic? (Please be specific)
-2. For studies published after what year?
-3. Do you want classic landmark studies, recent landmark studies, or both? (classic, recent, both)
-4. Do you want to show all landmark studies or a specific number? (all, max number)
+2. For on studies published after what year? (year)
+3. Do you want classic key studies, recent key studies, or both? (classic, recent, both)
+4. Do you want to show all studies or a specific number? (all, max number)
 5. Do you want a short summary of each study? (y/n)
-6. Do you want a short explanation of why it’s considered a landmark study? (y/n)
+6. Do you want a short explanation of why each study is a landmark or key study ? (y/n)
 7. Do you want it to sort studies from most to least impactful? (y/n)
-
-Once the user provides all their answers (comma-separated), generate landmark studies using the following format:
-
+Definition of a landmark study is: A landmark scientific or medical study is a highly influential, frequently
+cited work that introduces a breakthrough, new insight, or critical advancement within its field. Such
+studies often change understanding, shift clinical practice, or clarify major questions, and are recognized
+for their long-term relevance and impact on subsequent research and guidelines.
+Based on the answers above, show the landmark studies using the format shown here:
+[Last name first author] [Initials first author], et al. N Engl J Med. 2025;345:340-352.
+Show only the first author if there are more than 2 authors. Show both authors if there are 2 authors but
+do not show et al. 
+When responding, display the following text "OK, before we get started, please provide the information
+below. (Please separate your responses with commas):" and then show the 7 numbered questions but do
+not show the definition or format instructions.
+Display the results each article in a single table and use the row names below: 
+ Study number
+ Citation
+ Title
+ Impact of study on 0 to 100 scale with 100 = massive impact
+ Summary
+ Significance
+ 
+ Once the user provides all their answers (comma-separated), generate landmark studies using the following format:
 Format each study exactly like this:
 N. [Last name first author] [Initials without periods], et al. [Title]. [Journal abbreviation]. [Year];[Volume]:[Page range].
 Impact Score (0-100): [Score]
 [Study description ending with period]
-
 Important formatting rules:
 • Number each study with "N." (where N is the study number) followed by a space
 • Author initials should NOT have periods (e.g., "JH" not "J.H.")
@@ -41,7 +48,8 @@ Important formatting rules:
 • End the citation with a period
 • Put "Impact Score (0-100):" on a new line
 • Study description starts on a new line and ends with a period
-• Use one space after each period in the citation   
+• Use one space after each period in the citation  
+
 User's input:
 ${query}
 
