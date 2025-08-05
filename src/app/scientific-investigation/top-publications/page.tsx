@@ -174,6 +174,40 @@ export default function TopPublicationsPage() {
     toast.success(`${selectedKeyPoints.size} key points saved successfully!`);
   };
 
+  // Handle ending the interview via button
+  const handleEndInterview = async () => {
+    if (!interviewStarted) return;
+
+    const endMessage = { role: 'user' as const, content: 'end interview' };
+    const newMessages = [...messages, endMessage];
+    setMessages(newMessages);
+    setLoading(true);
+
+    try {
+      const res = await fetch('/api/expert-interview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'continue',
+          userMessage: 'end interview',
+          conversationHistory: newMessages,
+        }),
+      });
+      const data = await res.json();
+
+      setMessages([...newMessages, { role: 'assistant', content: data.result }]);
+      setAwaitingHighlightResponse(true);
+    } catch (err) {
+      console.error('Error ending interview:', err);
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: 'Failed to end interview properly.' },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -363,6 +397,8 @@ export default function TopPublicationsPage() {
             }
             removeExpertPrefix={true}
             onReset={handleReset}
+            onEndInterview={interviewStarted ? handleEndInterview : undefined}
+            interviewEnded={false}
           />
         </div>
 
