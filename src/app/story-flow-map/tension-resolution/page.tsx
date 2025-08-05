@@ -24,8 +24,6 @@ export default function TensionResolution() {
   const [context, setContext] = useState({
     coreStoryConcept: '',
     audience: '',
-    interventionName: '',
-    diseaseCondition: '',
   });
 
   const [messages, setMessages] = useState<{ role: 'assistant' | 'user'; content: string }[]>([]);
@@ -79,8 +77,6 @@ export default function TensionResolution() {
     setContext({
       coreStoryConcept: '',
       audience: '',
-      interventionName: '',
-      diseaseCondition: '',
     });
     // Reset messages with core story concept from localStorage
     if (typeof window !== 'undefined') {
@@ -112,8 +108,6 @@ export default function TensionResolution() {
   const [questions, setQuestions] = useState([
     'Do you want to use the currently selected Core Story Concept or provide a new one?',
     'Who is your audience?',
-    'What is your intervention name?',
-    'What is the disease or condition?',
   ]);
 
   // Update the first question with core story concept from localStorage
@@ -539,11 +533,8 @@ export default function TensionResolution() {
         ]);
         return;
       }
-      if (step === 1) setContext((prev) => ({ ...prev, audience: trimmed }));
-      if (step === 2) setContext((prev) => ({ ...prev, interventionName: trimmed }));
-
-      if (step === 3) {
-        setContext((prev) => ({ ...prev, diseaseCondition: trimmed }));
+      if (step === 1) {
+        setContext((prev) => ({ ...prev, audience: trimmed }));
         setMessages([
           ...newMessages,
           {
@@ -561,8 +552,6 @@ export default function TensionResolution() {
               action: 'start',
               coreStoryConcept: context.coreStoryConcept,
               audience: context.audience,
-              interventionName: context.interventionName,
-              diseaseCondition: trimmed,
             }),
           });
 
@@ -649,8 +638,6 @@ export default function TensionResolution() {
             action: 'continue',
             coreStoryConcept: context.coreStoryConcept,
             audience: context.audience,
-            interventionName: context.interventionName,
-            diseaseCondition: context.diseaseCondition,
             userMessage: trimmed,
             conversationHistory: newMessages,
           }),

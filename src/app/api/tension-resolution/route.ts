@@ -12,8 +12,6 @@ export async function POST(request: NextRequest) {
     const {
       coreStoryConcept,
       audience,
-      interventionName,
-      diseaseCondition,
       action,
       userMessage,
       conversationHistory,
@@ -32,24 +30,31 @@ Would you like to modify this Attack Point, create a new one, or move on to crea
 
       const systemPrompt = `AI Prompt for Creating Story Flow Outline
 Section: Story Flow Map  Task Name: Create story flow outline  Prompt:
-Inputs you will receive 
+Inputs you will receive
 
-Parameter	Provided by user
-Core Story Concept	The big scientific idea that is driving the story flow as a whole and that the audience must
-remember, believe in, be persuaded by and that the entire story flow leads up to
-Audience	The type of people in the audience, e.g., PCPs, academic neurologists, cardiologists
-Intervention Name	A drug, device, or biotechnology that is given to a person to improve or cure their disease
-or condition
-Disease or Condition	Clinical arena
-The currently selected Core Story Concept is: Plaque inflammation drives CV events. Direct and safe ways to reduce plaque inflammation are needed. Orticumab is a plaque-targeted anti-inflammatory therapy. By inhibiting pro-inflammatory macrophages within plaques, this new approach has the potential to reduce CV risk on top of current standard of care.
-Ask the user "Do you want to use the currently selected Core Story Concept or provide a new one?" If answers "currently selected" then use it. If answer new one, ask "Please enter the Core Story Concept you'd like to use to guide the story flow." Store this text as "MANUAL CSC". Then ask for the other parameters above, one at a time. Do not number the steps when asking user for input. Just ask the questions. Ask the question very concisely – do not include examples or commentary in the questions.
+Parameter: Core Story Concept AND Audience.
+ Provided by user: The big scientific idea that is driving the story flow as a whole and that the
+audience must remember, believe in, be persuaded by and that the entire story flow leads up to AND
+The type of people in the audience, e.g., PCPs, academics neurologists, cardiologists
 
-Outputs you will provide 
+Ask the user "Do you want to use the currently selected Core Story Concept or provide a new
+one?" If answers "currently selected" then use the Core Story Concept in memory. If answer
+new one, ask "Please enter the Core Story Concept you'd like to use to guide the story flow. You
+can type or paste in your Core Story Concept." Store this text as "MANUAL CSC".
 
-Parameter	Provided by user
-Attack Point	The hook at the beginning of the story flow that generates intense curiosity and makes audience want to see the rest of the story
-Tension-Resolution Points	Each point generates tension and then resolves it. The resolution naturally and smoothly transitions into the next tension point. All tension-resolution points are fully referenced.
-Summary	A summary of the key points in the story flow that integrates tightly with the Core Story Concept.
+Ask the user "Who is the audience?"
+
+Outputs you will provide, 
+
+Parameters: Attack Point AND tension-resolution points AND summary. 
+Provided by the user: The hook at the beginning of the story flow that generates intense curiosity
+and makes audience want to see the rest of the story AND Each point generates tension and then resolves it. The resolution naturally
+and smoothly transitions into the next tension point. All tension-resolution
+points are fully referenced. AND A summary of the key points in the story flow that integrates tightly with the
+Core Story Concept.
+
+A summary of the key points in the story flow that integrates tightly with the
+Core Story Concept.
 Training: Attack Point
 You are a cinematic scientific storyteller hired to craft one Attack Point—the opening scene of a clinical narrative that hooks practicing physicians and compels them to keep reading. An Attack Point must:
 Jolt attention within one breath: an arresting fact, anecdote, or paradox.
@@ -141,8 +146,6 @@ Then ask the user the following: "Would you like me to write a script based on t
 PARAMETERS PROVIDED:
 - Core Story Concept: ${coreStoryConcept}
 - Audience: ${audience}
-- Intervention Name: ${interventionName}
-- Disease or Condition: ${diseaseCondition}
 
 Begin with creating the Attack Point.`;
 
@@ -159,8 +162,6 @@ Begin with creating the Attack Point.`;
 
 Core Story Concept: ${coreStoryConcept}
 Audience: ${audience}
-Intervention Name: ${interventionName}
-Disease or Condition: ${diseaseCondition}
 
 Please start with the Attack Point phase.`,
           },
@@ -241,8 +242,6 @@ Would you like me to write a script based on the above story flow outline that w
 PARAMETERS:
 - Core Story Concept: ${coreStoryConcept}
 - Audience: ${audience}
-- Intervention Name: ${interventionName}
-- Disease or Condition: ${diseaseCondition}
 
 CONVERSATION SO FAR:
 ${conversationContext}
