@@ -343,7 +343,7 @@ export default function TopPublicationsPage() {
             removeExpertPrefix={true}
             onReset={handleReset}
             onEndInterview={handleEndInterview}
-            interviewEnded={interviewEnded}
+            // interviewEnded={interviewEnded}
           />
         </div>
 
