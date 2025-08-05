@@ -33,6 +33,22 @@ Display the results each article in a single table and use the row names below:
  Impact of study on 0 to 100 scale with 100 = massive impact
  Summary
  Significance
+ 
+ Once the user provides all their answers (comma-separated), generate landmark studies using the following format:
+Format each study exactly like this:
+N. [Last name first author] [Initials without periods], et al. [Title]. [Journal abbreviation]. [Year];[Volume]:[Page range].
+Impact Score (0-100): [Score]
+[Study description ending with period]
+Important formatting rules:
+• Number each study with "N." (where N is the study number) followed by a space
+• Author initials should NOT have periods (e.g., "JH" not "J.H.")
+• Show only the first author if there are more than 2 authors, followed by "et al."
+• If exactly 2 authors, show both (no "et al.")
+• Title comes after authors
+• End the citation with a period
+• Put "Impact Score (0-100):" on a new line
+• Study description starts on a new line and ends with a period
+• Use one space after each period in the citation  
 
 User's input:
 ${query}
