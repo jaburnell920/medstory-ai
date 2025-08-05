@@ -64,8 +64,17 @@ export default function CreateStoryFlowMap() {
     if (typeof window === 'undefined') return { hasCoreStoryConcept: false, hasStoryFlowOutline: false };
 
     try {
-      // Check for Core Story Concept data
-      const coreStoryConceptData = localStorage.getItem('selectedCoreStoryConceptData');
+      // Check all localStorage keys for debugging
+      console.log('All localStorage keys:');
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        console.log(`- ${key}`);
+      }
+      
+      // Check for Core Story Concept data - try multiple possible keys
+      const coreStoryConceptData = localStorage.getItem('selectedCoreStoryConceptData') || 
+                                  localStorage.getItem('coreStoryConcept') || 
+                                  localStorage.getItem('selectedCoreStoryConcept');
       console.log('Core Story Concept data from localStorage:', coreStoryConceptData);
       
       let hasCoreStoryConcept = false;
@@ -74,11 +83,28 @@ export default function CreateStoryFlowMap() {
         try {
           const conceptData = JSON.parse(coreStoryConceptData);
           console.log('Parsed Core Story Concept data:', conceptData);
-          hasCoreStoryConcept =
-            conceptData && conceptData.content && conceptData.content.trim().length > 0;
+          
+          // Check different possible structures
+          if (conceptData && typeof conceptData === 'object') {
+            if (conceptData.content && conceptData.content.trim().length > 0) {
+              hasCoreStoryConcept = true;
+            } else if (typeof conceptData === 'string' && conceptData.trim().length > 0) {
+              hasCoreStoryConcept = true;
+            } else if (Array.isArray(conceptData) && conceptData.length > 0) {
+              hasCoreStoryConcept = true;
+            }
+          } else if (typeof conceptData === 'string' && conceptData.trim().length > 0) {
+            hasCoreStoryConcept = true;
+          }
+          
           console.log('Has Core Story Concept:', hasCoreStoryConcept);
         } catch (e) {
           console.error('Error parsing Core Story Concept data:', e);
+          // If it's not valid JSON, check if it's a non-empty string
+          if (typeof coreStoryConceptData === 'string' && coreStoryConceptData.trim().length > 0) {
+            hasCoreStoryConcept = true;
+            console.log('Core Story Concept is a non-empty string');
+          }
         }
       }
 
@@ -121,6 +147,11 @@ export default function CreateStoryFlowMap() {
             console.log('Has Attack Points:', hasAttackPoints);
           } catch (e) {
             console.error('Error parsing Attack Points data:', e);
+            // If it's not valid JSON, check if it's a non-empty string
+            if (typeof attackPointsData === 'string' && attackPointsData.trim().length > 0) {
+              hasAttackPoints = true;
+              console.log('Attack Points is a non-empty string');
+            }
           }
         }
         
@@ -131,11 +162,23 @@ export default function CreateStoryFlowMap() {
             console.log('Has Tension Resolution:', hasTensionResolution);
           } catch (e) {
             console.error('Error parsing Tension Resolution data:', e);
+            // If it's not valid JSON, check if it's a non-empty string
+            if (typeof tensionResolutionData === 'string' && tensionResolutionData.trim().length > 0) {
+              hasTensionResolution = true;
+              console.log('Tension Resolution is a non-empty string');
+            }
           }
         }
         
         hasStoryFlowOutline = Boolean(hasAttackPoints) || Boolean(hasTensionResolution);
         console.log('Has Story Flow Outline from individual items:', hasStoryFlowOutline);
+      }
+
+      // For testing purposes, force both to true if we're in development mode
+      if (process.env.NODE_ENV === 'development') {
+        // Uncomment these lines to force values for testing
+        // hasCoreStoryConcept = true;
+        // hasStoryFlowOutline = true;
       }
 
       console.log('Final result - Has Core Story Concept:', hasCoreStoryConcept);
