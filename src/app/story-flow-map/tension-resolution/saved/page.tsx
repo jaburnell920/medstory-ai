@@ -10,8 +10,6 @@ interface SavedTensionResolution {
   context: {
     coreStoryConcept: string;
     audience: string;
-    interventionName: string;
-    diseaseCondition: string;
   };
   selectedAttackPoint: {
     index: number;
@@ -125,14 +123,8 @@ export default function SavedTensionResolutionPage() {
               <div className="mb-6 p-4 bg-gray-50 rounded-lg">
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">Context</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
-                  <div>
-                    <span className="font-semibold">Audience:</span> {item.context.audience}
-                  </div>
-                  <div>
-                    <span className="font-semibold">Intervention:</span> {item.context.interventionName}
-                  </div>
                   <div className="md:col-span-2">
-                    <span className="font-semibold">Disease/Condition:</span> {item.context.diseaseCondition}
+                    <span className="font-semibold">Audience:</span> {item.context.audience}
                   </div>
                   {item.context.coreStoryConcept && (
                     <div className="md:col-span-2">
