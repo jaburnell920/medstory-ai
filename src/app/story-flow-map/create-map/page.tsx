@@ -177,12 +177,25 @@ export default function CreateStoryFlowMap() {
         if (savedTensionResolutionData) {
           try {
             const savedData = JSON.parse(savedTensionResolutionData);
-            // Check if it has the expected structure with attack points or tension-resolution points
-            hasSavedTensionResolution = savedData && 
-              ((savedData.attackPoint && savedData.attackPoint.trim().length > 0) || 
-               (savedData.tensionResolutionPoints && savedData.tensionResolutionPoints.length > 0) ||
-               (savedData.selectedAttackPoint && savedData.selectedAttackPoint.trim().length > 0) ||
-               (savedData.selectedTensionResolutionPoints && savedData.selectedTensionResolutionPoints.length > 0));
+            console.log('Parsed Saved Tension Resolution data:', savedData);
+            
+            // Check if it's an array
+            if (Array.isArray(savedData) && savedData.length > 0) {
+              // Use the first item in the array
+              const firstItem = savedData[0];
+              hasSavedTensionResolution = firstItem && 
+                ((firstItem.attackPoint && firstItem.attackPoint.trim && firstItem.attackPoint.trim().length > 0) || 
+                 (firstItem.tensionResolutionPoints && firstItem.tensionResolutionPoints.length > 0) ||
+                 (firstItem.selectedAttackPoint && firstItem.selectedAttackPoint.content && firstItem.selectedAttackPoint.content.trim().length > 0) ||
+                 (firstItem.selectedTensionPoints && firstItem.selectedTensionPoints.length > 0));
+            } else {
+              // Check if it has the expected structure with attack points or tension-resolution points
+              hasSavedTensionResolution = savedData && 
+                ((savedData.attackPoint && savedData.attackPoint.trim && savedData.attackPoint.trim().length > 0) || 
+                 (savedData.tensionResolutionPoints && savedData.tensionResolutionPoints.length > 0) ||
+                 (savedData.selectedAttackPoint && savedData.selectedAttackPoint.content && savedData.selectedAttackPoint.content.trim().length > 0) ||
+                 (savedData.selectedTensionPoints && savedData.selectedTensionPoints.length > 0));
+            }
             console.log('Has Saved Tension Resolution:', hasSavedTensionResolution);
           } catch (e) {
             console.error('Error parsing Saved Tension Resolution data:', e);
@@ -419,19 +432,40 @@ export default function CreateStoryFlowMap() {
         if (savedTensionResolutionData) {
           try {
             const savedData = JSON.parse(savedTensionResolutionData);
+            console.log('Parsed savedTensionResolutionData for getDataFromMemory:', savedData);
             
-            // Check for attack point
-            if (attackPoints.length === 0 && savedData.selectedAttackPoint) {
-              attackPoints = [savedData.selectedAttackPoint];
-            } else if (attackPoints.length === 0 && savedData.attackPoint) {
-              attackPoints = [savedData.attackPoint];
-            }
-            
-            // Check for tension-resolution points
-            if (tensionResolutionPoints.length === 0 && savedData.selectedTensionResolutionPoints) {
-              tensionResolutionPoints = savedData.selectedTensionResolutionPoints;
-            } else if (tensionResolutionPoints.length === 0 && savedData.tensionResolutionPoints) {
-              tensionResolutionPoints = savedData.tensionResolutionPoints;
+            // Handle array structure
+            if (Array.isArray(savedData) && savedData.length > 0) {
+              const firstItem = savedData[0];
+              
+              // Check for attack point
+              if (attackPoints.length === 0 && firstItem.selectedAttackPoint) {
+                attackPoints = [firstItem.selectedAttackPoint.content || firstItem.selectedAttackPoint];
+                console.log('Got attack point from array:', attackPoints);
+              }
+              
+              // Check for tension-resolution points
+              if (tensionResolutionPoints.length === 0 && firstItem.selectedTensionPoints && firstItem.selectedTensionPoints.length > 0) {
+                tensionResolutionPoints = firstItem.selectedTensionPoints.map(point => point.content || point);
+                console.log('Got tension points from array:', tensionResolutionPoints);
+              }
+            } else {
+              // Handle non-array structure
+              // Check for attack point
+              if (attackPoints.length === 0 && savedData.selectedAttackPoint) {
+                attackPoints = [savedData.selectedAttackPoint.content || savedData.selectedAttackPoint];
+              } else if (attackPoints.length === 0 && savedData.attackPoint) {
+                attackPoints = [savedData.attackPoint];
+              }
+              
+              // Check for tension-resolution points
+              if (tensionResolutionPoints.length === 0 && savedData.selectedTensionResolutionPoints) {
+                tensionResolutionPoints = savedData.selectedTensionResolutionPoints;
+              } else if (tensionResolutionPoints.length === 0 && savedData.selectedTensionPoints) {
+                tensionResolutionPoints = savedData.selectedTensionPoints.map(point => point.content || point);
+              } else if (tensionResolutionPoints.length === 0 && savedData.tensionResolutionPoints) {
+                tensionResolutionPoints = savedData.tensionResolutionPoints;
+              }
             }
             
             console.log('Got data from savedTensionResolutionData:', { attackPoints, tensionResolutionPoints });
