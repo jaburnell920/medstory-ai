@@ -27,6 +27,7 @@ export default function TopPublicationsPage() {
   const [keyPoints, setKeyPoints] = useState<KeyPoint[]>([]);
   const [selectedKeyPoints, setSelectedKeyPoints] = useState<Set<string>>(new Set());
   const [initialKeyPointsLoaded, setInitialKeyPointsLoaded] = useState(false);
+  const [awaitingHighlightResponse, setAwaitingHighlightResponse] = useState(false);
   const keyPointsRef = useRef<HTMLDivElement | null>(null);
 
   // Only scroll to key points when they are first generated, not on checkbox changes
@@ -58,110 +59,10 @@ export default function TopPublicationsPage() {
     setKeyPoints([]);
     setSelectedKeyPoints(new Set());
     setInitialKeyPointsLoaded(false);
+    setAwaitingHighlightResponse(false);
   };
 
-  const handleEndInterview = async () => {
-    setLoading(true);
 
-    try {
-      // Extract key points from the conversation
-      // Skip the first 8 messages which are the expert info collection
-      const interviewMessages = interviewStarted ? messages.slice(8) : messages;
-      const conversationText = interviewMessages
-        .map((msg) => `${msg.role === 'user' ? 'Interviewer' : 'Expert'}: ${msg.content}`)
-        .join('\n\n');
-
-      // For demonstration purposes, create mock key points when API is not available
-      const mockKeyPoints = [
-        'The expert emphasized the importance of personalized medicine in cancer treatment',
-        'Current research focuses on immunotherapy and targeted therapies',
-        'Patient outcomes have improved significantly over the past decade',
-        'Collaboration between researchers and clinicians is crucial for advancement',
-        'Future directions include AI-assisted diagnosis and treatment planning',
-      ];
-
-      // Try to call OpenAI to extract key points, but fall back to mock data
-      try {
-        const res = await fetch('/api/openai', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            prompt: `Extract 5-10 key points from this interview with an expert in ${expertInfo}. 
-            Format each point as a clear, concise statement that captures an important insight or piece of information.
-            
-            INTERVIEW TRANSCRIPT:
-            ${conversationText}
-            
-            KEY POINTS:`,
-            max_tokens: 1000,
-          }),
-        });
-
-        const data = await res.json();
-
-        if (data.result) {
-          // Parse the key points from API response
-          const pointsText = data.result || '';
-          // Try to handle different formats of key points
-          let pointsList: string[] = [];
-
-          // First try numbered format (1. Point)
-          const numberedPoints: string[] = pointsText
-            .split(/\d+\./)
-            .filter((p: string) => p.trim().length > 0);
-          if (numberedPoints.length > 1) {
-            pointsList = numberedPoints.map((p) => p.trim());
-          }
-          // Then try bullet points
-          else if (pointsText.includes('•')) {
-            pointsList = pointsText
-              .split('•')
-              .filter((p: string) => p.trim().length > 0)
-              .map((p: string) => p.trim());
-          }
-          // Then try dash points
-          else if (pointsText.includes('-')) {
-            pointsList = pointsText
-              .split('-')
-              .filter((p: string) => p.trim().length > 0)
-              .map((p: string) => p.trim());
-          }
-          // If all else fails, just use the whole text
-          else {
-            pointsList = [pointsText.trim()];
-          }
-
-          // Create key points with IDs
-          const formattedKeyPoints: KeyPoint[] = pointsList.map(
-            (content: string, index: number): KeyPoint => ({
-              id: `keypoint-${Date.now()}-${index}`,
-              content,
-            })
-          );
-
-          setKeyPoints(formattedKeyPoints);
-        } else {
-          throw new Error('No result from API');
-        }
-      } catch (apiError) {
-        console.log('API not available, using mock key points for demonstration', apiError);
-        // Use mock key points when API is not available
-        const formattedKeyPoints: KeyPoint[] = mockKeyPoints.map(
-          (content: string, index: number): KeyPoint => ({
-            id: `keypoint-${Date.now()}-${index}`,
-            content,
-          })
-        );
-        setKeyPoints(formattedKeyPoints);
-      }
-
-      setInterviewEnded(true);
-    } catch (err) {
-      console.error('Error extracting key points:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Handle checkbox changes for key points
   const handleKeyPointSelection = (pointId: string, isSelected: boolean) => {
@@ -234,6 +135,25 @@ export default function TopPublicationsPage() {
           .map((msg) => msg.content)
           .join('; ');
         setExpertInfo(expertInfoCollected);
+
+        // Create concise expert description
+        const expertInfoParts = expertInfoCollected.split(';').map(part => part.trim());
+        const background = expertInfoParts[0];
+        const expertise = expertInfoParts[1];
+        const scientistOrClinician = expertInfoParts[2];
+        const academicOrPractitioner = expertInfoParts[3];
+
+        const expertDescription = `I will create a simulation of an interview with an expert with a background in ${background}, deep expertise in ${expertise}, who is ${scientistOrClinician === 'both' ? 'both a basic scientist and a clinician' : `a ${scientistOrClinician}`} and ${academicOrPractitioner === 'both' ? 'both an academic and a practitioner' : `a ${academicOrPractitioner}`}.`;
+
+        // Add the expert description message
+        const messagesWithDescription = [...newMessages, { role: 'assistant' as const, content: expertDescription }];
+        setMessages(messagesWithDescription);
+
+        // Add "We'll now begin the interview" message
+        const beginMessage = "We'll now begin the interview. Please let me know when to end the interview by entering \"end interview\" or \"interview complete\".";
+        const messagesWithBegin = [...messagesWithDescription, { role: 'assistant' as const, content: beginMessage }];
+        setMessages(messagesWithBegin);
+
         setInterviewStarted(true);
 
         try {
@@ -247,7 +167,7 @@ export default function TopPublicationsPage() {
           });
           const data = await res.json();
 
-          setMessages([...newMessages, { role: 'assistant', content: data.result }]);
+          setMessages([...messagesWithBegin, { role: 'assistant' as const, content: data.result }]);
         } catch (err) {
           console.error('Error starting interview:', err);
           setMessages((prev) => [
@@ -261,43 +181,104 @@ export default function TopPublicationsPage() {
         setLoading(false);
       }
     } else {
-      // Continue interview - append instruction to not ask questions
-      const modifiedInput = isEndInterview
-        ? input
-        : `${input}. Do not ask any questions in your response.`;
-      setLoading(true);
+      // Check if this is a response to the highlight extraction question
+      const isHighlightResponse = awaitingHighlightResponse && (
+        input.toLowerCase().includes('yes') || 
+        input.toLowerCase().includes('extract') ||
+        input.toLowerCase().includes('highlight')
+      );
 
-      try {
-        const res = await fetch('/api/expert-interview', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'continue',
-            expertInfo: expertInfo,
-            userMessage: modifiedInput,
-            conversationHistory: messages,
-          }),
-        });
-        const data = await res.json();
+      if (isHighlightResponse) {
+        // Extract highlights
+        setLoading(true);
+        try {
+          const res = await fetch('/api/expert-interview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'extractHighlights',
+              conversationHistory: messages,
+            }),
+          });
+          const data = await res.json();
 
-        setMessages([...newMessages, { role: 'assistant', content: data.result }]);
+          // Parse the highlights and create key points
+          const highlightsText = data.result || '';
+          let pointsList: string[] = [];
 
-        // If this was an end interview command, update the state and extract key points
-        if (isEndInterview) {
-          setInterviewEnded(true);
-          // Wait for the response to be added to messages, then extract key points
-          setTimeout(() => {
-            handleEndInterview();
-          }, 1000);
+          // Parse numbered format (1. Point)
+          const numberedPoints = highlightsText
+            .split(/\d+\./)
+            .filter((p: string) => p.trim().length > 0);
+          if (numberedPoints.length > 1) {
+            pointsList = numberedPoints.map((p: string) => p.trim());
+          } else {
+            // Fallback to splitting by newlines
+            pointsList = highlightsText
+              .split('\n')
+              .filter((p: string) => p.trim().length > 0)
+              .map((p: string) => p.trim());
+          }
+
+          // Create key points with IDs
+          const formattedKeyPoints: KeyPoint[] = pointsList.map(
+            (content: string, index: number): KeyPoint => ({
+              id: `keypoint-${Date.now()}-${index}`,
+              content,
+            })
+          );
+
+          setKeyPoints(formattedKeyPoints);
+          setMessages([...newMessages, { role: 'assistant', content: data.result }]);
+          setAwaitingHighlightResponse(false);
+        } catch (err) {
+          console.error('Error extracting highlights:', err);
+          setMessages((prev) => [
+            ...prev,
+            { role: 'assistant', content: 'Failed to extract highlights.' },
+          ]);
+        } finally {
+          setLoading(false);
         }
-      } catch (err) {
-        console.error('Error continuing interview:', err);
-        setMessages((prev) => [
-          ...prev,
-          { role: 'assistant', content: 'Failed to continue interview.' },
-        ]);
-      } finally {
-        setLoading(false);
+      } else {
+        // Continue interview - append instruction to not ask questions
+        const modifiedInput = isEndInterview
+          ? input
+          : `${input}. Do not ask any questions in your response.`;
+        setLoading(true);
+
+        try {
+          const res = await fetch('/api/expert-interview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'continue',
+              expertInfo: expertInfo,
+              userMessage: modifiedInput,
+              conversationHistory: messages,
+            }),
+          });
+          const data = await res.json();
+
+          setMessages([...newMessages, { role: 'assistant', content: data.result }]);
+
+          // If this was an end interview command, check if the response contains the highlight question
+          if (isEndInterview) {
+            setInterviewEnded(true);
+            const responseText = data.result.toLowerCase();
+            if (responseText.includes('extract') && responseText.includes('highlight')) {
+              setAwaitingHighlightResponse(true);
+            }
+          }
+        } catch (err) {
+          console.error('Error continuing interview:', err);
+          setMessages((prev) => [
+            ...prev,
+            { role: 'assistant', content: 'Failed to continue interview.' },
+          ]);
+        } finally {
+          setLoading(false);
+        }
       }
     }
 
@@ -336,23 +317,23 @@ export default function TopPublicationsPage() {
             onSubmit={handleSubmit}
             loading={loading}
             placeholder={
-              interviewStarted
+              awaitingHighlightResponse
+                ? 'Type "yes" to extract highlights or "no" to skip...'
+                : interviewStarted
                 ? 'Ask your question... (type "end interview" when finished)'
                 : 'Enter your response...'
             }
             removeExpertPrefix={true}
             onReset={handleReset}
-            onEndInterview={handleEndInterview}
-            // interviewEnded={interviewEnded}
           />
         </div>
 
-        {/* Key Points Section - Right Side - Fixed */}
+        {/* Key Highlights Section - Right Side - Fixed */}
         <div className="flex-1 h-full">
-          {interviewEnded && keyPoints.length > 0 ? (
+          {keyPoints.length > 0 ? (
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex flex-col">
               <div className="flex justify-between items-center mb-4 flex-shrink-0">
-                <h2 className="text-xl font-bold text-blue-900">Key Points from Interview</h2>
+                <h2 className="text-xl font-bold text-blue-900">Key Highlights from Interview</h2>
                 <div className="flex items-center gap-3">
                   <span className="text-sm text-gray-600">{selectedKeyPoints.size} selected</span>
                   {selectedKeyPoints.size > 0 && (
