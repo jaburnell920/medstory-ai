@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -52,6 +52,12 @@ Your first response should be brief - simply acknowledge that you're pleased to 
 `;
 
     try {
+      if (!openai) {
+        // Mock response when OpenAI API is not available
+        const mockResponse = `Thank you for inviting me to participate in this interview. I'm pleased to share my expertise in cardiology and cardiovascular medicine, particularly in the areas of heart failure, cardiac transplantation, and mechanical circulatory support. I look forward to our discussion.`;
+        return NextResponse.json({ result: mockResponse });
+      }
+
       const completion = await openai.chat.completions.create({
         model: 'gpt-4',
         messages: [
@@ -96,7 +102,7 @@ Please respond with:
 2. A wish for their success in creating a dynamic educational program
 3. Then ask "Would you like me to extract key highlights from this interview?"
 
-Do not include any other content in your response.
+Keep your response warm, professional, and concise. Do not include any other content in your response.
 `;
     } else {
       continuePrompt = `
@@ -127,6 +133,25 @@ Respond directly to the interviewer's question or comment, maintaining your expe
     }
 
     try {
+      if (!openai) {
+        // Mock responses when OpenAI API is not available
+        if (isEndInterview) {
+          const mockEndResponse = `Thank you so much for this engaging interview! I really enjoyed our discussion about cardiovascular medicine and the challenges we face in treating heart failure patients. I wish you the very best of luck in creating your dynamic educational program. Would you like me to extract key highlights from this interview?`;
+          return NextResponse.json({ result: mockEndResponse });
+        } else {
+          // Mock response for regular interview questions
+          const mockResponses = [
+            "That's an excellent question. In my experience with heart failure patients, we've seen significant advances in both pharmacological and device-based therapies over the past decade. The introduction of SGLT2 inhibitors has been particularly transformative.",
+            "From a clinical perspective, patient selection for advanced therapies like cardiac transplantation remains one of our biggest challenges. We need to balance the potential benefits with the risks and ensure we're optimizing outcomes for each individual patient.",
+            "The field of mechanical circulatory support has evolved tremendously. We're seeing better outcomes with newer generation devices, but we still face challenges with device-related complications and patient quality of life.",
+            "Collaboration between basic scientists and clinicians is absolutely crucial. The translational research we're doing today will determine the therapies we have available for patients tomorrow.",
+            "One of the most exciting developments is the potential for personalized medicine in heart failure. We're beginning to understand how genetic factors influence treatment response."
+          ];
+          const randomResponse = mockResponses[Math.floor(Math.random() * mockResponses.length)];
+          return NextResponse.json({ result: randomResponse });
+        }
+      }
+
       const completion = await openai.chat.completions.create({
         model: 'gpt-4',
         messages: [
@@ -160,7 +185,7 @@ Only include highlights that relate to medical content. Do not include any other
 
 Each highlight should be a key point that the expert made during the interview that should be strongly considered for inclusion in the full story narrative.
 
-Format the response as a numbered list with blank lines between successive highlights.
+Format the response as a numbered list with blank lines between successive highlights. Each highlight should be formatted as a complete, standalone statement.
 
 INTERVIEW TRANSCRIPT:
 ${conversationContext}
@@ -168,6 +193,24 @@ ${conversationContext}
 KEY HIGHLIGHTS:`;
 
     try {
+      if (!openai) {
+        // Mock highlights when OpenAI API is not available
+        const mockHighlights = `1. SGLT2 inhibitors have been particularly transformative in heart failure treatment over the past decade
+
+2. Patient selection for advanced therapies like cardiac transplantation requires balancing potential benefits with risks for optimal outcomes
+
+3. Mechanical circulatory support has evolved with better outcomes from newer generation devices, though device-related complications remain a challenge
+
+4. Collaboration between basic scientists and clinicians is crucial for translational research that determines future therapies
+
+5. Personalized medicine in heart failure is emerging, with genetic factors beginning to influence treatment response decisions
+
+6. Device-related complications and patient quality of life remain significant challenges in mechanical circulatory support
+
+7. Pharmacological and device-based therapies have both seen significant advances in heart failure management`;
+        return NextResponse.json({ result: mockHighlights });
+      }
+
       const completion = await openai.chat.completions.create({
         model: 'gpt-4',
         messages: [
