@@ -37,21 +37,18 @@ export default function CoreStoryConcept() {
 
   // Load saved concepts on component mount and clear generated results on page refresh
   useEffect(() => {
+    // Always start with concept #1 for a new session
+    setNextConceptNumber(1);
+    
     // Load saved concepts from localStorage only for the saved page functionality
     // Don't display them immediately on page load - they should only appear after generation
     const savedConcepts = localStorage.getItem('coreStoryConceptsData');
 
-    if (savedConcepts) {
-      const conceptsData = JSON.parse(savedConcepts);
-
-      // Set the next concept number based on existing saved concepts
-      if (conceptsData.length > 0) {
-        const maxConceptNumber = Math.max(
-          ...conceptsData.map((c: CoreStoryConcept) => c.conceptNumber || 0)
-        );
-        setNextConceptNumber(maxConceptNumber + 1);
-      }
-    }
+    // Clear any existing concepts data to ensure we start fresh
+    localStorage.removeItem('coreStoryConceptsData');
+    
+    // We don't need to set the next concept number based on saved concepts anymore
+    // This ensures we always start with #1
 
     const handleBeforeUnload = () => {
       // Clear the generated results but keep saved concepts
@@ -232,7 +229,7 @@ export default function CoreStoryConcept() {
             drug: context.drug,
             audience: context.audience,
             length: context.length,
-            conceptNumber: nextConceptNumber,
+            conceptNumber: concepts.length === 0 ? 1 : nextConceptNumber,
           };
 
           setConcepts((prevConcepts) => {
@@ -444,7 +441,7 @@ export default function CoreStoryConcept() {
               },
               {
                 role: 'user',
-                content: `Create a Core Story Concept Candidate #${nextConceptNumber} for ${context.drug} in ${context.disease} for the target audience ${context.audience} with a length of ${context.length}.`,
+                content: `Create a Core Story Concept Candidate #1 for ${context.drug} in ${context.disease} for the target audience ${context.audience} with a length of ${context.length}.`,
               },
             ],
             disease: context.disease,
@@ -465,7 +462,7 @@ export default function CoreStoryConcept() {
           drug: context.drug,
           audience: context.audience,
           length: context.length,
-          conceptNumber: nextConceptNumber,
+          conceptNumber: concepts.length === 0 ? 1 : nextConceptNumber,
         };
 
         setConcepts((prevConcepts) => {

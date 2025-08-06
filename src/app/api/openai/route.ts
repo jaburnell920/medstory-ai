@@ -80,7 +80,7 @@ Use the following to find an optimal Core Story Concept:
 1. Mine for novelty – scan the mechanism of action, pivotal trials, and unmet needs to surface little-known truths that ${drug} makes actionable. Write for busy specialists—active voice, vivid verbs, zero fluff. Avoid clichés and marketing jargon.
 2. If there are saved message highlights from an expert interview, give these moderately heavy
 weight in formulating the Core Story Concept.
-3. Use the following title: "Core Story Concept Candidate #X" where X is the number of the current core story concept, then add a blank line after this. 
+3. Use the following title: "Core Story Concept Candidate #X" where X is the number of the current core story concept, then add a blank line after this. For the first concept in a session, always use #1. 
 4. Following the title, distill each truth into a memorable mini-narrative that is structured in the form of
 a tension section which is ${length} number of words and a resolution section which is ${length}
 number of words. The resolution pays off the tension in hand-in-glove fashion that makes perfect
@@ -119,7 +119,7 @@ Use the following to find an optimal Core Story Concept:
 1. Mine for novelty – scan the mechanism of action, pivotal trials, and unmet needs to surface little-known truths that ${drug} makes actionable. Write for busy specialists—active voice, vivid verbs, zero fluff. Avoid clichés and marketing jargon.
 2. If there are saved message highlights from an expert interview, give these moderately heavy
 weight in formulating the Core Story Concept.
-3. Use the following title: "Core Story Concept Candidate #1" then add a blank line after this. 
+3. Use the following title: "Core Story Concept Candidate #1" then add a blank line after this. Always use #1 for the first concept. 
 4. Following the title, distill each truth into a memorable mini-narrative that is structured in the form of a tension section which is ${length} words and a resolution section which is ${length} words. The resolution pays off the tension in hand-in-glove fashion that makes perfect sense. For the section titles, use only the words "TENSION" and "RESOLUTION" without any asterisks, quotation marks, or colons. Always include a blank line after each section title.
 
 Return only the concepts in the template above.
