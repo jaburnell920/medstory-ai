@@ -171,9 +171,26 @@ export default function TensionResolution() {
     return cleaned;
   };
 
-  // Helper function to clean conclusion content
+  // Helper function to clean conclusion content and separate references if found
   const cleanConclusion = (conclusion: string): string => {
     let cleaned = conclusion.trim();
+
+    // Check if references section is embedded within conclusion
+    // This pattern matches various forms of "References" headings
+    const referencesMatch =
+      cleaned.match(/\n\s*\*?\*?References?\*?\*?[:\s]*/i) ||
+      cleaned.match(/\n\s*\[References?\]/i) ||
+      cleaned.match(/\n\s*References? section/i) ||
+      (cleaned.startsWith('References') && cleaned.match(/^References?[:\s]/i));
+    if (referencesMatch) {
+      // Only keep the part before references
+      if (referencesMatch.index === 0) {
+        // If references are at the start, there's no conclusion content
+        cleaned = '';
+      } else {
+        cleaned = cleaned.substring(0, referencesMatch.index).trim();
+      }
+    }
 
     // Remove asterisks, colons, and dashes
     cleaned = cleaned
@@ -281,8 +298,8 @@ export default function TensionResolution() {
         continue;
       }
 
-      // Check for Conclusion
-      if (line.match(/^\*?\*?Conclusion\*?\*?/i)) {
+      // Check for Conclusion - improved pattern to catch various formats
+      if (line.match(/^\*?\*?Conclusion\*?\*?/i) || line.match(/^Conclusion:/i)) {
         if (currentSection && currentContent.length > 0) {
           // Save previous section
           if (currentSection === 'attack') {
@@ -301,8 +318,8 @@ export default function TensionResolution() {
         continue;
       }
 
-      // Check for References
-      if (line.match(/^References?$/i)) {
+      // Check for References - improved pattern to catch various formats
+      if (line.match(/^\*?\*?References?\*?\*?$/i) || line.match(/^References?:/i)) {
         if (currentSection && currentContent.length > 0) {
           // Save previous section
           if (currentSection === 'attack') {
@@ -341,7 +358,32 @@ export default function TensionResolution() {
           cleanTensionResolutionPoint(currentContent.join('\n').trim())
         );
       } else if (currentSection === 'conclusion') {
-        conclusionFound = cleanConclusion(currentContent.join('\n').trim());
+        const conclusionText = currentContent.join('\n').trim();
+
+        // Check if references section is embedded within conclusion
+        // This pattern matches various forms of "References" headings
+        const referencesMatch =
+          conclusionText.match(/\n\s*\*?\*?References?\*?\*?[:\s]*/i) ||
+          conclusionText.match(/\n\s*\[References?\]/i) ||
+          conclusionText.match(/\n\s*References? section/i) ||
+          (conclusionText.startsWith('References') && conclusionText.match(/^References?[:\s]/i));
+        if (referencesMatch && referencesMatch.index !== undefined) {
+          // Split the text into conclusion and references
+          if (referencesMatch.index === 0) {
+            // If references are at the start, there's no conclusion content
+            conclusionFound = '';
+            referencesFound = conclusionText.substring(referencesMatch[0].length).trim();
+          } else {
+            conclusionFound = cleanConclusion(
+              conclusionText.substring(0, referencesMatch.index).trim()
+            );
+            referencesFound = conclusionText
+              .substring(referencesMatch.index + referencesMatch[0].length)
+              .trim();
+          }
+        } else {
+          conclusionFound = cleanConclusion(conclusionText);
+        }
       } else if (currentSection === 'references') {
         referencesFound = currentContent.join('\n').trim();
       }
@@ -894,7 +936,14 @@ export default function TensionResolution() {
                 {references && (
                   <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                     <h3 className="text-lg font-semibold text-blue-800 mb-2">References</h3>
-                    <pre className="text-gray-800 whitespace-pre-wrap font-sans">{references}</pre>
+                    <pre className="text-gray-800 whitespace-pre-wrap font-sans">
+                      {references
+                        .replace(
+                          /\n?Would you like the tension-resolution points put into a table\??\.?$/i,
+                          ''
+                        )
+                        .trim()}
+                    </pre>
                   </div>
                 )}
 
