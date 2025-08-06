@@ -37,21 +37,18 @@ export default function CoreStoryConcept() {
 
   // Load saved concepts on component mount and clear generated results on page refresh
   useEffect(() => {
+    // Always start with concept #1 for a new session
+    setNextConceptNumber(1);
+
     // Load saved concepts from localStorage only for the saved page functionality
     // Don't display them immediately on page load - they should only appear after generation
     const savedConcepts = localStorage.getItem('coreStoryConceptsData');
 
-    if (savedConcepts) {
-      const conceptsData = JSON.parse(savedConcepts);
+    // Clear any existing concepts data to ensure we start fresh
+    localStorage.removeItem('coreStoryConceptsData');
 
-      // Set the next concept number based on existing saved concepts
-      if (conceptsData.length > 0) {
-        const maxConceptNumber = Math.max(
-          ...conceptsData.map((c: CoreStoryConcept) => c.conceptNumber || 0)
-        );
-        setNextConceptNumber(maxConceptNumber + 1);
-      }
-    }
+    // We don't need to set the next concept number based on saved concepts anymore
+    // This ensures we always start with #1
 
     const handleBeforeUnload = () => {
       // Clear the generated results but keep saved concepts
@@ -158,7 +155,7 @@ export default function CoreStoryConcept() {
     'What is the disease state?',
     'What is the therapeutic intervention?',
     'Who is the audience?',
-    'Would you like a concise or full-length Core Story Concept?',
+    'Would you like a concise (25 words) or full-length (50 words) Core Story Concept?',
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -232,7 +229,7 @@ export default function CoreStoryConcept() {
             drug: context.drug,
             audience: context.audience,
             length: context.length,
-            conceptNumber: nextConceptNumber,
+            conceptNumber: concepts.length === 0 ? 1 : nextConceptNumber,
           };
 
           setConcepts((prevConcepts) => {
@@ -293,7 +290,9 @@ export default function CoreStoryConcept() {
 
         concepts.forEach((concept, index) => {
           // Extract tension and resolution from concept content
-          const lines = concept.content.split('\n');
+          // First, clean the content by removing asterisks, quotation marks, and colons
+          const cleanedContent = concept.content.replace(/[*"':]/g, '');
+          const lines = cleanedContent.split('\n');
           let tension = '';
           let resolution = '';
           let currentSection = '';
@@ -413,7 +412,15 @@ export default function CoreStoryConcept() {
     if (step === 2) setContext((prev) => ({ ...prev, audience: trimmed }));
     if (step === 3) {
       // Process the length preference
-      const lengthValue = trimmed.toLowerCase().includes('concise') ? '<25 words' : '40-60 words';
+      let lengthValue;
+      if (trimmed.toLowerCase().includes('concise')) {
+        lengthValue = '25';
+      } else if (trimmed.toLowerCase().includes('full')) {
+        lengthValue = '50';
+      } else {
+        // If the user's response is unclear, set a default
+        lengthValue = '40';
+      }
       setContext((prev) => ({ ...prev, length: lengthValue }));
     }
 
@@ -434,7 +441,7 @@ export default function CoreStoryConcept() {
               },
               {
                 role: 'user',
-                content: `Create a Core Story Concept Candidate #${nextConceptNumber} for ${context.drug} in ${context.disease} for the target audience ${context.audience} with a length of ${context.length}.`,
+                content: `Create a Core Story Concept Candidate #1 for ${context.drug} in ${context.disease} for the target audience ${context.audience} with a length of ${context.length}.`,
               },
             ],
             disease: context.disease,
@@ -455,7 +462,7 @@ export default function CoreStoryConcept() {
           drug: context.drug,
           audience: context.audience,
           length: context.length,
-          conceptNumber: nextConceptNumber,
+          conceptNumber: concepts.length === 0 ? 1 : nextConceptNumber,
         };
 
         setConcepts((prevConcepts) => {
@@ -579,18 +586,33 @@ export default function CoreStoryConcept() {
                         <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
                           {concept.content
                             ? concept.content
+                                // Remove all asterisks, quotation marks, and colons from the output text
+                                .replace(/[*"':]/g, '')
+                                // Ensure consistent formatting for TENSION title
                                 .replace(
-                                  /^(\*\*)?TENSION(\*\*)?:?\s*$/gim,
-                                  '<div class="font-bold text-blue-800 text-base mt-6 mb-4">TENSION</div>'
+                                  /^TENSION.*$/gim,
+                                  '<div class="font-bold text-blue-800 text-base mt-6 mb-4">TENSION</div>\n'
                                 )
+                                // Ensure consistent formatting for RESOLUTION title
                                 .replace(
-                                  /^(\*\*)?RESOLUTION(\*\*)?:?\s*$/gim,
-                                  '<div class="font-bold text-blue-800 text-base mt-6 mb-4">RESOLUTION</div>'
+                                  /^RESOLUTION.*$/gim,
+                                  '<div class="font-bold text-blue-800 text-base mt-6 mb-4">RESOLUTION</div>\n'
                                 )
+                                // Ensure every CSC has a title with consistent formatting
                                 .replace(
-                                  /Core Story Concept Candidate #\d+/g,
+                                  /^Core Story Concept Candidate #\d+.*$/gim,
                                   () =>
-                                    `<div class="font-bold text-blue-800 text-lg mb-4">Core Story Concept Candidate #${concept.conceptNumber}</div>`
+                                    `<div class="font-bold text-blue-800 text-lg mb-4">Core Story Concept #${concept.conceptNumber}</div>`
+                                )
+                                // Add title if missing
+                                .replace(
+                                  /^(?!<div class="font-bold text-blue-800 text-lg mb-4">Core Story Concept Candidate)/,
+                                  () => {
+                                    if (!concept.content.includes('Core Story Concept Candidate')) {
+                                      return `<div class="font-bold text-blue-800 text-lg mb-4">Core Story Concept Candidate b#${concept.conceptNumber}</div>\n`;
+                                    }
+                                    return '';
+                                  }
                                 )
                                 .replace(/##/g, '') // Remove all occurrences of ##
                                 .split('\n')
