@@ -169,8 +169,9 @@ export default function CoreStoryConcept() {
     if (
       result &&
       messages.length > 0 &&
-      messages[messages.length - 1].content ===
-        'Would you like to modify this Core Story Concept or create a new one?'
+      (messages[messages.length - 1].content.includes('Would you like to modify this Core Story Concept') ||
+       messages[messages.length - 1].content.includes("I've created a new Core Story Concept") ||
+       messages[messages.length - 1].content.includes("I've modified the Core Story Concept"))
     ) {
       setLoading(true);
 
@@ -275,8 +276,7 @@ export default function CoreStoryConcept() {
     if (
       result &&
       messages.length > 0 &&
-      messages[messages.length - 1].content ===
-        'Got it. Would you like to see a table with all the Core Story Concept Candidates?'
+      messages[messages.length - 1].content.includes('Would you like to see a table with all the Core Story Concept Candidates?')
     ) {
       if (trimmed.toLowerCase().includes('yes')) {
         // Generate table content from concepts
@@ -325,7 +325,7 @@ export default function CoreStoryConcept() {
     if (
       result &&
       messages.length > 0 &&
-      messages[messages.length - 1].content === 'What modifications would you like to make?'
+      messages[messages.length - 1].content.includes('What modifications would you like to make?')
     ) {
       setLoading(true);
       try {
