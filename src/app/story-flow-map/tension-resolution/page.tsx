@@ -157,8 +157,11 @@ export default function TensionResolution() {
     cleaned = cleaned.replace(/^\*?\*?Tension-Resolution #\d+.*?\n?/i, '');
 
     // Look for title patterns like ": title**" or "**title**" and convert to proper bold HTML
-    cleaned = cleaned.replace(/^:\s*([^*\n]+)\*+\s*$/gm, '<strong>$1</strong>');
-    cleaned = cleaned.replace(/^\*+([^*\n]+)\*+\s*$/gm, '<strong>$1</strong>');
+    cleaned = cleaned.replace(/^:\s*([^*\n]+)\*+\s*$/gm, '<strong>$1</strong>\n');
+    cleaned = cleaned.replace(/^\*+([^*\n]+)\*+\s*$/gm, '<strong>$1</strong>\n');
+
+    // Add a blank line after "Tension:" if it exists
+    cleaned = cleaned.replace(/(Tension:.*?)(\n)/i, '$1\n$2');
 
     // Remove remaining asterisks, colons, and dashes
     cleaned = cleaned
