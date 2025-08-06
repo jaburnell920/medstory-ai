@@ -156,12 +156,21 @@ export default function TensionResolution() {
     // Remove the header line first
     cleaned = cleaned.replace(/^\*?\*?Tension-Resolution #\d+.*?\n?/i, '');
 
-    // Look for title patterns like ": title**" or "**title**" and convert to proper bold HTML
-    cleaned = cleaned.replace(/^:\s*([^*\n]+)\*+\s*$/gm, '<strong>$1</strong>\n');
-    cleaned = cleaned.replace(/^\*+([^*\n]+)\*+\s*$/gm, '<strong>$1</strong>\n');
+    // Insert an empty line after a title if it exists
+    cleaned = cleaned.replace(/^(.+?)\n(Tension:)/i, '$1\n\n$2');
+    // Insert a blank line above "Tension:" if it exists
+    cleaned = cleaned.replace(/^(.*?)(\n)(?=Tension:)/i, '$1\n\n');
 
+    // Look for title patterns like ": title**" or "**title**" and convert to proper bold HTML
+    cleaned = cleaned.replace(/^:\s*([^*\n]+)\*+\s*$/gm, '<strong>$1</strong>');
+    cleaned = cleaned.replace(/^\*+([^*\n]+)\*+\s*$/gm, '<strong>$1</strong>');
     // Add a blank line after "Tension:" if it exists
-    cleaned = cleaned.replace(/(Tension:.*?)(\n)/i, '$1\n$2');
+    // cleaned = cleaned.replace(/(Tension:*?)(\n)/i, '$1\n\n');
+    // Add a blank line after "Resolution:" if it exists
+    cleaned = cleaned.replace(/(Resolution:*?)(\n)/i, '$1\n\n');
+
+    // Replace 'Tension:' with 'blahblah:'
+    // cleaned = cleaned.replace(/Tension/g, 'Tension');
 
     // Remove remaining asterisks, colons, and dashes
     cleaned = cleaned
