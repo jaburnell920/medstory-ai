@@ -293,7 +293,9 @@ export default function CoreStoryConcept() {
 
         concepts.forEach((concept, index) => {
           // Extract tension and resolution from concept content
-          const lines = concept.content.split('\n');
+          // First, clean the content by removing asterisks, quotation marks, and colons
+          const cleanedContent = concept.content.replace(/[*"':]/g, '');
+          const lines = cleanedContent.split('\n');
           let tension = '';
           let resolution = '';
           let currentSection = '';
@@ -579,18 +581,33 @@ export default function CoreStoryConcept() {
                         <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
                           {concept.content
                             ? concept.content
+                                // Remove all asterisks, quotation marks, and colons from the output text
+                                .replace(/[*"':]/g, '')
+                                // Ensure consistent formatting for TENSION title
                                 .replace(
-                                  /^(\*\*)?TENSION(\*\*)?:?\s*$/gim,
-                                  '<div class="font-bold text-blue-800 text-base mt-6 mb-4">TENSION</div>'
+                                  /^TENSION.*$/gim,
+                                  '<div class="font-bold text-blue-800 text-base mt-6 mb-4">TENSION</div>\n'
                                 )
+                                // Ensure consistent formatting for RESOLUTION title
                                 .replace(
-                                  /^(\*\*)?RESOLUTION(\*\*)?:?\s*$/gim,
-                                  '<div class="font-bold text-blue-800 text-base mt-6 mb-4">RESOLUTION</div>'
+                                  /^RESOLUTION.*$/gim,
+                                  '<div class="font-bold text-blue-800 text-base mt-6 mb-4">RESOLUTION</div>\n'
                                 )
+                                // Ensure every CSC has a title with consistent formatting
                                 .replace(
-                                  /Core Story Concept Candidate #\d+/g,
+                                  /^Core Story Concept Candidate #\d+.*$/g,
                                   () =>
                                     `<div class="font-bold text-blue-800 text-lg mb-4">Core Story Concept Candidate #${concept.conceptNumber}</div>`
+                                )
+                                // Add title if missing
+                                .replace(
+                                  /^(?!<div class="font-bold text-blue-800 text-lg mb-4">Core Story Concept Candidate)/,
+                                  () => {
+                                    if (!concept.content.includes('Core Story Concept Candidate')) {
+                                      return `<div class="font-bold text-blue-800 text-lg mb-4">Core Story Concept Candidate #${concept.conceptNumber}</div>\n`;
+                                    }
+                                    return '';
+                                  }
                                 )
                                 .replace(/##/g, '') // Remove all occurrences of ##
                                 .split('\n')
