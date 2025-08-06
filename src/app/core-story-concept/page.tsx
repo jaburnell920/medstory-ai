@@ -40,10 +40,6 @@ export default function CoreStoryConcept() {
     // Always start with concept #1 for a new session
     setNextConceptNumber(1);
 
-    // Load saved concepts from localStorage only for the saved page functionality
-    // Don't display them immediately on page load - they should only appear after generation
-    const savedConcepts = localStorage.getItem('coreStoryConceptsData');
-
     // Clear any existing concepts data to ensure we start fresh
     localStorage.removeItem('coreStoryConceptsData');
 
