@@ -7,15 +7,12 @@ import PageLayout from '@/app/components/PageLayout';
 import ChatInterface from '@/app/components/ChatInterface';
 
 const questions = [
-  'Do you want me to use a specific Core Story Concept? (Y/N - if yes, paste it here)',
-  'Do you want me to use a specific Story Flow Map? (Y/N - if yes, paste it here)',
   'Who is your target audience? (eg, PCPs, CARDs, specialists, patients, general public)',
   'How long is the presentation? (in minutes)',
-  'What is the maximum number of slides for the presentation? (none or specify number)',
+  "What's the maximum number of slides for the presentation? (none or specify number)",
   'What is your desired tone? (eg, provocative, academic, friendly, calm - or a combination)',
   'How visual should it be? (e.g. minimal, moderate visuals, highly visual)',
   'Do you want me to write speaker notes for each slide? (Y/N)',
-  'Would you like me to mimic the visual style of a specific Powerpoint deck? (Y/N - if yes, upload the file)',
 ];
 
 export default function DeckGenerationPage() {
@@ -25,14 +22,14 @@ export default function DeckGenerationPage() {
   const [messages, setMessages] = useState<{ role: 'assistant' | 'user'; content: string }[]>([
     {
       role: 'assistant',
-      content:
-        "Got it - you need me to generate an outline for a MEDSTORY® presentation deck. First I'll need a few bits of information to generate your optimized presentation deck. This shouldn't take long - just 8 quick questions and we'll be on our way.\n\n1. " +
-        questions[0],
+      content: 'Checking for Core Story Concept and Story Flow Outline...',
     },
   ]);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState('');
   const [showFinalMessage, setShowFinalMessage] = useState(false);
+  const [initialCheckComplete, setInitialCheckComplete] = useState(false);
+  const [hasRequiredConcepts, setHasRequiredConcepts] = useState(false);
   const resultRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -41,26 +38,304 @@ export default function DeckGenerationPage() {
     }
   }, [result]);
 
+  useEffect(() => {
+    // Check for Core Story Concept and Story Flow Outline in memory/localStorage
+    const checkRequiredConcepts = () => {
+      // Check for Core Story Concept data - try multiple possible keys
+      const coreStoryConceptData =
+        localStorage.getItem('selectedCoreStoryConceptData') ||
+        localStorage.getItem('coreStoryConcept') ||
+        localStorage.getItem('selectedCoreStoryConcept');
+
+      let hasCoreStoryConcept = false;
+
+      if (coreStoryConceptData) {
+        try {
+          const conceptData = JSON.parse(coreStoryConceptData);
+          if (conceptData && typeof conceptData === 'object') {
+            if (conceptData.content && conceptData.content.trim().length > 0) {
+              hasCoreStoryConcept = true;
+            } else if (typeof conceptData === 'string' && conceptData.trim().length > 0) {
+              hasCoreStoryConcept = true;
+            } else if (Array.isArray(conceptData) && conceptData.length > 0) {
+              hasCoreStoryConcept = true;
+            }
+          } else if (typeof conceptData === 'string' && conceptData.trim().length > 0) {
+            hasCoreStoryConcept = true;
+          }
+        } catch {
+          if (typeof coreStoryConceptData === 'string' && coreStoryConceptData.trim().length > 0) {
+            hasCoreStoryConcept = true;
+          }
+        }
+      }
+
+      // Check for Story Flow Outline data (attack points and tension-resolution points)
+      const storyFlowData = localStorage.getItem('storyFlowData');
+      const attackPointsData = localStorage.getItem('attackPoints');
+      const tensionResolutionData = localStorage.getItem('tensionResolutionPoints');
+      const savedTensionResolutionData = localStorage.getItem('savedTensionResolutionData');
+
+      let hasStoryFlowOutline = false;
+
+      // Check if any story flow outline data exists
+      if (storyFlowData) {
+        try {
+          const flowData = JSON.parse(storyFlowData);
+          hasStoryFlowOutline =
+            flowData &&
+            ((flowData.attackPoints && flowData.attackPoints.length > 0) ||
+              (flowData.tensionResolutionPoints && flowData.tensionResolutionPoints.length > 0));
+        } catch {
+          // If parsing fails, check individual items
+        }
+      }
+
+      // Fallback: check individual localStorage items
+      if (!hasStoryFlowOutline) {
+        let hasAttackPoints = false;
+        let hasTensionResolution = false;
+        let hasSavedTensionResolution = false;
+
+        if (attackPointsData) {
+          try {
+            const attackPoints = JSON.parse(attackPointsData);
+            hasAttackPoints = attackPoints && attackPoints.length > 0;
+          } catch {
+            if (typeof attackPointsData === 'string' && attackPointsData.trim().length > 0) {
+              hasAttackPoints = true;
+            }
+          }
+        }
+
+        if (tensionResolutionData) {
+          try {
+            const tensionResolution = JSON.parse(tensionResolutionData);
+            hasTensionResolution = tensionResolution && tensionResolution.length > 0;
+          } catch {
+            if (
+              typeof tensionResolutionData === 'string' &&
+              tensionResolutionData.trim().length > 0
+            ) {
+              hasTensionResolution = true;
+            }
+          }
+        }
+
+        if (savedTensionResolutionData) {
+          try {
+            const savedTensionResolution = JSON.parse(savedTensionResolutionData);
+            hasSavedTensionResolution = savedTensionResolution && savedTensionResolution.length > 0;
+          } catch {
+            if (
+              typeof savedTensionResolutionData === 'string' &&
+              savedTensionResolutionData.trim().length > 0
+            ) {
+              hasSavedTensionResolution = true;
+            }
+          }
+        }
+
+        hasStoryFlowOutline = hasAttackPoints || hasTensionResolution || hasSavedTensionResolution;
+      }
+
+      if (!hasCoreStoryConcept) {
+        setMessages([
+          {
+            role: 'assistant',
+            content:
+              "To create a Story Flow Map, I need you to create a Core Story Concept. Please go to the Core Story Concept section of MEDSTORYAI to do this then return here and I'll be happy to generate the Story Flow Map. Thanks.",
+          },
+        ]);
+        setInitialCheckComplete(true);
+        return;
+      }
+
+      if (!hasStoryFlowOutline) {
+        setMessages([
+          {
+            role: 'assistant',
+            content:
+              "To create a Story Flow Map, I need you to create a Story Flow Outline first. Please go to the Story Flow section of MEDSTORYAI to do this then return here and I'll be happy to generate the Story Flow Map. Thanks.",
+          },
+        ]);
+        setInitialCheckComplete(true);
+        return;
+      }
+
+      // Both concepts exist, proceed with the deck generation
+      setHasRequiredConcepts(true);
+      setMessages([
+        {
+          role: 'assistant',
+          content:
+            "Got it - you need me to generate an outline for a MEDSTORY® presentation deck. First I'll need a few bits of information to generate your optimized presentation deck. This shouldn't take long - just 6 quick questions and we'll be on our way.\n\n1. " +
+            questions[0],
+        },
+      ]);
+      setInitialCheckComplete(true);
+    };
+
+    // Simulate checking (in a real app, this might be an API call)
+    setTimeout(checkRequiredConcepts, 1000);
+  }, []);
+
   const handleReset = () => {
     setStep(0);
     setAnswers([]);
     setInput('');
-    setMessages([
-      {
-        role: 'assistant',
-        content:
-          "Got it - you need me to generate an outline for a MEDSTORY® presentation deck. First I'll need a few bits of information to generate your optimized presentation deck. This shouldn't take long - just 8 quick questions and we'll be on our way.\n\n1. " +
-          questions[0],
-      },
-    ]);
     setLoading(false);
     setResult('');
     setShowFinalMessage(false);
+    setInitialCheckComplete(false);
+    setHasRequiredConcepts(false);
+    setMessages([
+      {
+        role: 'assistant',
+        content: 'Checking for Core Story Concept and Story Flow Outline...',
+      },
+    ]);
+
+    // Re-run the initial check
+    setTimeout(() => {
+      // Check for Core Story Concept data - try multiple possible keys
+      const coreStoryConceptData =
+        localStorage.getItem('selectedCoreStoryConceptData') ||
+        localStorage.getItem('coreStoryConcept') ||
+        localStorage.getItem('selectedCoreStoryConcept');
+
+      let hasCoreStoryConcept = false;
+
+      if (coreStoryConceptData) {
+        try {
+          const conceptData = JSON.parse(coreStoryConceptData);
+          if (conceptData && typeof conceptData === 'object') {
+            if (conceptData.content && conceptData.content.trim().length > 0) {
+              hasCoreStoryConcept = true;
+            } else if (typeof conceptData === 'string' && conceptData.trim().length > 0) {
+              hasCoreStoryConcept = true;
+            } else if (Array.isArray(conceptData) && conceptData.length > 0) {
+              hasCoreStoryConcept = true;
+            }
+          } else if (typeof conceptData === 'string' && conceptData.trim().length > 0) {
+            hasCoreStoryConcept = true;
+          }
+        } catch {
+          if (typeof coreStoryConceptData === 'string' && coreStoryConceptData.trim().length > 0) {
+            hasCoreStoryConcept = true;
+          }
+        }
+      }
+
+      // Check for Story Flow Outline data (attack points and tension-resolution points)
+      const storyFlowData = localStorage.getItem('storyFlowData');
+      const attackPointsData = localStorage.getItem('attackPoints');
+      const tensionResolutionData = localStorage.getItem('tensionResolutionPoints');
+      const savedTensionResolutionData = localStorage.getItem('savedTensionResolutionData');
+
+      let hasStoryFlowOutline = false;
+
+      // Check if any story flow outline data exists
+      if (storyFlowData) {
+        try {
+          const flowData = JSON.parse(storyFlowData);
+          hasStoryFlowOutline =
+            flowData &&
+            ((flowData.attackPoints && flowData.attackPoints.length > 0) ||
+              (flowData.tensionResolutionPoints && flowData.tensionResolutionPoints.length > 0));
+        } catch {
+          // If parsing fails, check individual items
+        }
+      }
+
+      // Fallback: check individual localStorage items
+      if (!hasStoryFlowOutline) {
+        let hasAttackPoints = false;
+        let hasTensionResolution = false;
+        let hasSavedTensionResolution = false;
+
+        if (attackPointsData) {
+          try {
+            const attackPoints = JSON.parse(attackPointsData);
+            hasAttackPoints = attackPoints && attackPoints.length > 0;
+          } catch {
+            if (typeof attackPointsData === 'string' && attackPointsData.trim().length > 0) {
+              hasAttackPoints = true;
+            }
+          }
+        }
+
+        if (tensionResolutionData) {
+          try {
+            const tensionResolution = JSON.parse(tensionResolutionData);
+            hasTensionResolution = tensionResolution && tensionResolution.length > 0;
+          } catch {
+            if (
+              typeof tensionResolutionData === 'string' &&
+              tensionResolutionData.trim().length > 0
+            ) {
+              hasTensionResolution = true;
+            }
+          }
+        }
+
+        if (savedTensionResolutionData) {
+          try {
+            const savedTensionResolution = JSON.parse(savedTensionResolutionData);
+            hasSavedTensionResolution = savedTensionResolution && savedTensionResolution.length > 0;
+          } catch {
+            if (
+              typeof savedTensionResolutionData === 'string' &&
+              savedTensionResolutionData.trim().length > 0
+            ) {
+              hasSavedTensionResolution = true;
+            }
+          }
+        }
+
+        hasStoryFlowOutline = hasAttackPoints || hasTensionResolution || hasSavedTensionResolution;
+      }
+
+      if (!hasCoreStoryConcept) {
+        setMessages([
+          {
+            role: 'assistant',
+            content:
+              "To create a Story Flow Map, I need you to create a Core Story Concept. Please go to the Core Story Concept section of MEDSTORYAI to do this then return here and I'll be happy to generate the Story Flow Map. Thanks.",
+          },
+        ]);
+        setInitialCheckComplete(true);
+        return;
+      }
+
+      if (!hasStoryFlowOutline) {
+        setMessages([
+          {
+            role: 'assistant',
+            content:
+              "To create a Story Flow Map, I need you to create a Story Flow Outline first. Please go to the Story Flow section of MEDSTORYAI to do this then return here and I'll be happy to generate the Story Flow Map. Thanks.",
+          },
+        ]);
+        setInitialCheckComplete(true);
+        return;
+      }
+
+      setHasRequiredConcepts(true);
+      setMessages([
+        {
+          role: 'assistant',
+          content:
+            "Got it - you need me to generate an outline for a MEDSTORY® presentation deck. First I'll need a few bits of information to generate your optimized presentation deck. This shouldn't take long - just 6 quick questions and we'll be on our way.\n\n1. " +
+            questions[0],
+        },
+      ]);
+      setInitialCheckComplete(true);
+    }, 1000);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || !hasRequiredConcepts) return;
 
     const newMessages = [...messages, { role: 'user' as const, content: input }];
     setMessages(newMessages);
@@ -89,47 +364,141 @@ export default function DeckGenerationPage() {
       const updatedAnswers = [...answers, input];
       setAnswers(updatedAnswers);
 
+      // Get the stored concepts
+      const coreStoryConceptData =
+        localStorage.getItem('selectedCoreStoryConceptData') ||
+        localStorage.getItem('coreStoryConcept') ||
+        localStorage.getItem('selectedCoreStoryConcept');
+
+      let coreStoryConcept = '';
+      if (coreStoryConceptData) {
+        try {
+          const conceptData = JSON.parse(coreStoryConceptData);
+          if (conceptData && typeof conceptData === 'object' && conceptData.content) {
+            coreStoryConcept = conceptData.content;
+          } else if (typeof conceptData === 'string') {
+            coreStoryConcept = conceptData;
+          }
+        } catch {
+          if (typeof coreStoryConceptData === 'string') {
+            coreStoryConcept = coreStoryConceptData;
+          }
+        }
+      }
+
+      // Get story flow outline data
+      const storyFlowData = localStorage.getItem('storyFlowData');
+      const attackPointsData = localStorage.getItem('attackPoints');
+      const tensionResolutionData = localStorage.getItem('tensionResolutionPoints');
+      const savedTensionResolutionData = localStorage.getItem('savedTensionResolutionData');
+
+      let storyFlowOutline = '';
+
+      // Compile story flow outline from available data
+      if (storyFlowData) {
+        try {
+          const flowData = JSON.parse(storyFlowData);
+          if (flowData) {
+            storyFlowOutline += JSON.stringify(flowData, null, 2);
+          }
+        } catch {
+          // If parsing fails, use raw data
+          storyFlowOutline += storyFlowData;
+        }
+      }
+
+      if (attackPointsData) {
+        try {
+          const attackPoints = JSON.parse(attackPointsData);
+          if (attackPoints && attackPoints.length > 0) {
+            storyFlowOutline += '\n\nAttack Points:\n' + JSON.stringify(attackPoints, null, 2);
+          }
+        } catch {
+          if (typeof attackPointsData === 'string' && attackPointsData.trim().length > 0) {
+            storyFlowOutline += '\n\nAttack Points:\n' + attackPointsData;
+          }
+        }
+      }
+
+      if (tensionResolutionData) {
+        try {
+          const tensionResolution = JSON.parse(tensionResolutionData);
+          if (tensionResolution && tensionResolution.length > 0) {
+            storyFlowOutline +=
+              '\n\nTension Resolution Points:\n' + JSON.stringify(tensionResolution, null, 2);
+          }
+        } catch {
+          if (
+            typeof tensionResolutionData === 'string' &&
+            tensionResolutionData.trim().length > 0
+          ) {
+            storyFlowOutline += '\n\nTension Resolution Points:\n' + tensionResolutionData;
+          }
+        }
+      }
+
+      if (savedTensionResolutionData) {
+        try {
+          const savedTensionResolution = JSON.parse(savedTensionResolutionData);
+          if (savedTensionResolution && savedTensionResolution.length > 0) {
+            storyFlowOutline +=
+              '\n\nSaved Tension Resolution Data:\n' +
+              JSON.stringify(savedTensionResolution, null, 2);
+          }
+        } catch {
+          if (
+            typeof savedTensionResolutionData === 'string' &&
+            savedTensionResolutionData.trim().length > 0
+          ) {
+            storyFlowOutline += '\n\nSaved Tension Resolution Data:\n' + savedTensionResolutionData;
+          }
+        }
+      }
+
       // Create the detailed prompt for the AI
       const detailedPrompt = `
 I want you to act as a world-class expert in:
-generative AI prompting
-PowerPoint design
-live presentation coaching
-TED Talk-style speaking
-narrative storytelling structure
-cognitive and behavioral psychology
-persuasive science/business communication
-visual data storytelling and infographic design
-stoic philosophy for clarity, simplicity, and purpose
+ generative AI prompting
+ PowerPoint design
+ live presentation coaching
+ TED Talk-style speaking
+ narrative storytelling structure
+ cognitive and behavioral psychology
+ persuasive science/business communication
+ visual data storytelling and infographic design
+ stoic philosophy for clarity, simplicity, and purpose
 
-Based on the following answers, generate a complete, persuasive, memorable PowerPoint presentation outline:
+Based on the following information, generate a complete, persuasive, memorable PowerPoint presentation outline:
 
-1. Core Story Concept: ${updatedAnswers[0]}
-2. Story Flow Map: ${updatedAnswers[1]}
-3. Target Audience: ${updatedAnswers[2]}
-4. Presentation Length: ${updatedAnswers[3]} minutes
-5. Maximum Slides: ${updatedAnswers[4]}
-6. Desired Tone: ${updatedAnswers[5]}
-7. Visual Level: ${updatedAnswers[6]}
-8. Speaker Notes: ${updatedAnswers[7]}
-9. Visual Style Reference: ${updatedAnswers[8]}
+Core Story Concept: ${coreStoryConcept}
+Story Flow Outline: ${storyFlowOutline}
+
+1. Target Audience: ${updatedAnswers[0]}
+2. Presentation Length: ${updatedAnswers[1]} minutes
+3. Maximum Slides: ${updatedAnswers[2]}
+4. Desired Tone: ${updatedAnswers[3]}
+5. Visual Level: ${updatedAnswers[4]}
+6. Speaker Notes: ${updatedAnswers[5]}
 
 Each slide should be formatted in sections which are separated by blank lines. First section is TEXT followed by either bullets or floating text. Second section is VISUALS followed by detailed description of the visuals. Third section is SPEAKER NOTES which should be between 25 and 150 words. Fourth section is REFERENCES with the numbered references. Insert blank lines after the last line of each section. Add a separator line after each slide.
-Slide title - should express the main idea of the slide fully but in less than 15 words. Do not include the words "tension" "tension point" "resolution" or "resolution point" in the slides title.
-Slide text - either bullets (maximum 5) or floating text (maximum 2). Make sure all text is supported by references that are listed in the footnote.
-Suggested visuals - make the visual directly associate with one of the bullets or with one of the floating text. Make sure that all information presented in the visuals is supported by references that are listed in the footnote.
-Speaker notes (if user indicated to include these in questions above). Speaker notes should be conversational and between 50 and 150 words. These should go into details if necessary to fully explain all the text and visuals on the slide but without going into excessive detail.
-Footnote references - number these sequentially and use the following format: Smith E, et al. N Eng J Med. 2024;345:50-61. For each slide, number the references starting at 1. It's OK to have the same reference on different slides in different positions in the reference list.
-If a story flow map is provided, use this for the narrative arc of the presentation deck.
-If a story flow map is not provided, create narrative arc that includes a compelling, curiosity-generating attack point followed by multiple tension points each of which is resolved and then smoothly transitions to next tension point, and concludes with a summary slide containing the big idea of the presentation, delivers insight, and ends with clarity and emotional payoff
-
-Design the presentation to:
-Grab attention in the first 30 seconds
-Use visual and emotional anchors for memory retention
-Align with scientific principles of attention, motivation, and persuasion
-Make the talk feel valuable, novel, and easy to share with others
-
-Generate the entire outline without stopping for user input.
+ Slide title - should express the main idea of the slide fully but in less than 15 words. Do not include the words "tension" "tension point" "resolution" or "resolution point" in the slides title.
+ Slide text - either bullets (maximum 5) or floating text (maximum 2). Make sure all text is supported by references that are listed in the footnote.
+ Suggested visuals - make the visual directly associate with one of the bullets or with one of the floating text. Make sure that all information presented in the visuals is supported by references that are listed in the footnote.
+ Speaker notes (if user indicated to include these in questions above). Speaker notes should be conversational and between 50 and 150 words. These should go into details if necessary to fully explain all the text and visuals on the slide but without going into excessive detail.
+ Footnote references - number these sequentially and use the following format: Smith E, et al. N Eng J Med. 2024;345:50-61. For each slide, number the references starting at 1. It's OK to have the same reference on different slides in different positions in the reference list.
+ If a story flow map is provided, use this for the narrative arc of the presentation deck.
+ If a story flow map is not provided, create narrative arc that includes a compelling, curiosity-generating attack point followed by multiple tension points each of which is resolved and then smoothly transitions to next tension point, and concludes with a summary slide containing the big idea of the presentation, delivers insight, and ends with clarity and emotional payoff
+ Generate the entire outline and do not stop midway to get user input
+ Design the presentation to:
+ Grab attention in the first 30 seconds
+ Use visual and emotional anchors for memory retention
+ Align with scientific principles of attention, motivation, and persuasion
+ Make the talk feel valuable, novel, and easy to share with others
+When creating the Powerpoint file for downloading:
+ Use all the slides in the outline
+ Make the aspect ratio of the slides 16:9
+ Use the outline exactly as shown.
+ Insert the speaker notes into the notes section of each slide the PP file
       `;
 
       try {
@@ -180,7 +549,7 @@ Generate the entire outline without stopping for user input.
             setInput={setInput}
             onSubmit={handleSubmit}
             loading={loading}
-            showInput={!showFinalMessage}
+            showInput={!showFinalMessage && hasRequiredConcepts && initialCheckComplete}
             placeholder="Type your response..."
             onReset={handleReset}
           />
