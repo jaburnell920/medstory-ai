@@ -98,7 +98,7 @@ export default function TensionResolution() {
       coreStoryConcept: '',
       audience: '',
     });
-    // Reset messages with core story concept from localStorage
+    // Reset messages with core story concept from localStorage - same logic as initial page load
     if (typeof window !== 'undefined') {
       const savedCoreStoryConceptData = localStorage.getItem('selectedCoreStoryConceptData');
       let initialMessage =
@@ -108,11 +108,16 @@ export default function TensionResolution() {
         try {
           const conceptData = JSON.parse(savedCoreStoryConceptData);
           if (conceptData && conceptData.content) {
-            initialMessage += '\n\nCurrently selected: ' + conceptData.content;
+            // Don't show the "Currently selected:" text - just use the base message
+            initialMessage =
+              'Do you want to use the currently selected Core Story Concept or provide a new one?';
           }
         } catch (error) {
           console.error('Error parsing core story concept from localStorage:', error);
         }
+      } else {
+        initialMessage =
+          'There is no Core Story Concept saved in memory. Please provide a new one, or visit the Create Core Story Concept Options page and then come back.';
       }
 
       setMessages([
