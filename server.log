@@ -69,3 +69,13 @@ Conversation history: [
   { role: 'user', content: 'yes' }
 ]
  POST /api/tension-resolution 200 in 26ms
+ ○ Compiling / ...
+ ✓ Compiled / in 840ms
+ GET / 200 in 901ms
+ ✓ Compiled in 142ms
+ GET /story-flow-map/tension-resolution 200 in 230ms
+ POST /api/tension-resolution 200 in 90ms
+ POST /api/tension-resolution 200 in 25ms
+ POST /api/tension-resolution 200 in 25ms
+ POST /api/tension-resolution 200 in 28ms
+ ✓ Compiled in 139ms
