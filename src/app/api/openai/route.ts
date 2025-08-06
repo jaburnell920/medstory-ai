@@ -120,7 +120,7 @@ Use the following to find an optimal Core Story Concept:
 2. If there are saved message highlights from an expert interview, give these moderately heavy
 weight in formulating the Core Story Concept.
 3. Use the following title: "Core Story Concept Candidate #1" then add a blank line after this. 
-4. Following the title, distill each truth into a memorable mini-narrative that is structured in the form of a tension section which is ${length} and a resolution section which is ${length}. The resolution pays off the tension in hand-in-glove fashion that makes perfect sense. For the section titles, use only the words "TENSION" and "RESOLUTION" without any asterisks, quotation marks, or colons. Always include a blank line after each section title.
+4. Following the title, distill each truth into a memorable mini-narrative that is structured in the form of a tension section which is ${length} words and a resolution section which is ${length} words. The resolution pays off the tension in hand-in-glove fashion that makes perfect sense. For the section titles, use only the words "TENSION" and "RESOLUTION" without any asterisks, quotation marks, or colons. Always include a blank line after each section title.
 
 Return only the concepts in the template above.
 

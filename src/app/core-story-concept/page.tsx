@@ -158,7 +158,7 @@ export default function CoreStoryConcept() {
     'What is the disease state?',
     'What is the therapeutic intervention?',
     'Who is the audience?',
-    'Would you like a concise or full-length Core Story Concept?',
+    'Would you like a concise (25 words) or full-length (50 words) Core Story Concept?',
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -415,7 +415,15 @@ export default function CoreStoryConcept() {
     if (step === 2) setContext((prev) => ({ ...prev, audience: trimmed }));
     if (step === 3) {
       // Process the length preference
-      const lengthValue = trimmed.toLowerCase().includes('concise') ? '<25 words' : '40-60 words';
+      let lengthValue;
+      if (trimmed.toLowerCase().includes('concise')) {
+        lengthValue = '25';
+      } else if (trimmed.toLowerCase().includes('full')) {
+        lengthValue = '50';
+      } else {
+        // If the user's response is unclear, set a default
+        lengthValue = '40';
+      }
       setContext((prev) => ({ ...prev, length: lengthValue }));
     }
 
