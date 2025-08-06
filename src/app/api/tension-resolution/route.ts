@@ -230,10 +230,19 @@ References
 
 Would you like the tension-resolution points put into a table format?`;
         } else if (userMessage.toLowerCase().includes('table') || 
-                   (userMessage.toLowerCase().includes('yes') && 
-                    conversationHistory.some((msg: any) => 
-                      msg.role === 'assistant' && 
-                      msg.content.toLowerCase().includes('table')))) {
+                   userMessage.toLowerCase().includes('yes')) {
+          // Check if this is a response to a table question
+          const lastAssistantMessage = conversationHistory
+            .filter((msg: any) => msg.role === 'assistant')
+            .pop()?.content || '';
+          
+          // If user said "yes" and the last assistant message was about tables, show table
+          if (userMessage.toLowerCase().includes('yes') && 
+              lastAssistantMessage.toLowerCase().includes('table')) {
+            // Show table format
+          } else if (userMessage.toLowerCase().includes('table')) {
+            // User explicitly requested table
+          }
 
           mockResult = `| # | Tension | Resolution |
 |---|---------|------------|
