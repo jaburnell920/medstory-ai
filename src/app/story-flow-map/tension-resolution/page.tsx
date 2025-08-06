@@ -517,12 +517,23 @@ export default function TensionResolution() {
       /TED Talk Script:/i,
       /## Duration:/i,
       /\[Walk to center stage/i,
+      /\[Opening Hook:/i, // Match [Opening Hook: format (actual format from network response)
+      /\[The speaker walks/i, // Match [The speaker walks format
+      /\[Problem Setup/i, // Match [Problem Setup format
+      /\[Journey Through/i, // Match [Journey Through format
+      /\[Climactic Revelation/i, // Match [Climactic Revelation format
+      /\[Call to Action/i, // Match [Call to Action format
       /Opening Hook \(/i,
+      /\*\*\[Opening Hook:/i, // Match **[Opening Hook: format
       /The Problem \(/i,
       /Journey Through Discovery \(/i,
       /The Revelation \(/i,
       /Call to Action \(/i,
       /Speaker Notes:/i,
+      /\*\*Opening Hook \(/i, // Match **Opening Hook ( format
+      /\*\*The Problem \(/i, // Match **The Problem ( format
+      /\*\*Journey Through/i, // Match **Journey Through format
+      /\*\*Call to Action/i, // Match **Call to Action format
     ];
 
     // Check if the response contains TED talk script indicators
@@ -952,17 +963,12 @@ export default function TensionResolution() {
 
         // If this is a TED talk script, don't add it to chat messages
         if (tedTalkResult) {
-          // Only add the question part to chat, not the full script
-          if (question) {
-            responseContent = question;
-          } else {
-            // If no question was extracted but we have a TED talk script, don't add anything to chat
-            responseContent = '';
-          }
+          // Don't add TED talk scripts to chat at all - they should only appear in results section
+          responseContent = '';
         }
 
-        // Only add to chat if there's content to add
-        if (responseContent.trim()) {
+        // Only add to chat if there's content to add and it's not a TED talk script
+        if (responseContent.trim() && !tedTalkResult) {
           setMessages((msgs) => [
             ...msgs,
             {
