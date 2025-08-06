@@ -151,7 +151,7 @@ export default function CoreStoryConcept() {
     'What is the disease state?',
     'What is the therapeutic intervention?',
     'Who is the audience?',
-    'Would you like a concise (25 words) or full-length (50 words) Core Story Concept?',
+    'Would you like a concise or full-length Core Story Concept?',
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
