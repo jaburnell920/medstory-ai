@@ -367,7 +367,7 @@ export default function TensionResolution() {
           conclusionText.match(/\n\s*\[References?\]/i) ||
           conclusionText.match(/\n\s*References? section/i) ||
           (conclusionText.startsWith('References') && conclusionText.match(/^References?[:\s]/i));
-        if (referencesMatch) {
+        if (referencesMatch && referencesMatch.index !== undefined) {
           // Split the text into conclusion and references
           if (referencesMatch.index === 0) {
             // If references are at the start, there's no conclusion content
