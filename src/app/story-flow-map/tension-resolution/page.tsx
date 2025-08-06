@@ -1154,14 +1154,15 @@ export default function TensionResolution() {
                       <table className="w-full border-collapse border border-gray-300">
                         <thead>
                           <tr className="bg-green-100">
-                            {tableData.headers.map((header, index) => (
-                              <th
-                                key={index}
-                                className="border border-gray-300 px-4 py-2 text-left font-semibold text-green-800"
-                              >
-                                {header}
-                              </th>
-                            ))}
+                            <th className="border border-gray-300 px-4 py-2 text-left font-semibold text-green-800">
+                              {/* Empty header for first column */}
+                            </th>
+                            <th className="border border-gray-300 px-4 py-2 text-left font-semibold text-green-800">
+                              Tension
+                            </th>
+                            <th className="border border-gray-300 px-4 py-2 text-left font-semibold text-green-800">
+                              Resolution
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1173,7 +1174,9 @@ export default function TensionResolution() {
                               {row.map((cell, cellIndex) => (
                                 <td
                                   key={cellIndex}
-                                  className="border border-gray-300 px-4 py-2 text-gray-800 align-top"
+                                  className={`border border-gray-300 px-4 py-2 text-gray-800 ${
+                                    cellIndex === 0 ? 'text-center align-middle' : 'align-top'
+                                  }`}
                                 >
                                   {cell}
                                 </td>
