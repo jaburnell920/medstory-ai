@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import PageLayout from '@/app/components/PageLayout';
@@ -28,6 +28,24 @@ export default function TensionResolution() {
   });
 
   const [messages, setMessages] = useState<{ role: 'assistant' | 'user'; content: string }[]>([]);
+
+  // Ref for auto-scrolling the results section
+  const resultsScrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when new content is generated
+  useEffect(() => {
+    if (
+      resultsScrollRef.current &&
+      (attackPoints.length > 0 ||
+        tensionResolutionPoints.length > 0 ||
+        conclusion ||
+        references ||
+        tableData ||
+        result)
+    ) {
+      resultsScrollRef.current.scrollTop = resultsScrollRef.current.scrollHeight;
+    }
+  }, [attackPoints, tensionResolutionPoints, conclusion, references, tableData, result]);
 
   // Initialize messages with core story concept from localStorage
   useEffect(() => {
@@ -153,12 +171,15 @@ export default function TensionResolution() {
 
   // Helper function to parse markdown table
   const parseMarkdownTable = (text: string): { headers: string[]; rows: string[][] } | null => {
-    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-    
+    const lines = text
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+
     // Find table start and end
     let tableStart = -1;
     let tableEnd = -1;
-    
+
     for (let i = 0; i < lines.length; i++) {
       if (lines[i].startsWith('|') && lines[i].endsWith('|')) {
         if (tableStart === -1) {
@@ -170,25 +191,31 @@ export default function TensionResolution() {
         break;
       }
     }
-    
+
     if (tableStart === -1 || tableEnd === -1 || tableStart === tableEnd) {
       return null;
     }
-    
+
     const tableLines = lines.slice(tableStart, tableEnd + 1);
-    
+
     // Parse headers (first line)
     const headerLine = tableLines[0];
-    const headers = headerLine.split('|').map(cell => cell.trim()).filter(cell => cell.length > 0);
-    
+    const headers = headerLine
+      .split('|')
+      .map((cell) => cell.trim())
+      .filter((cell) => cell.length > 0);
+
     // Skip separator line (second line with dashes)
     const dataLines = tableLines.slice(2);
-    
+
     // Parse data rows
-    const rows = dataLines.map(line => {
-      return line.split('|').map(cell => cell.trim()).filter(cell => cell.length > 0);
+    const rows = dataLines.map((line) => {
+      return line
+        .split('|')
+        .map((cell) => cell.trim())
+        .filter((cell) => cell.length > 0);
     });
-    
+
     return { headers, rows };
   };
 
@@ -931,7 +958,7 @@ export default function TensionResolution() {
                 </div>
               </div>
 
-              <div className="space-y-6 overflow-y-auto flex-1">
+              <div ref={resultsScrollRef} className="space-y-6 overflow-y-auto flex-1">
                 {/* Attack Points */}
                 {attackPoints.map((attackPoint, index) => (
                   <div
@@ -1035,7 +1062,10 @@ export default function TensionResolution() {
                         </thead>
                         <tbody>
                           {tableData.rows.map((row, rowIndex) => (
-                            <tr key={rowIndex} className={rowIndex % 2 === 0 ? 'bg-white' : 'bg-green-25'}>
+                            <tr
+                              key={rowIndex}
+                              className={rowIndex % 2 === 0 ? 'bg-white' : 'bg-green-25'}
+                            >
                               {row.map((cell, cellIndex) => (
                                 <td
                                   key={cellIndex}
