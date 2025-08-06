@@ -9,7 +9,7 @@ import ChatInterface from '@/app/components/ChatInterface';
 const questions = [
   'Who is your target audience? (eg, PCPs, CARDs, specialists, patients, general public)',
   'How long is the presentation? (in minutes)',
-  'What\'s the maximum number of slides for the presentation? (none or specify number)',
+  "What's the maximum number of slides for the presentation? (none or specify number)",
   'What is your desired tone? (eg, provocative, academic, friendly, calm - or a combination)',
   'How visual should it be? (e.g. minimal, moderate visuals, highly visual)',
   'Do you want me to write speaker notes for each slide? (Y/N)',
@@ -46,9 +46,9 @@ export default function DeckGenerationPage() {
         localStorage.getItem('selectedCoreStoryConceptData') ||
         localStorage.getItem('coreStoryConcept') ||
         localStorage.getItem('selectedCoreStoryConcept');
-      
+
       let hasCoreStoryConcept = false;
-      
+
       if (coreStoryConceptData) {
         try {
           const conceptData = JSON.parse(coreStoryConceptData);
@@ -63,21 +63,21 @@ export default function DeckGenerationPage() {
           } else if (typeof conceptData === 'string' && conceptData.trim().length > 0) {
             hasCoreStoryConcept = true;
           }
-        } catch (e) {
+        } catch {
           if (typeof coreStoryConceptData === 'string' && coreStoryConceptData.trim().length > 0) {
             hasCoreStoryConcept = true;
           }
         }
       }
-      
+
       // Check for Story Flow Outline data (attack points and tension-resolution points)
       const storyFlowData = localStorage.getItem('storyFlowData');
       const attackPointsData = localStorage.getItem('attackPoints');
       const tensionResolutionData = localStorage.getItem('tensionResolutionPoints');
       const savedTensionResolutionData = localStorage.getItem('savedTensionResolutionData');
-      
+
       let hasStoryFlowOutline = false;
-      
+
       // Check if any story flow outline data exists
       if (storyFlowData) {
         try {
@@ -86,86 +86,96 @@ export default function DeckGenerationPage() {
             flowData &&
             ((flowData.attackPoints && flowData.attackPoints.length > 0) ||
               (flowData.tensionResolutionPoints && flowData.tensionResolutionPoints.length > 0));
-        } catch (e) {
+        } catch {
           // If parsing fails, check individual items
         }
       }
-      
+
       // Fallback: check individual localStorage items
       if (!hasStoryFlowOutline) {
         let hasAttackPoints = false;
         let hasTensionResolution = false;
         let hasSavedTensionResolution = false;
-        
+
         if (attackPointsData) {
           try {
             const attackPoints = JSON.parse(attackPointsData);
             hasAttackPoints = attackPoints && attackPoints.length > 0;
-          } catch (e) {
+          } catch {
             if (typeof attackPointsData === 'string' && attackPointsData.trim().length > 0) {
               hasAttackPoints = true;
             }
           }
         }
-        
+
         if (tensionResolutionData) {
           try {
             const tensionResolution = JSON.parse(tensionResolutionData);
             hasTensionResolution = tensionResolution && tensionResolution.length > 0;
-          } catch (e) {
-            if (typeof tensionResolutionData === 'string' && tensionResolutionData.trim().length > 0) {
+          } catch {
+            if (
+              typeof tensionResolutionData === 'string' &&
+              tensionResolutionData.trim().length > 0
+            ) {
               hasTensionResolution = true;
             }
           }
         }
-        
+
         if (savedTensionResolutionData) {
           try {
             const savedTensionResolution = JSON.parse(savedTensionResolutionData);
             hasSavedTensionResolution = savedTensionResolution && savedTensionResolution.length > 0;
-          } catch (e) {
-            if (typeof savedTensionResolutionData === 'string' && savedTensionResolutionData.trim().length > 0) {
+          } catch {
+            if (
+              typeof savedTensionResolutionData === 'string' &&
+              savedTensionResolutionData.trim().length > 0
+            ) {
               hasSavedTensionResolution = true;
             }
           }
         }
-        
+
         hasStoryFlowOutline = hasAttackPoints || hasTensionResolution || hasSavedTensionResolution;
       }
-      
+
       if (!hasCoreStoryConcept) {
         setMessages([
           {
             role: 'assistant',
-            content: 'To create a Story Flow Map, I need you to create a Core Story Concept. Please go to the Core Story Concept section of MEDSTORYAI to do this then return here and I\'ll be happy to generate the Story Flow Map. Thanks.',
+            content:
+              "To create a Story Flow Map, I need you to create a Core Story Concept. Please go to the Core Story Concept section of MEDSTORYAI to do this then return here and I'll be happy to generate the Story Flow Map. Thanks.",
           },
         ]);
         setInitialCheckComplete(true);
         return;
       }
-      
+
       if (!hasStoryFlowOutline) {
         setMessages([
           {
             role: 'assistant',
-            content: 'To create a Story Flow Map, I need you to create a Story Flow Outline first. Please go to the Story Flow section of MEDSTORYAI to do this then return here and I\'ll be happy to generate the Story Flow Map. Thanks.',
+            content:
+              "To create a Story Flow Map, I need you to create a Story Flow Outline first. Please go to the Story Flow section of MEDSTORYAI to do this then return here and I'll be happy to generate the Story Flow Map. Thanks.",
           },
         ]);
         setInitialCheckComplete(true);
         return;
       }
-      
+
       // Both concepts exist, proceed with the deck generation
       setHasRequiredConcepts(true);
       setMessages([
         {
           role: 'assistant',
-          content: "Got it - you need me to generate an outline for a MEDSTORY® presentation deck. First I'll need a few bits of information to generate your optimized presentation deck. This shouldn't take long - just 6 quick questions and we'll be on our way.\n\n1. " + questions[0],
+          content:
+            "Got it - you need me to generate an outline for a MEDSTORY® presentation deck. First I'll need a few bits of information to generate your optimized presentation deck. This shouldn't take long - just 6 quick questions and we'll be on our way.\n\n1. " +
+            questions[0],
         },
       ]);
       setInitialCheckComplete(true);
     };
-    
+
     // Simulate checking (in a real app, this might be an API call)
     setTimeout(checkRequiredConcepts, 1000);
   }, []);
@@ -185,7 +195,7 @@ export default function DeckGenerationPage() {
         content: 'Checking for Core Story Concept and Story Flow Outline...',
       },
     ]);
-    
+
     // Re-run the initial check
     setTimeout(() => {
       // Check for Core Story Concept data - try multiple possible keys
@@ -193,9 +203,9 @@ export default function DeckGenerationPage() {
         localStorage.getItem('selectedCoreStoryConceptData') ||
         localStorage.getItem('coreStoryConcept') ||
         localStorage.getItem('selectedCoreStoryConcept');
-      
+
       let hasCoreStoryConcept = false;
-      
+
       if (coreStoryConceptData) {
         try {
           const conceptData = JSON.parse(coreStoryConceptData);
@@ -210,21 +220,21 @@ export default function DeckGenerationPage() {
           } else if (typeof conceptData === 'string' && conceptData.trim().length > 0) {
             hasCoreStoryConcept = true;
           }
-        } catch (e) {
+        } catch {
           if (typeof coreStoryConceptData === 'string' && coreStoryConceptData.trim().length > 0) {
             hasCoreStoryConcept = true;
           }
         }
       }
-      
+
       // Check for Story Flow Outline data (attack points and tension-resolution points)
       const storyFlowData = localStorage.getItem('storyFlowData');
       const attackPointsData = localStorage.getItem('attackPoints');
       const tensionResolutionData = localStorage.getItem('tensionResolutionPoints');
       const savedTensionResolutionData = localStorage.getItem('savedTensionResolutionData');
-      
+
       let hasStoryFlowOutline = false;
-      
+
       // Check if any story flow outline data exists
       if (storyFlowData) {
         try {
@@ -233,80 +243,90 @@ export default function DeckGenerationPage() {
             flowData &&
             ((flowData.attackPoints && flowData.attackPoints.length > 0) ||
               (flowData.tensionResolutionPoints && flowData.tensionResolutionPoints.length > 0));
-        } catch (e) {
+        } catch {
           // If parsing fails, check individual items
         }
       }
-      
+
       // Fallback: check individual localStorage items
       if (!hasStoryFlowOutline) {
         let hasAttackPoints = false;
         let hasTensionResolution = false;
         let hasSavedTensionResolution = false;
-        
+
         if (attackPointsData) {
           try {
             const attackPoints = JSON.parse(attackPointsData);
             hasAttackPoints = attackPoints && attackPoints.length > 0;
-          } catch (e) {
+          } catch {
             if (typeof attackPointsData === 'string' && attackPointsData.trim().length > 0) {
               hasAttackPoints = true;
             }
           }
         }
-        
+
         if (tensionResolutionData) {
           try {
             const tensionResolution = JSON.parse(tensionResolutionData);
             hasTensionResolution = tensionResolution && tensionResolution.length > 0;
-          } catch (e) {
-            if (typeof tensionResolutionData === 'string' && tensionResolutionData.trim().length > 0) {
+          } catch {
+            if (
+              typeof tensionResolutionData === 'string' &&
+              tensionResolutionData.trim().length > 0
+            ) {
               hasTensionResolution = true;
             }
           }
         }
-        
+
         if (savedTensionResolutionData) {
           try {
             const savedTensionResolution = JSON.parse(savedTensionResolutionData);
             hasSavedTensionResolution = savedTensionResolution && savedTensionResolution.length > 0;
-          } catch (e) {
-            if (typeof savedTensionResolutionData === 'string' && savedTensionResolutionData.trim().length > 0) {
+          } catch {
+            if (
+              typeof savedTensionResolutionData === 'string' &&
+              savedTensionResolutionData.trim().length > 0
+            ) {
               hasSavedTensionResolution = true;
             }
           }
         }
-        
+
         hasStoryFlowOutline = hasAttackPoints || hasTensionResolution || hasSavedTensionResolution;
       }
-      
+
       if (!hasCoreStoryConcept) {
         setMessages([
           {
             role: 'assistant',
-            content: 'To create a Story Flow Map, I need you to create a Core Story Concept. Please go to the Core Story Concept section of MEDSTORYAI to do this then return here and I\'ll be happy to generate the Story Flow Map. Thanks.',
+            content:
+              "To create a Story Flow Map, I need you to create a Core Story Concept. Please go to the Core Story Concept section of MEDSTORYAI to do this then return here and I'll be happy to generate the Story Flow Map. Thanks.",
           },
         ]);
         setInitialCheckComplete(true);
         return;
       }
-      
+
       if (!hasStoryFlowOutline) {
         setMessages([
           {
             role: 'assistant',
-            content: 'To create a Story Flow Map, I need you to create a Story Flow Outline first. Please go to the Story Flow section of MEDSTORYAI to do this then return here and I\'ll be happy to generate the Story Flow Map. Thanks.',
+            content:
+              "To create a Story Flow Map, I need you to create a Story Flow Outline first. Please go to the Story Flow section of MEDSTORYAI to do this then return here and I'll be happy to generate the Story Flow Map. Thanks.",
           },
         ]);
         setInitialCheckComplete(true);
         return;
       }
-      
+
       setHasRequiredConcepts(true);
       setMessages([
         {
           role: 'assistant',
-          content: "Got it - you need me to generate an outline for a MEDSTORY® presentation deck. First I'll need a few bits of information to generate your optimized presentation deck. This shouldn't take long - just 6 quick questions and we'll be on our way.\n\n1. " + questions[0],
+          content:
+            "Got it - you need me to generate an outline for a MEDSTORY® presentation deck. First I'll need a few bits of information to generate your optimized presentation deck. This shouldn't take long - just 6 quick questions and we'll be on our way.\n\n1. " +
+            questions[0],
         },
       ]);
       setInitialCheckComplete(true);
@@ -349,7 +369,7 @@ export default function DeckGenerationPage() {
         localStorage.getItem('selectedCoreStoryConceptData') ||
         localStorage.getItem('coreStoryConcept') ||
         localStorage.getItem('selectedCoreStoryConcept');
-      
+
       let coreStoryConcept = '';
       if (coreStoryConceptData) {
         try {
@@ -359,21 +379,21 @@ export default function DeckGenerationPage() {
           } else if (typeof conceptData === 'string') {
             coreStoryConcept = conceptData;
           }
-        } catch (e) {
+        } catch {
           if (typeof coreStoryConceptData === 'string') {
             coreStoryConcept = coreStoryConceptData;
           }
         }
       }
-      
+
       // Get story flow outline data
       const storyFlowData = localStorage.getItem('storyFlowData');
       const attackPointsData = localStorage.getItem('attackPoints');
       const tensionResolutionData = localStorage.getItem('tensionResolutionPoints');
       const savedTensionResolutionData = localStorage.getItem('savedTensionResolutionData');
-      
+
       let storyFlowOutline = '';
-      
+
       // Compile story flow outline from available data
       if (storyFlowData) {
         try {
@@ -381,46 +401,55 @@ export default function DeckGenerationPage() {
           if (flowData) {
             storyFlowOutline += JSON.stringify(flowData, null, 2);
           }
-        } catch (e) {
+        } catch {
           // If parsing fails, use raw data
           storyFlowOutline += storyFlowData;
         }
       }
-      
+
       if (attackPointsData) {
         try {
           const attackPoints = JSON.parse(attackPointsData);
           if (attackPoints && attackPoints.length > 0) {
             storyFlowOutline += '\n\nAttack Points:\n' + JSON.stringify(attackPoints, null, 2);
           }
-        } catch (e) {
+        } catch {
           if (typeof attackPointsData === 'string' && attackPointsData.trim().length > 0) {
             storyFlowOutline += '\n\nAttack Points:\n' + attackPointsData;
           }
         }
       }
-      
+
       if (tensionResolutionData) {
         try {
           const tensionResolution = JSON.parse(tensionResolutionData);
           if (tensionResolution && tensionResolution.length > 0) {
-            storyFlowOutline += '\n\nTension Resolution Points:\n' + JSON.stringify(tensionResolution, null, 2);
+            storyFlowOutline +=
+              '\n\nTension Resolution Points:\n' + JSON.stringify(tensionResolution, null, 2);
           }
-        } catch (e) {
-          if (typeof tensionResolutionData === 'string' && tensionResolutionData.trim().length > 0) {
+        } catch {
+          if (
+            typeof tensionResolutionData === 'string' &&
+            tensionResolutionData.trim().length > 0
+          ) {
             storyFlowOutline += '\n\nTension Resolution Points:\n' + tensionResolutionData;
           }
         }
       }
-      
+
       if (savedTensionResolutionData) {
         try {
           const savedTensionResolution = JSON.parse(savedTensionResolutionData);
           if (savedTensionResolution && savedTensionResolution.length > 0) {
-            storyFlowOutline += '\n\nSaved Tension Resolution Data:\n' + JSON.stringify(savedTensionResolution, null, 2);
+            storyFlowOutline +=
+              '\n\nSaved Tension Resolution Data:\n' +
+              JSON.stringify(savedTensionResolution, null, 2);
           }
-        } catch (e) {
-          if (typeof savedTensionResolutionData === 'string' && savedTensionResolutionData.trim().length > 0) {
+        } catch {
+          if (
+            typeof savedTensionResolutionData === 'string' &&
+            savedTensionResolutionData.trim().length > 0
+          ) {
             storyFlowOutline += '\n\nSaved Tension Resolution Data:\n' + savedTensionResolutionData;
           }
         }
