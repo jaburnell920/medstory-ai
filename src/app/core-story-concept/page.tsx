@@ -179,7 +179,7 @@ export default function CoreStoryConcept() {
         if (concepts.length > 0) {
           setCurrentlyModifyingConcept(concepts[concepts.length - 1]);
         }
-        // Ask for modifications
+        // Ask for modifications without showing "Ok, here we go"
         setMessages([
           ...newMessages,
           {
@@ -420,7 +420,9 @@ export default function CoreStoryConcept() {
       setContext((prev) => ({ ...prev, length: lengthValue }));
     }
 
-    if (step === 3) {
+    // Only proceed with initial generation if we're in the initial questionnaire flow
+    // and not in the post-generation modification phase
+    if (step === 3 && !result) {
       setMessages([...newMessages, { role: 'assistant', content: 'Ok, here we go' }]);
       setLoading(true);
 
