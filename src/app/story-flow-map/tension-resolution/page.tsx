@@ -135,9 +135,9 @@ export default function TensionResolution() {
   const cleanAttackPoint = (attackPoint: string): string => {
     const unwantedString =
       'Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?';
-    
+
     let cleaned = attackPoint.replace(unwantedString, '').trim();
-    
+
     // Remove asterisks, colons, and dashes from the content
     cleaned = cleaned
       .replace(/\*+/g, '') // Remove all asterisks
@@ -145,21 +145,21 @@ export default function TensionResolution() {
       .replace(/^\s*-+\s*/gm, '') // Remove dashes at start of lines
       .replace(/:\s*$/gm, '') // Remove trailing colons
       .trim();
-    
+
     return cleaned;
   };
 
   // Helper function to clean tension-resolution points and format titles properly
   const cleanTensionResolutionPoint = (point: string): string => {
     let cleaned = point.trim();
-    
+
     // Remove the header line first
     cleaned = cleaned.replace(/^\*?\*?Tension-Resolution #\d+.*?\n?/i, '');
-    
+
     // Look for title patterns like ": title**" or "**title**" and convert to proper bold HTML
     cleaned = cleaned.replace(/^:\s*([^*\n]+)\*+\s*$/gm, '<strong>$1</strong>');
     cleaned = cleaned.replace(/^\*+([^*\n]+)\*+\s*$/gm, '<strong>$1</strong>');
-    
+
     // Remove remaining asterisks, colons, and dashes
     cleaned = cleaned
       .replace(/\*+/g, '') // Remove all remaining asterisks
@@ -167,14 +167,14 @@ export default function TensionResolution() {
       .replace(/^\s*-+\s*/gm, '') // Remove dashes at start of lines
       .replace(/:\s*$/gm, '') // Remove trailing colons
       .trim();
-    
+
     return cleaned;
   };
 
   // Helper function to clean conclusion content
   const cleanConclusion = (conclusion: string): string => {
     let cleaned = conclusion.trim();
-    
+
     // Remove asterisks, colons, and dashes
     cleaned = cleaned
       .replace(/\*+/g, '') // Remove all asterisks
@@ -182,7 +182,7 @@ export default function TensionResolution() {
       .replace(/^\s*-+\s*/gm, '') // Remove dashes at start of lines
       .replace(/:\s*$/gm, '') // Remove trailing colons
       .trim();
-    
+
     return cleaned;
   };
 
@@ -271,7 +271,9 @@ export default function TensionResolution() {
               attackPointsFound.push(cleanedAttackPoint);
             }
           } else if (currentSection === 'tension') {
-            tensionResolutionPointsFound.push(cleanTensionResolutionPoint(currentContent.join('\n').trim()));
+            tensionResolutionPointsFound.push(
+              cleanTensionResolutionPoint(currentContent.join('\n').trim())
+            );
           }
         }
         currentSection = 'tension';
@@ -289,7 +291,9 @@ export default function TensionResolution() {
               attackPointsFound.push(cleanedAttackPoint);
             }
           } else if (currentSection === 'tension') {
-            tensionResolutionPointsFound.push(cleanTensionResolutionPoint(currentContent.join('\n').trim()));
+            tensionResolutionPointsFound.push(
+              cleanTensionResolutionPoint(currentContent.join('\n').trim())
+            );
           }
         }
         currentSection = 'conclusion';
@@ -307,7 +311,9 @@ export default function TensionResolution() {
               attackPointsFound.push(cleanedAttackPoint);
             }
           } else if (currentSection === 'tension') {
-            tensionResolutionPointsFound.push(cleanTensionResolutionPoint(currentContent.join('\n').trim()));
+            tensionResolutionPointsFound.push(
+              cleanTensionResolutionPoint(currentContent.join('\n').trim())
+            );
           } else if (currentSection === 'conclusion') {
             conclusionFound = cleanConclusion(currentContent.join('\n').trim());
           }
@@ -331,7 +337,9 @@ export default function TensionResolution() {
           attackPointsFound.push(cleanedAttackPoint);
         }
       } else if (currentSection === 'tension') {
-        tensionResolutionPointsFound.push(cleanTensionResolutionPoint(currentContent.join('\n').trim()));
+        tensionResolutionPointsFound.push(
+          cleanTensionResolutionPoint(currentContent.join('\n').trim())
+        );
       } else if (currentSection === 'conclusion') {
         conclusionFound = cleanConclusion(currentContent.join('\n').trim());
       } else if (currentSection === 'references') {
@@ -830,11 +838,17 @@ export default function TensionResolution() {
                         className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                       />
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-blue-800 mb-2">
-                          Attack Point #{index + 1}
-                        </h3>
                         <pre className="text-gray-800 whitespace-pre-wrap font-sans">
-                          {attackPoint}
+                          {attackPoint
+                            .replace(
+                              /Attack Point #\d+:?/gi,
+                              () =>
+                                `<div class="font-bold text-blue-800 text-lg mb-4">Attack Point #${index + 1}</div>`
+                            )
+                            .split('\n')
+                            .map((line, i) => (
+                              <div key={i} dangerouslySetInnerHTML={{ __html: line }} />
+                            ))}
                         </pre>
                       </div>
                     </div>
@@ -859,7 +873,7 @@ export default function TensionResolution() {
                         <h3 className="text-lg font-semibold text-blue-800 mb-2">
                           Tension-Resolution #{index + 1}
                         </h3>
-                        <div 
+                        <div
                           className="text-gray-800 whitespace-pre-wrap font-sans"
                           dangerouslySetInnerHTML={{ __html: point }}
                         />
