@@ -1095,10 +1095,23 @@ export default function TensionResolution() {
                         <h3 className="text-lg font-semibold text-blue-800 mb-2">
                           Tension-Resolution #{index + 1}
                         </h3>
-                        <div
-                          className="text-gray-800 whitespace-pre-wrap font-sans"
-                          dangerouslySetInnerHTML={{ __html: point }}
-                        />
+                        <div className="text-gray-800 whitespace-pre-wrap font-sans">
+                          {point
+                            // Format TENSION headers with proper styling and spacing
+                            .replace(
+                              /^TENSION:/gim,
+                              '<div class="font-bold text-blue-800 text-base mt-6 mb-4">TENSION</div>\n'
+                            )
+                            // Format RESOLUTION headers with proper styling and spacing
+                            .replace(
+                              /^RESOLUTION:/gim,
+                              '<div class="font-bold text-blue-800 text-base mt-6 mb-4">RESOLUTION</div>\n'
+                            )
+                            .split('\n')
+                            .map((line, i) => (
+                              <div key={i} dangerouslySetInnerHTML={{ __html: line }} />
+                            ))}
+                        </div>
                       </div>
                     </div>
                   </div>
