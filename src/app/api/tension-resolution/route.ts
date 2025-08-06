@@ -134,7 +134,9 @@ Discovery of product X was a critical discovery that transformed practice. (1)  
 Put a blank line after "References" and between references.
 
 Make sure that the reference citation starts 2 spaces after the period that follows the reference number. 
-After the references are displayed, ask the user if they want the tension-resolution points put into a table. If yes, make a table with the following columns: number (do not show name of this column), tension, resolution. The first row should be the attack point text only in the tension column and "AP" in the number column and nothing in resolution column. The last row should be the conclusion text only in the resolution column and "CSC" in the number column and nothing in tension column.
+After the references are displayed, ask the user if they want the tension-resolution points put into a table. If the user responds "yes" or explicitly requests a table, create a markdown table with the following columns: number (do not show name of this column), tension, resolution. The first row should be the attack point text only in the tension column and "AP" in the number column and nothing in resolution column. The last row should be the conclusion text only in the resolution column and "CSC" in the number column and nothing in tension column.
+
+IMPORTANT: When the user says "yes" to the table question, immediately provide the table format and then ask about the TED talk. Do NOT repeat the table question.
 
 Then ask the user the following: "Would you like me to write a script based on the above story flow outline that would be suitable for a highly engaging TED talk?" If yes, ask how long the talk should be (in minutes). You are an extremely successful and accomplished TED presenter who has given 10 different TED talks each of which garnered over 10 million views. Deliver a script for a TED talk using the same approach you took for your previous talks and aim for a length of minutes.
 
@@ -187,41 +189,35 @@ In the cardiac catheterization lab, Dr. Sarah Chen stared at the angiogram of he
 
 Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?`;
         } else if (userMessage.toLowerCase().includes('short')) {
-          mockResult = `Tension-Resolution #1
+          mockResult = `**Tension-Resolution #1: The Silent Epidemic**  
+**Tension:** High blood pressure often goes unnoticed until it manifests as life-threatening events like strokes or heart attacks, putting patients at critical risk without warning.  
+**Resolution:** Lisinopril provides a proactive approach, effectively managing blood pressure before such catastrophic events occur by targeting the root cause in the renin-angiotensin system.
 
-<strong>Immune System Failure</strong>
+---
 
-Traditional chemotherapy had failed Emma repeatedly, with each relapse more aggressive than the last, leaving her immune system devastated and her family desperate.
+**Tension-Resolution #2: Unyielding Control Challenges**  
+**Tension:** Despite numerous antihypertensive drugs, achieving consistent blood pressure control remains elusive for many patients, leading to persistent cardiovascular risks.  
+**Resolution:** Lisinopril offers a reliable solution by directly inhibiting ACE, thereby reducing the formation of Angiotensin II and ensuring stable blood pressure management.
 
-CAR-T cell therapy offered a revolutionary approach reprogramming her own T-cells to recognize and destroy the CD19+ leukemia cells that had evaded conventional treatment.
+---
 
-Tension-Resolution #2
+**Tension-Resolution #3: The Mechanism of Elegance**  
+**Tension:** Complex mechanisms of hypertension often complicate treatment, overwhelming patients with choices and uncertainty.  
+**Resolution:** Lisinopril simplifies treatment with its straightforward yet powerful mechanism, providing clear and effective intervention by directly disrupting the hypertension pathway.
 
-<strong>Engineering Hope</strong>
+---
 
-The complex manufacturing process required extracting Emma's T-cells, genetically modifying them in specialized laboratories, and expanding them over weeks while her condition deteriorated.
+**Conclusion:** Lisinopril transforms hypertension management into a proactive and reliable journey, not just reducing blood pressure but altering cardiovascular destinies, aligning with the Core Story Concept of redefining patient outcomes.
 
-Advanced viral vectors successfully delivered the chimeric antigen receptor genes, creating millions of engineered cells capable of sustained anti-leukemia activity.
+**References**  
 
-Tension-Resolution #3
+1. Brown MJ, et al. Clinical benefits of ACE inhibitors in managing hypertension. Lancet. 2019;393:1038-1050.
 
-<strong>The Cellular Storm</strong>
+2. Williams B, et al. The role of ACE inhibitors in hypertension treatment. J Hypertens. 2020;38:1234-1243.
 
-Within days of infusion, Emma developed severe cytokine release syndrome as her modified T-cells launched an unprecedented immune assault against her cancer.
+3. Smith SM, et al. Efficacy of lisinopril in cardiovascular risk reduction. JAMA Cardiol. 2021;6:456-465.
 
-Careful management with tocilizumab and supportive care controlled the inflammatory response while preserving the therapeutic effect of the CAR-T cells.
-
-Conclusion
-
-Emma achieved complete remission within 30 days, demonstrating how personalized cellular immunotherapy can transform outcomes in relapsed/refractory B-cell ALL, offering hope where conventional treatments have failed.
-
-References
-
-1. Maude SL, et al. Tisagenlecleucel in children and young adults with B-cell lymphoblastic leukemia. N Engl J Med. 2018;378:439-448.
-
-2. Lee DW, et al. T cells expressing CD19 chimeric antigen receptors for acute lymphoblastic leukaemia in children and young adults. Lancet. 2015;385:517-528.
-
-Would you like the tension-resolution points put into a table format?`;
+Would you like the tension-resolution points put into a table?`;
         } else if (
           userMessage.toLowerCase().includes('table') ||
           userMessage.toLowerCase().includes('yes')
@@ -235,24 +231,25 @@ Would you like the tension-resolution points put into a table format?`;
               .pop()?.content || '';
 
           // If user said "yes" and the last assistant message was about tables, show table
+          // OR if user explicitly requested table
           if (
-            userMessage.toLowerCase().includes('yes') &&
-            lastAssistantMessage.toLowerCase().includes('table')
+            (userMessage.toLowerCase().includes('yes') &&
+              lastAssistantMessage.toLowerCase().includes('table')) ||
+            userMessage.toLowerCase().includes('table')
           ) {
-            // Show table format
-          } else if (userMessage.toLowerCase().includes('table')) {
-            // User explicitly requested table
-          }
-
-          mockResult = `| # | Tension | Resolution |
+            mockResult = `| # | Tension | Resolution |
 |---|---------|------------|
-| AP | In the pediatric ICU, 8-year-old Emma's leukemia cells had survived every conventional treatment—chemotherapy, radiation, even a bone marrow transplant. Her CD19+ B-cells, once targets for therapy, had become invisible to traditional treatments. As her parents watched her condition deteriorate, her oncologist prepared to discuss palliative care. But hidden within Emma's own immune system lay engineered T-cells, reprogrammed with chimeric antigen receptors, waiting to launch a precision strike that would redefine the boundaries between life and death in pediatric oncology. | |
-| 1 | Traditional chemotherapy had failed Emma repeatedly, with each relapse more aggressive than the last, leaving her immune system devastated and her family desperate. | CAR-T cell therapy offered a revolutionary approach—reprogramming her own T-cells to recognize and destroy the CD19+ leukemia cells that had evaded conventional treatment. |
-| 2 | The complex manufacturing process required extracting Emma's T-cells, genetically modifying them in specialized laboratories, and expanding them over weeks while her condition deteriorated. | Advanced viral vectors successfully delivered the chimeric antigen receptor genes, creating millions of engineered cells capable of sustained anti-leukemia activity. |
-| 3 | Within days of infusion, Emma developed severe cytokine release syndrome as her modified T-cells launched an unprecedented immune assault against her cancer. | Careful management with tocilizumab and supportive care controlled the inflammatory response while preserving the therapeutic effect of the CAR-T cells. |
-| CSC | | Emma achieved complete remission within 30 days, demonstrating how personalized cellular immunotherapy can transform outcomes in relapsed/refractory B-cell ALL, offering hope where conventional treatments have failed. |
+| AP | A dangerous fusion of high blood pressure with a string of catastrophes in its wake: stroke, heart attack, kidney dysfunction. The modern cardiology still scuffles with suboptimal systolic and diastolic pressure control, leaving many patients dancing on the precipice of severe cardiovascular events, despite a landscape brimming with antihypertensive agents. The struggle isn't around the lack of medicines, but the right weapon that directly challenges the renin-angiotensin system's tyranny on blood pressure control. | |
+| 1 | High blood pressure often goes unnoticed until it manifests as life-threatening events like strokes or heart attacks, putting patients at critical risk without warning. | Lisinopril provides a proactive approach, effectively managing blood pressure before such catastrophic events occur by targeting the root cause in the renin-angiotensin system. |
+| 2 | Despite numerous antihypertensive drugs, achieving consistent blood pressure control remains elusive for many patients, leading to persistent cardiovascular risks. | Lisinopril offers a reliable solution by directly inhibiting ACE, thereby reducing the formation of Angiotensin II and ensuring stable blood pressure management. |
+| 3 | Complex mechanisms of hypertension often complicate treatment, overwhelming patients with choices and uncertainty. | Lisinopril simplifies treatment with its straightforward yet powerful mechanism, providing clear and effective intervention by directly disrupting the hypertension pathway. |
+| CSC | | Lisinopril transforms hypertension management into a proactive and reliable journey, not just reducing blood pressure but altering cardiovascular destinies, aligning with the Core Story Concept of redefining patient outcomes. |
 
 Would you like me to write a script based on the above story flow outline that would be suitable for a highly engaging TED talk?`;
+          } else {
+            // User said "yes" but not to a table question, handle other cases
+            mockResult = `What modifications would you like to make to the Attack Point?`;
+          }
         } else {
           mockResult = `What modifications would you like to make to the Attack Point?`;
         }
@@ -268,7 +265,51 @@ Would you like me to write a script based on the above story flow outline that w
         )
         .join('\n\n');
 
-      const continuePrompt = `You are continuing to help create a Story Flow Outline with Attack Point and Tension-Resolution Points using the comprehensive AI Prompt for Creating Story Flow Outline.
+      console.log('User message:', userMessage);
+      console.log('Conversation context:', conversationContext);
+
+      // Check if user is responding "yes" to a table question
+      const lastAssistantMessage =
+        conversationHistory
+          .filter(
+            (msg: { role: 'user' | 'assistant'; content: string }) => msg.role === 'assistant'
+          )
+          .pop()?.content || '';
+
+      const isTableRequest =
+        userMessage.toLowerCase().includes('yes') &&
+        lastAssistantMessage.toLowerCase().includes('table');
+
+      let continuePrompt = '';
+
+      if (isTableRequest) {
+        // Special handling for table creation
+        continuePrompt = `You are helping create a Story Flow Outline. The user has requested that the tension-resolution points be put into a table format.
+
+PARAMETERS:
+- Core Story Concept: ${coreStoryConcept}
+- Audience: ${audience}
+
+CONVERSATION CONTEXT:
+${conversationContext}
+
+CRITICAL INSTRUCTIONS:
+The user has said "yes" to creating a table. You must now create a markdown table with the tension-resolution points from the previous response.
+
+Create a markdown table with the following format:
+- Columns: number (do not show column header), tension, resolution
+- First row: "AP" in number column, attack point text in tension column, empty resolution column
+- Middle rows: "1", "2", "3" etc. in number column, tension text in tension column, resolution text in resolution column
+- Last row: "CSC" in number column, empty tension column, conclusion text in resolution column
+
+Extract the attack point, tension-resolution points, and conclusion from the previous conversation and format them into this table structure.
+
+After creating the table, ask: "Would you like me to write a script based on the above story flow outline that would be suitable for a highly engaging TED talk?"
+
+DO NOT ask about the table again. The user has already confirmed they want the table.`;
+      } else {
+        // Regular conversation flow
+        continuePrompt = `You are continuing to help create a Story Flow Outline with Attack Point and Tension-Resolution Points using the comprehensive AI Prompt for Creating Story Flow Outline.
 
 PARAMETERS:
 - Core Story Concept: ${coreStoryConcept}
@@ -313,11 +354,14 @@ Lastname FN, et al. Title of article. J Abbrev. Year;Volume:PagePage.
 Put a blank line after "References" and between references.
 Make sure that the reference citation starts 2 spaces after the period that follows the reference number.
 
-After the references are displayed, ask the user if they want the tension-resolution points put into a table. If yes, make a table with the following columns: number (do not show name of this column), tension, resolution. The first row should be the attack point text only in the tension column and "AP" in the number column and nothing in resolution column. The last row should be the conclusion text only in the resolution column and "CSC" in the number column and nothing in tension column.
+After the references are displayed, ask the user if they want the tension-resolution points put into a table. If the user responds "yes" or explicitly requests a table, create a markdown table with the following columns: number (do not show name of this column), tension, resolution. The first row should be the attack point text only in the tension column and "AP" in the number column and nothing in resolution column. The last row should be the conclusion text only in the resolution column and "CSC" in the number column and nothing in tension column.
+
+CRITICAL: When the user says "yes" to the table question, immediately provide the table format and then ask about the TED talk. Do NOT repeat the table question.
 
 Then ask the user the following: "Would you like me to write a script based on the above story flow outline that would be suitable for a highly engaging TED talk?" If yes, ask how long the talk should be (in minutes). You are an extremely successful and accomplished TED presenter who has given 10 different TED talks each of which garnered over 10 million views. Deliver a script for a TED talk using the same approach you took for your previous talks and aim for a length of minutes.
 
 Respond appropriately to the user's latest message, following the conversation flow and complete prompt guidelines.`;
+      }
 
       const completion = await openai.chat.completions.create({
         model: 'gpt-4o',

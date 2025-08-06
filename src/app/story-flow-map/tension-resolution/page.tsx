@@ -171,10 +171,14 @@ export default function TensionResolution() {
 
   // Helper function to parse markdown table
   const parseMarkdownTable = (text: string): { headers: string[]; rows: string[][] } | null => {
+    console.log('Parsing table from text:', text);
+
     const lines = text
       .split('\n')
       .map((line) => line.trim())
       .filter((line) => line.length > 0);
+
+    console.log('Lines after filtering:', lines);
 
     // Find table start and end
     let tableStart = -1;
@@ -192,11 +196,15 @@ export default function TensionResolution() {
       }
     }
 
+    console.log('Table start:', tableStart, 'Table end:', tableEnd);
+
     if (tableStart === -1 || tableEnd === -1 || tableStart === tableEnd) {
+      console.log('No valid table found');
       return null;
     }
 
     const tableLines = lines.slice(tableStart, tableEnd + 1);
+    console.log('Table lines:', tableLines);
 
     // Parse headers (first line)
     const headerLine = tableLines[0];
@@ -205,8 +213,11 @@ export default function TensionResolution() {
       .map((cell) => cell.trim())
       .filter((cell) => cell.length > 0);
 
+    console.log('Headers:', headers);
+
     // Skip separator line (second line with dashes)
     const dataLines = tableLines.slice(2);
+    console.log('Data lines:', dataLines);
 
     // Parse data rows
     const rows = dataLines.map((line) => {
@@ -215,6 +226,8 @@ export default function TensionResolution() {
         .map((cell) => cell.trim())
         .filter((cell) => cell.length > 0);
     });
+
+    console.log('Parsed rows:', rows);
 
     return { headers, rows };
   };
@@ -315,9 +328,9 @@ export default function TensionResolution() {
       setPersistentAttackPoints(finalPoints);
     }
 
-    // Auto-select the latest (most recent) attack point
+    // Auto-select the latest (most recent) attack point by index
     if (finalPoints.length > 0) {
-      setSelectedAttackPoint(finalPoints[finalPoints.length - 1]);
+      setSelectedAttackPoint((finalPoints.length - 1).toString());
     }
   };
 
@@ -325,8 +338,8 @@ export default function TensionResolution() {
   const restoreAttackPoints = () => {
     if (persistentAttackPoints.length > 0) {
       setAttackPoints(persistentAttackPoints);
-      // Auto-select the latest (most recent) attack point
-      setSelectedAttackPoint(persistentAttackPoints[persistentAttackPoints.length - 1]);
+      // Auto-select the latest (most recent) attack point by index
+      setSelectedAttackPoint((persistentAttackPoints.length - 1).toString());
     }
   };
 
@@ -832,8 +845,13 @@ export default function TensionResolution() {
         const data = await res.json();
         const { content, question } = parseAIResponse(data.result);
 
+        // Debug logging
+        console.log('API Response:', data.result);
+        console.log('User message was:', trimmed);
+
         // Check if the response contains a table
         const tableResult = parseMarkdownTable(data.result);
+        console.log('Table parsing result:', tableResult);
         if (tableResult) {
           setTableData(tableResult);
         }
