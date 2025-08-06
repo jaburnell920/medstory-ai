@@ -7,23 +7,65 @@
    - Network:      http://0.0.0.0:12000
 
  ✓ Starting...
- ✓ Compiled middleware in 255ms
- ✓ Ready in 1177ms
+ ✓ Compiled middleware in 247ms
+ ✓ Ready in 1162ms
  ⚠ Webpack is configured while Turbopack is not, which may cause problems.
  ⚠ See instructions if you need to configure Turbopack:
   https://nextjs.org/docs/app/api-reference/next-config-js/turbo
 
  ○ Compiling /story-flow-map/tension-resolution ...
- ✓ Compiled /story-flow-map/tension-resolution in 2.5s
- GET /story-flow-map/tension-resolution 200 in 2819ms
+ ✓ Compiled /story-flow-map/tension-resolution in 2.6s
+ GET /story-flow-map/tension-resolution 200 in 2903ms
  ⚠ Cross origin request detected from work-1-bzkqcmrmydwjutaw.prod-runtime.all-hands.dev to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
 Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
  ○ Compiling /api/tension-resolution ...
- ✓ Compiled /api/tension-resolution in 925ms
- POST /api/tension-resolution 200 in 1000ms
- POST /api/tension-resolution 200 in 27ms
+ ✓ Compiled /api/tension-resolution in 879ms
+ POST /api/tension-resolution 200 in 954ms
+API Route - User message: move on to creating tension-resolution points
+API Route - Conversation history length: 8
+Move on condition triggered
+ POST /api/tension-resolution 200 in 25ms
+API Route - User message: short
+API Route - Conversation history length: 10
+Short narrative condition triggered
  POST /api/tension-resolution 200 in 26ms
- POST /api/tension-resolution 200 in 24ms
- ✓ Compiled in 151ms
- ✓ Compiled in 146ms
- ✓ Compiled in 122ms
+API Route - User message: yes
+API Route - Conversation history length: 12
+Table condition triggered!
+User message: yes
+Conversation history: [
+  {
+    role: 'assistant',
+    content: 'Do you want to use the currently selected Core Story Concept or provide a new one?'
+  },
+  { role: 'user', content: 'Use the currently selected one' },
+  {
+    role: 'assistant',
+    content: 'No saved Core Story Concept found. Please create a new one.'
+  },
+  {
+    role: 'user',
+    content: 'Lisinopril remains a cornerstone in hypertension management, offering unparalleled efficacy, safety, and renal protection that newer drugs cannot match.'
+  },
+  { role: 'assistant', content: 'Who is your audience?' },
+  { role: 'user', content: 'Cardiologists' },
+  {
+    role: 'assistant',
+    content: 'Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?'
+  },
+  {
+    role: 'user',
+    content: 'move on to creating tension-resolution points'
+  },
+  {
+    role: 'assistant',
+    content: 'Would you like a short narrative (3-5 tension-resolution points), full narrative (8-12 tension-resolution points), or would you like to specify the number of tension-resolution points?'
+  },
+  { role: 'user', content: 'short' },
+  {
+    role: 'assistant',
+    content: 'Would you like the tension-resolution points put into a table format?'
+  },
+  { role: 'user', content: 'yes' }
+]
+ POST /api/tension-resolution 200 in 26ms
