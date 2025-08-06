@@ -9,13 +9,8 @@ const openai = process.env.OPENAI_API_KEY
 
 export async function POST(request: NextRequest) {
   try {
-    const {
-      coreStoryConcept,
-      audience,
-      action,
-      userMessage,
-      conversationHistory,
-    } = await request.json();
+    const { coreStoryConcept, audience, action, userMessage, conversationHistory } =
+      await request.json();
 
     if (action === 'start') {
       // Mock response for testing when no OpenAI API key is available
@@ -176,8 +171,6 @@ Please start with the Attack Point phase.`,
       // Mock response for testing when no OpenAI API key is available
       if (!openai) {
         let mockResult = '';
-        
-
 
         if (
           userMessage.toLowerCase().includes('move on') ||
@@ -229,16 +222,23 @@ References
 2. Lee DW, et al. T cells expressing CD19 chimeric antigen receptors for acute lymphoblastic leukaemia in children and young adults. Lancet. 2015;385:517-528.
 
 Would you like the tension-resolution points put into a table format?`;
-        } else if (userMessage.toLowerCase().includes('table') || 
-                   userMessage.toLowerCase().includes('yes')) {
+        } else if (
+          userMessage.toLowerCase().includes('table') ||
+          userMessage.toLowerCase().includes('yes')
+        ) {
           // Check if this is a response to a table question
-          const lastAssistantMessage = conversationHistory
-            .filter((msg: any) => msg.role === 'assistant')
-            .pop()?.content || '';
-          
+          const lastAssistantMessage =
+            conversationHistory
+              .filter(
+                (msg: { role: 'user' | 'assistant'; content: string }) => msg.role === 'assistant'
+              )
+              .pop()?.content || '';
+
           // If user said "yes" and the last assistant message was about tables, show table
-          if (userMessage.toLowerCase().includes('yes') && 
-              lastAssistantMessage.toLowerCase().includes('table')) {
+          if (
+            userMessage.toLowerCase().includes('yes') &&
+            lastAssistantMessage.toLowerCase().includes('table')
+          ) {
             // Show table format
           } else if (userMessage.toLowerCase().includes('table')) {
             // User explicitly requested table
