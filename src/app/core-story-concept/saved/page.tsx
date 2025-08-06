@@ -54,7 +54,7 @@ export default function SavedCoreStoryConceptPage() {
             alt="Core Story Chat"
             width={72}
             height={72}
-            className="w-18 h-18"
+            className="w-28 h-32"
           />
         }
         sectionName="Core Story Concept"
@@ -75,7 +75,7 @@ export default function SavedCoreStoryConceptPage() {
           alt="Core Story Chat"
           width={72}
           height={72}
-          className="w-18 h-18"
+          className="w-28 h-32"
         />
       }
       sectionName="Core Story Concept"

@@ -73,7 +73,7 @@ export default function SavedTensionResolutionPage() {
             alt="Story Flow Map"
             width={72}
             height={72}
-            className="w-18 h-18"
+            className="w-28 h-32"
           />
         }
         sectionName="Story Flow Map"
@@ -94,7 +94,7 @@ export default function SavedTensionResolutionPage() {
           alt="Story Flow Map"
           width={72}
           height={72}
-          className="w-18 h-18"
+          className="w-28 h-32"
         />
       }
       sectionName="Story Flow Map"
@@ -146,7 +146,10 @@ export default function SavedTensionResolutionPage() {
                       Selected Attack Point #{item.selectedAttackPoint.index + 1}
                     </h3>
                     <pre className="text-gray-800 whitespace-pre-wrap font-sans text-sm">
-                      {item.selectedAttackPoint.content.replace(/^\*{0,2}Attack Point #\d+\*{0,2}:?\s*\n?/i, '')}
+                      {item.selectedAttackPoint.content.replace(
+                        /^\*{0,2}Attack Point #\d+\*{0,2}:?\s*\n?/i,
+                        ''
+                      )}
                     </pre>
                   </div>
                 </div>

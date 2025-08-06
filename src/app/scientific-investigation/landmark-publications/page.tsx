@@ -280,7 +280,7 @@ export default function LandmarkPublicationsPage() {
           alt="Core Story Chat"
           width={90}
           height={90}
-          className="w-24 h-24"
+          className="w-28 h-32"
         />
       }
       sectionName="Scientific Investigation"

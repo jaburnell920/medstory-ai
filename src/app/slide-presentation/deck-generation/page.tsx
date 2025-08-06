@@ -698,7 +698,7 @@ When creating the Powerpoint file for downloading:
           alt="Core Story Chat"
           width={72}
           height={72}
-          className="w-18 h-18"
+          className="w-26 h-30"
         />
       }
       sectionName="MEDSTORY Slide Deck"

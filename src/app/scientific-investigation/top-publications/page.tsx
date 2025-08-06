@@ -68,7 +68,7 @@ export default function TopPublicationsPage() {
     try {
       // Skip the first 8 messages which are the expert info collection
       const interviewMessages = interviewStarted ? messages.slice(8) : messages;
-      
+
       const res = await fetch('/api/expert-interview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -134,7 +134,7 @@ export default function TopPublicationsPage() {
         'Collaboration between researchers and clinicians is crucial for advancement',
         'Future directions include AI-assisted diagnosis and treatment planning',
       ];
-      
+
       const formattedKeyPoints: KeyPoint[] = mockKeyPoints.map(
         (content: string, index: number): KeyPoint => ({
           id: `keypoint-${Date.now()}-${index}`,
@@ -221,11 +221,12 @@ export default function TopPublicationsPage() {
       input.toLowerCase().includes('interview complete');
 
     // Check if this is a response to the highlight extraction question
-    const isHighlightResponse = awaitingHighlightResponse && 
-      (input.toLowerCase().includes('yes') || 
-       input.toLowerCase().includes('no') ||
-       input.toLowerCase().includes('extract') ||
-       input.toLowerCase().includes('highlight'));
+    const isHighlightResponse =
+      awaitingHighlightResponse &&
+      (input.toLowerCase().includes('yes') ||
+        input.toLowerCase().includes('no') ||
+        input.toLowerCase().includes('extract') ||
+        input.toLowerCase().includes('highlight'));
 
     if (!interviewStarted) {
       // First response - collect expert info
@@ -290,30 +291,42 @@ export default function TopPublicationsPage() {
       setLoading(true);
       setAwaitingHighlightResponse(false);
 
-      const userWantsHighlights = input.toLowerCase().includes('yes') || 
-                                  input.toLowerCase().includes('extract');
+      const userWantsHighlights =
+        input.toLowerCase().includes('yes') || input.toLowerCase().includes('extract');
 
       if (userWantsHighlights) {
         // Extract highlights
         try {
           await handleExtractHighlights();
-          setMessages([...newMessages, { 
-            role: 'assistant', 
-            content: 'I\'ve extracted the key medical highlights from our interview. You can see them on the right side of the screen. Each highlight includes a checkbox so you can select the ones most relevant for your educational program.' 
-          }]);
+          setMessages([
+            ...newMessages,
+            {
+              role: 'assistant',
+              content:
+                "I've extracted the key medical highlights from our interview. You can see them on the right side of the screen. Each highlight includes a checkbox so you can select the ones most relevant for your educational program.",
+            },
+          ]);
         } catch (err) {
           console.error('Error extracting highlights:', err);
-          setMessages([...newMessages, { 
-            role: 'assistant', 
-            content: 'I apologize, but I encountered an error while extracting the highlights. Please try again.' 
-          }]);
+          setMessages([
+            ...newMessages,
+            {
+              role: 'assistant',
+              content:
+                'I apologize, but I encountered an error while extracting the highlights. Please try again.',
+            },
+          ]);
         }
       } else {
         // User doesn't want highlights
-        setMessages([...newMessages, { 
-          role: 'assistant', 
-          content: 'No problem! Thank you again for the engaging interview. Best of luck with your educational program!' 
-        }]);
+        setMessages([
+          ...newMessages,
+          {
+            role: 'assistant',
+            content:
+              'No problem! Thank you again for the engaging interview. Best of luck with your educational program!',
+          },
+        ]);
       }
       setLoading(false);
     } else {
@@ -365,7 +378,7 @@ export default function TopPublicationsPage() {
           alt="Core Story Chat"
           width={72}
           height={72}
-          className="w-18 h-18"
+          className="w-28 h-32"
         />
       }
       sectionName="Stakeholder Interviews"
@@ -392,8 +405,8 @@ export default function TopPublicationsPage() {
               awaitingHighlightResponse
                 ? 'Type "yes" to extract highlights or "no" to skip...'
                 : interviewStarted
-                ? 'Ask your question... (type "end interview" when finished)'
-                : 'Enter your response...'
+                  ? 'Ask your question... (type "end interview" when finished)'
+                  : 'Enter your response...'
             }
             removeExpertPrefix={true}
             onReset={handleReset}
