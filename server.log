@@ -79,3 +79,39 @@ Conversation history: [
  POST /api/tension-resolution 200 in 25ms
  POST /api/tension-resolution 200 in 28ms
  ✓ Compiled in 139ms
+ GET / 200 in 52ms
+ GET / 200 in 54ms
+ GET / 200 in 51ms
+ GET / 200 in 46ms
+API Route Debug:
+- User message: yes
+- Conversation history length: 12
+- Last assistant message: yes
+TABLE CONDITION TRIGGERED!
+- User said yes: true
+- Found table in history: true
+ POST /api/tension-resolution 200 in 71ms
+ ✓ Compiled in 140ms
+ ✓ Compiled in 145ms
+ GET /story-flow-map/tension-resolution 200 in 262ms
+ POST /api/tension-resolution 200 in 25ms
+API Route Debug:
+- User message: move on
+- Conversation history length: 8
+- Last assistant message: move on
+ POST /api/tension-resolution 200 in 30ms
+API Route Debug:
+- User message: short
+- Conversation history length: 10
+- Last assistant message: short
+ POST /api/tension-resolution 200 in 25ms
+API Route Debug:
+- User message: yes
+- Conversation history length: 12
+- Last assistant message: yes
+TABLE CONDITION TRIGGERED!
+- User said yes: true
+- Found table in history: true
+ POST /api/tension-resolution 200 in 28ms
+ ✓ Compiled in 137ms
+ ✓ Compiled in 140ms

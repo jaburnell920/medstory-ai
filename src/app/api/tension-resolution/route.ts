@@ -176,6 +176,8 @@ Please start with the Attack Point phase.`,
       // Mock response for testing when no OpenAI API key is available
       if (!openai) {
         let mockResult = '';
+        
+
 
         if (
           userMessage.toLowerCase().includes('move on') ||
@@ -231,7 +233,8 @@ Would you like the tension-resolution points put into a table format?`;
                    (userMessage.toLowerCase().includes('yes') && 
                     conversationHistory.some((msg: any) => 
                       msg.role === 'assistant' && 
-                      msg.content.toLowerCase().includes('table format')))) {
+                      msg.content.toLowerCase().includes('table')))) {
+
           mockResult = `| # | Tension | Resolution |
 |---|---------|------------|
 | AP | In the pediatric ICU, 8-year-old Emma's leukemia cells had survived every conventional treatment—chemotherapy, radiation, even a bone marrow transplant. Her CD19+ B-cells, once targets for therapy, had become invisible to traditional treatments. As her parents watched her condition deteriorate, her oncologist prepared to discuss palliative care. But hidden within Emma's own immune system lay engineered T-cells, reprogrammed with chimeric antigen receptors, waiting to launch a precision strike that would redefine the boundaries between life and death in pediatric oncology. | |
