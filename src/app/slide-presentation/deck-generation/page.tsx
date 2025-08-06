@@ -27,9 +27,9 @@ export default function DeckGenerationPage() {
   ]);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState('');
-  const [showFinalMessage, setShowFinalMessage] = useState(false);
   const [initialCheckComplete, setInitialCheckComplete] = useState(false);
   const [hasRequiredConcepts, setHasRequiredConcepts] = useState(false);
+  const [generationFailed, setGenerationFailed] = useState(false);
   const resultRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -180,15 +180,173 @@ export default function DeckGenerationPage() {
     setTimeout(checkRequiredConcepts, 1000);
   }, []);
 
+  const handleRetry = async () => {
+    setLoading(true);
+    setGenerationFailed(false);
+    setResult('');
+
+    // Get the stored concepts and answers
+    const coreStoryConceptData =
+      localStorage.getItem('selectedCoreStoryConceptData') ||
+      localStorage.getItem('coreStoryConcept') ||
+      localStorage.getItem('selectedCoreStoryConcept');
+
+    let coreStoryConcept = '';
+    if (coreStoryConceptData) {
+      try {
+        const conceptData = JSON.parse(coreStoryConceptData);
+        if (conceptData && typeof conceptData === 'object' && conceptData.content) {
+          coreStoryConcept = conceptData.content;
+        } else if (typeof conceptData === 'string') {
+          coreStoryConcept = conceptData;
+        }
+      } catch {
+        if (typeof coreStoryConceptData === 'string') {
+          coreStoryConcept = coreStoryConceptData;
+        }
+      }
+    }
+
+    // Get story flow outline data
+    const storyFlowData = localStorage.getItem('storyFlowData');
+    const attackPointsData = localStorage.getItem('attackPoints');
+    const tensionResolutionData = localStorage.getItem('tensionResolutionPoints');
+    const savedTensionResolutionData = localStorage.getItem('savedTensionResolutionData');
+
+    let storyFlowOutline = '';
+
+    // Compile story flow outline from available data
+    if (storyFlowData) {
+      try {
+        const flowData = JSON.parse(storyFlowData);
+        if (flowData) {
+          storyFlowOutline += JSON.stringify(flowData, null, 2);
+        }
+      } catch {
+        storyFlowOutline += storyFlowData;
+      }
+    }
+
+    if (attackPointsData) {
+      try {
+        const attackPoints = JSON.parse(attackPointsData);
+        if (attackPoints && attackPoints.length > 0) {
+          storyFlowOutline += '\n\nAttack Points:\n' + JSON.stringify(attackPoints, null, 2);
+        }
+      } catch {
+        if (typeof attackPointsData === 'string' && attackPointsData.trim().length > 0) {
+          storyFlowOutline += '\n\nAttack Points:\n' + attackPointsData;
+        }
+      }
+    }
+
+    if (tensionResolutionData) {
+      try {
+        const tensionResolution = JSON.parse(tensionResolutionData);
+        if (tensionResolution && tensionResolution.length > 0) {
+          storyFlowOutline +=
+            '\n\nTension Resolution Points:\n' + JSON.stringify(tensionResolution, null, 2);
+        }
+      } catch {
+        if (typeof tensionResolutionData === 'string' && tensionResolutionData.trim().length > 0) {
+          storyFlowOutline += '\n\nTension Resolution Points:\n' + tensionResolutionData;
+        }
+      }
+    }
+
+    if (savedTensionResolutionData) {
+      try {
+        const savedTensionResolution = JSON.parse(savedTensionResolutionData);
+        if (savedTensionResolution && savedTensionResolution.length > 0) {
+          storyFlowOutline +=
+            '\n\nSaved Tension Resolution Data:\n' +
+            JSON.stringify(savedTensionResolution, null, 2);
+        }
+      } catch {
+        if (
+          typeof savedTensionResolutionData === 'string' &&
+          savedTensionResolutionData.trim().length > 0
+        ) {
+          storyFlowOutline += '\n\nSaved Tension Resolution Data:\n' + savedTensionResolutionData;
+        }
+      }
+    }
+
+    // Create the detailed prompt for the AI
+    const detailedPrompt = `
+I want you to act as a world-class expert in:
+ generative AI prompting
+ PowerPoint design
+ live presentation coaching
+ TED Talk-style speaking
+ narrative storytelling structure
+ cognitive and behavioral psychology
+ persuasive science/business communication
+ visual data storytelling and infographic design
+ stoic philosophy for clarity, simplicity, and purpose
+
+Based on the following information, generate a complete, persuasive, memorable PowerPoint presentation outline:
+
+Core Story Concept: ${coreStoryConcept}
+Story Flow Outline: ${storyFlowOutline}
+
+1. Target Audience: ${answers[0]}
+2. Presentation Length: ${answers[1]} minutes
+3. Maximum Slides: ${answers[2]}
+4. Desired Tone: ${answers[3]}
+5. Visual Level: ${answers[4]}
+6. Speaker Notes: ${answers[5]}
+
+Each slide should be formatted in sections which are separated by blank lines. First section is TEXT followed by either bullets or floating text. Second section is VISUALS followed by detailed description of the visuals. Third section is SPEAKER NOTES which should be between 25 and 150 words. Fourth section is REFERENCES with the numbered references. Insert blank lines after the last line of each section. Add a separator line after each slide.
+ Slide title - should express the main idea of the slide fully but in less than 15 words. Do not include the words "tension" "tension point" "resolution" or "resolution point" in the slides title.
+ Slide text - either bullets (maximum 5) or floating text (maximum 2). Make sure all text is supported by references that are listed in the footnote.
+ Suggested visuals - make the visual directly associate with one of the bullets or with one of the floating text. Make sure that all information presented in the visuals is supported by references that are listed in the footnote.
+ Speaker notes (if user indicated to include these in questions above). Speaker notes should be conversational and between 50 and 150 words. These should go into details if necessary to fully explain all the text and visuals on the slide but without going into excessive detail.
+ Footnote references - number these sequentially and use the following format: Smith E, et al. N Eng J Med. 2024;345:50-61. For each slide, number the references starting at 1. It's OK to have the same reference on different slides in different positions in the reference list.
+ If a story flow map is provided, use this for the narrative arc of the presentation deck.
+ If a story flow map is not provided, create narrative arc that includes a compelling, curiosity-generating attack point followed by multiple tension points each of which is resolved and then smoothly transitions to next tension point, and concludes with a summary slide containing the big idea of the presentation, delivers insight, and ends with clarity and emotional payoff
+ Generate the entire outline and do not stop midway to get user input
+ Design the presentation to:
+ Grab attention in the first 30 seconds
+ Use visual and emotional anchors for memory retention
+ Align with scientific principles of attention, motivation, and persuasion
+ Make the talk feel valuable, novel, and easy to share with others
+When creating the Powerpoint file for downloading:
+ Use all the slides in the outline
+ Make the aspect ratio of the slides 16:9
+ Use the outline exactly as shown.
+ Insert the speaker notes into the notes section of each slide the PP file
+    `;
+
+    try {
+      const res = await fetch('/api/deck-generation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          answers: answers,
+          detailedPrompt: detailedPrompt,
+        }),
+      });
+      const data = await res.json();
+      setResult(data.result);
+    } catch (err) {
+      toast.error('Something went wrong.');
+      console.error(err);
+      setGenerationFailed(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleReset = () => {
     setStep(0);
     setAnswers([]);
     setInput('');
     setLoading(false);
     setResult('');
-    setShowFinalMessage(false);
     setInitialCheckComplete(false);
     setHasRequiredConcepts(false);
+    setGenerationFailed(false);
     setMessages([
       {
         role: 'assistant',
@@ -343,11 +501,17 @@ export default function DeckGenerationPage() {
 
     if (step < questions.length - 1) {
       setAnswers([...answers, input]);
-      setMessages([
-        ...newMessages,
-        { role: 'assistant' as const, content: `${step + 2}. ${questions[step + 1]}` },
-      ]);
-      setStep(step + 1);
+      setLoading(true);
+
+      // Add a small delay to show the thinking animation
+      setTimeout(() => {
+        setMessages([
+          ...newMessages,
+          { role: 'assistant' as const, content: `${step + 2}. ${questions[step + 1]}` },
+        ]);
+        setStep(step + 1);
+        setLoading(false);
+      }, 500);
     } else {
       setAnswers([...answers, input]);
       setMessages([
@@ -358,7 +522,6 @@ export default function DeckGenerationPage() {
             'Thanks for that info. Give me a moment and your presentation outline will be ready shortly',
         },
       ]);
-      setShowFinalMessage(true);
       setLoading(true);
 
       const updatedAnswers = [...answers, input];
@@ -516,6 +679,7 @@ When creating the Powerpoint file for downloading:
       } catch (err) {
         toast.error('Something went wrong.');
         console.error(err);
+        setGenerationFailed(true);
         setMessages((prev) => [
           ...prev,
           { role: 'assistant', content: 'Failed to generate presentation outline.' },
@@ -549,10 +713,22 @@ When creating the Powerpoint file for downloading:
             setInput={setInput}
             onSubmit={handleSubmit}
             loading={loading}
-            showInput={!showFinalMessage && hasRequiredConcepts && initialCheckComplete}
+            showInput={hasRequiredConcepts && initialCheckComplete}
             placeholder="Type your response..."
             onReset={handleReset}
           />
+          {/* Retry button for failed generation */}
+          {generationFailed && (
+            <div className="mt-4 flex justify-center">
+              <button
+                onClick={handleRetry}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                disabled={loading}
+              >
+                Retry Generation
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Result Section - Right Side - Fixed */}
