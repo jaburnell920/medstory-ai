@@ -39,14 +39,14 @@ export default function CoreStoryConcept() {
   useEffect(() => {
     // Always start with concept #1 for a new session
     setNextConceptNumber(1);
-    
+
     // Load saved concepts from localStorage only for the saved page functionality
     // Don't display them immediately on page load - they should only appear after generation
     const savedConcepts = localStorage.getItem('coreStoryConceptsData');
 
     // Clear any existing concepts data to ensure we start fresh
     localStorage.removeItem('coreStoryConceptsData');
-    
+
     // We don't need to set the next concept number based on saved concepts anymore
     // This ensures we always start with #1
 
@@ -600,16 +600,16 @@ export default function CoreStoryConcept() {
                                 )
                                 // Ensure every CSC has a title with consistent formatting
                                 .replace(
-                                  /^Core Story Concept Candidate #\d+.*$/g,
+                                  /^Core Story Concept Candidate #\d+.*$/gim,
                                   () =>
-                                    `<div class="font-bold text-blue-800 text-lg mb-4">Core Story Concept Candidate #${concept.conceptNumber}</div>`
+                                    `<div class="font-bold text-blue-800 text-lg mb-4">Core Story Concept #${concept.conceptNumber}</div>`
                                 )
                                 // Add title if missing
                                 .replace(
                                   /^(?!<div class="font-bold text-blue-800 text-lg mb-4">Core Story Concept Candidate)/,
                                   () => {
                                     if (!concept.content.includes('Core Story Concept Candidate')) {
-                                      return `<div class="font-bold text-blue-800 text-lg mb-4">Core Story Concept Candidate #${concept.conceptNumber}</div>\n`;
+                                      return `<div class="font-bold text-blue-800 text-lg mb-4">Core Story Concept Candidate b#${concept.conceptNumber}</div>\n`;
                                     }
                                     return '';
                                   }
