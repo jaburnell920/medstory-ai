@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
       if (!openai) {
         const mockResult = `Attack Point #1
 
-In the pediatric ICU, 8-year-old Emma's leukemia cells had survived every conventional treatment—chemotherapy, radiation, even a bone marrow transplant. Her CD19+ B-cells, once targets for therapy, had become invisible to traditional treatments. As her parents watched her condition deteriorate, her oncologist prepared to discuss palliative care. But hidden within Emma's own immune system lay engineered T-cells, reprogrammed with chimeric antigen receptors, waiting to launch a precision strike that would redefine the boundaries between life and death in pediatric oncology.
+In the pediatric ICU, 8-year-old Emma's leukemia cells had survived every conventional treatment including chemotherapy, radiation, even a bone marrow transplant. Her CD19+ B-cells, once targets for therapy, had become invisible to traditional treatments. As her parents watched her condition deteriorate, her oncologist prepared to discuss palliative care. But hidden within Emma's own immune system lay engineered T-cells, reprogrammed with chimeric antigen receptors, waiting to launch a precision strike that would redefine the boundaries between life and death in pediatric oncology.
 
 Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?`;
         return NextResponse.json({ result: mockResult });
@@ -188,28 +188,43 @@ Please start with the Attack Point phase.`,
         ) {
           mockResult = `Attack Point #2
 
-In the cardiac catheterization lab, Dr. Sarah Chen stared at the angiogram of her 52-year-old patient—three stents, optimal medical therapy, yet another acute coronary syndrome just six months later. The culprit lesion showed no significant stenosis, but the plaque was angry, inflamed, and primed to rupture again. Traditional lipid-lowering had failed to silence the inflammatory cascade driving his recurrent events. But targeting the macrophages within the plaque itself—the very cells orchestrating this inflammatory storm—represented an entirely new battlefield in the war against cardiovascular death.
+In the cardiac catheterization lab, Dr. Sarah Chen stared at the angiogram of her 52-year-old patient with three stents, optimal medical therapy, yet another acute coronary syndrome just six months later. The culprit lesion showed no significant stenosis, but the plaque was angry, inflamed, and primed to rupture again. Traditional lipid-lowering had failed to silence the inflammatory cascade driving his recurrent events. But targeting the macrophages within the plaque itself, the very cells orchestrating this inflammatory storm, represented an entirely new battlefield in the war against cardiovascular death.
 
 Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?`;
         } else if (userMessage.toLowerCase().includes('short')) {
-          mockResult = `**Tension-Resolution #1:** Immune System Failure
-Tension: Traditional chemotherapy had failed Emma repeatedly, with each relapse more aggressive than the last, leaving her immune system devastated and her family desperate.
-Resolution: CAR-T cell therapy offered a revolutionary approach—reprogramming her own T-cells to recognize and destroy the CD19+ leukemia cells that had evaded conventional treatment.
+          mockResult = `Tension-Resolution #1
 
-**Tension-Resolution #2:** Engineering Hope
-Tension: The complex manufacturing process required extracting Emma's T-cells, genetically modifying them in specialized laboratories, and expanding them over weeks while her condition deteriorated.
-Resolution: Advanced viral vectors successfully delivered the chimeric antigen receptor genes, creating millions of engineered cells capable of sustained anti-leukemia activity.
+<strong>Immune System Failure</strong>
 
-**Tension-Resolution #3:** The Cellular Storm
-Tension: Within days of infusion, Emma developed severe cytokine release syndrome as her modified T-cells launched an unprecedented immune assault against her cancer.
-Resolution: Careful management with tocilizumab and supportive care controlled the inflammatory response while preserving the therapeutic effect of the CAR-T cells.
+Traditional chemotherapy had failed Emma repeatedly, with each relapse more aggressive than the last, leaving her immune system devastated and her family desperate.
 
-**Conclusion**
+CAR-T cell therapy offered a revolutionary approach reprogramming her own T-cells to recognize and destroy the CD19+ leukemia cells that had evaded conventional treatment.
+
+Tension-Resolution #2
+
+<strong>Engineering Hope</strong>
+
+The complex manufacturing process required extracting Emma's T-cells, genetically modifying them in specialized laboratories, and expanding them over weeks while her condition deteriorated.
+
+Advanced viral vectors successfully delivered the chimeric antigen receptor genes, creating millions of engineered cells capable of sustained anti-leukemia activity.
+
+Tension-Resolution #3
+
+<strong>The Cellular Storm</strong>
+
+Within days of infusion, Emma developed severe cytokine release syndrome as her modified T-cells launched an unprecedented immune assault against her cancer.
+
+Careful management with tocilizumab and supportive care controlled the inflammatory response while preserving the therapeutic effect of the CAR-T cells.
+
+Conclusion
+
 Emma achieved complete remission within 30 days, demonstrating how personalized cellular immunotherapy can transform outcomes in relapsed/refractory B-cell ALL, offering hope where conventional treatments have failed.
 
 References
-1. Maude SL, et al. Tisagenlecleucel in children and young adults with B-cell lymphoblastic leukemia. *N Engl J Med.* 2018;378:439-448.
-2. Lee DW, et al. T cells expressing CD19 chimeric antigen receptors for acute lymphoblastic leukaemia in children and young adults. *Lancet.* 2015;385:517-528.
+
+1. Maude SL, et al. Tisagenlecleucel in children and young adults with B-cell lymphoblastic leukemia. N Engl J Med. 2018;378:439-448.
+
+2. Lee DW, et al. T cells expressing CD19 chimeric antigen receptors for acute lymphoblastic leukaemia in children and young adults. Lancet. 2015;385:517-528.
 
 Would you like the tension-resolution points put into a table format?`;
         } else if (userMessage.toLowerCase().includes('table')) {
