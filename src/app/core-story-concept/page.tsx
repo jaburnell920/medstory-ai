@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import PageLayout from '@/app/components/PageLayout';
@@ -34,6 +34,16 @@ export default function CoreStoryConcept() {
   const [nextConceptNumber, setNextConceptNumber] = useState<number>(1);
   const [currentlyModifyingConcept, setCurrentlyModifyingConcept] =
     useState<CoreStoryConcept | null>(null);
+
+  // Ref for auto-scrolling the results section
+  const resultsScrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when new content is generated
+  useEffect(() => {
+    if (resultsScrollRef.current && concepts.length > 0) {
+      resultsScrollRef.current.scrollTop = resultsScrollRef.current.scrollHeight;
+    }
+  }, [concepts]);
 
   // Load saved concepts on component mount and clear generated results on page refresh
   useEffect(() => {
@@ -169,9 +179,11 @@ export default function CoreStoryConcept() {
     if (
       result &&
       messages.length > 0 &&
-      (messages[messages.length - 1].content.includes('Would you like to modify this Core Story Concept') ||
-       messages[messages.length - 1].content.includes("I've created a new Core Story Concept") ||
-       messages[messages.length - 1].content.includes("I've modified the Core Story Concept"))
+      (messages[messages.length - 1].content.includes(
+        'Would you like to modify this Core Story Concept'
+      ) ||
+        messages[messages.length - 1].content.includes("I've created a new Core Story Concept") ||
+        messages[messages.length - 1].content.includes("I've modified the Core Story Concept"))
     ) {
       setLoading(true);
 
@@ -276,7 +288,9 @@ export default function CoreStoryConcept() {
     if (
       result &&
       messages.length > 0 &&
-      messages[messages.length - 1].content.includes('Would you like to see a table with all the Core Story Concept Candidates?')
+      messages[messages.length - 1].content.includes(
+        'Would you like to see a table with all the Core Story Concept Candidates?'
+      )
     ) {
       if (trimmed.toLowerCase().includes('yes')) {
         // Generate table content from concepts
@@ -565,7 +579,7 @@ export default function CoreStoryConcept() {
                 </div>
               </div>
 
-              <div className="space-y-4 overflow-y-auto flex-1">
+              <div ref={resultsScrollRef} className="space-y-4 overflow-y-auto flex-1">
                 {concepts.map((concept) => (
                   <div
                     key={concept.id}

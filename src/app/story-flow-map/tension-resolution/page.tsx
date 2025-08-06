@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import PageLayout from '@/app/components/PageLayout';
@@ -17,6 +17,7 @@ export default function TensionResolution() {
   const [conclusion, setConclusion] = useState('');
   const [references, setReferences] = useState('');
   const [conversationStarted, setConversationStarted] = useState(false);
+  const [tableData, setTableData] = useState<{ headers: string[]; rows: string[][] } | null>(null);
 
   // State for selections and saving
   const [selectedAttackPoint, setSelectedAttackPoint] = useState<string>('');
@@ -27,6 +28,24 @@ export default function TensionResolution() {
   });
 
   const [messages, setMessages] = useState<{ role: 'assistant' | 'user'; content: string }[]>([]);
+
+  // Ref for auto-scrolling the results section
+  const resultsScrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when new content is generated
+  useEffect(() => {
+    if (
+      resultsScrollRef.current &&
+      (attackPoints.length > 0 ||
+        tensionResolutionPoints.length > 0 ||
+        conclusion ||
+        references ||
+        tableData ||
+        result)
+    ) {
+      resultsScrollRef.current.scrollTop = resultsScrollRef.current.scrollHeight;
+    }
+  }, [attackPoints, tensionResolutionPoints, conclusion, references, tableData, result]);
 
   // Initialize messages with core story concept from localStorage
   useEffect(() => {
@@ -74,6 +93,7 @@ export default function TensionResolution() {
     setConversationStarted(false);
     setSelectedAttackPoint('');
     setSelectedTensionPoints(new Set());
+    setTableData(null);
     setContext({
       coreStoryConcept: '',
       audience: '',
@@ -147,6 +167,56 @@ export default function TensionResolution() {
       .trim();
 
     return cleaned;
+  };
+
+  // Helper function to parse markdown table
+  const parseMarkdownTable = (text: string): { headers: string[]; rows: string[][] } | null => {
+    const lines = text
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+
+    // Find table start and end
+    let tableStart = -1;
+    let tableEnd = -1;
+
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].startsWith('|') && lines[i].endsWith('|')) {
+        if (tableStart === -1) {
+          tableStart = i;
+        }
+        tableEnd = i;
+      } else if (tableStart !== -1) {
+        // If we found a table and now hit a non-table line, stop
+        break;
+      }
+    }
+
+    if (tableStart === -1 || tableEnd === -1 || tableStart === tableEnd) {
+      return null;
+    }
+
+    const tableLines = lines.slice(tableStart, tableEnd + 1);
+
+    // Parse headers (first line)
+    const headerLine = tableLines[0];
+    const headers = headerLine
+      .split('|')
+      .map((cell) => cell.trim())
+      .filter((cell) => cell.length > 0);
+
+    // Skip separator line (second line with dashes)
+    const dataLines = tableLines.slice(2);
+
+    // Parse data rows
+    const rows = dataLines.map((line) => {
+      return line
+        .split('|')
+        .map((cell) => cell.trim())
+        .filter((cell) => cell.length > 0);
+    });
+
+    return { headers, rows };
   };
 
   // Helper function to clean tension-resolution points and format titles properly
@@ -668,6 +738,12 @@ export default function TensionResolution() {
           const data = await res.json();
           const { content, question } = parseAIResponse(data.result);
 
+          // Check if the response contains a table
+          const tableResult = parseMarkdownTable(data.result);
+          if (tableResult) {
+            setTableData(tableResult);
+          }
+
           // Parse the content to extract different sections
           const parsedContent = parseContentResponse(data.result);
 
@@ -755,6 +831,12 @@ export default function TensionResolution() {
 
         const data = await res.json();
         const { content, question } = parseAIResponse(data.result);
+
+        // Check if the response contains a table
+        const tableResult = parseMarkdownTable(data.result);
+        if (tableResult) {
+          setTableData(tableResult);
+        }
 
         // Parse the content to extract different sections
         const parsedContent = parseContentResponse(data.result);
@@ -856,6 +938,7 @@ export default function TensionResolution() {
           tensionResolutionPoints.length > 0 ||
           conclusion ||
           references ||
+          tableData ||
           result ? (
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex flex-col">
               <div className="flex justify-between items-center mb-4 flex-shrink-0">
@@ -875,7 +958,7 @@ export default function TensionResolution() {
                 </div>
               </div>
 
-              <div className="space-y-6 overflow-y-auto flex-1">
+              <div ref={resultsScrollRef} className="space-y-6 overflow-y-auto flex-1">
                 {/* Attack Points */}
                 {attackPoints.map((attackPoint, index) => (
                   <div
@@ -956,6 +1039,46 @@ export default function TensionResolution() {
                         )
                         .trim()}
                     </pre>
+                  </div>
+                )}
+
+                {/* Table Display */}
+                {tableData && (
+                  <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                    <h3 className="text-lg font-semibold text-green-800 mb-4">Story Flow Table</h3>
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse border border-gray-300">
+                        <thead>
+                          <tr className="bg-green-100">
+                            {tableData.headers.map((header, index) => (
+                              <th
+                                key={index}
+                                className="border border-gray-300 px-4 py-2 text-left font-semibold text-green-800"
+                              >
+                                {header}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {tableData.rows.map((row, rowIndex) => (
+                            <tr
+                              key={rowIndex}
+                              className={rowIndex % 2 === 0 ? 'bg-white' : 'bg-green-25'}
+                            >
+                              {row.map((cell, cellIndex) => (
+                                <td
+                                  key={cellIndex}
+                                  className="border border-gray-300 px-4 py-2 text-gray-800 align-top"
+                                >
+                                  {cell}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 )}
 
