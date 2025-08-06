@@ -222,7 +222,7 @@ Would you like the tension-resolution points put into a table?`;
           userMessage.toLowerCase().includes('table') ||
           userMessage.toLowerCase().includes('yes')
         ) {
-          // Check if this is a response to a table question
+          // Check if this is a response to a table question or TED talk question
           const lastAssistantMessage =
             conversationHistory
               .filter(
@@ -230,11 +230,19 @@ Would you like the tension-resolution points put into a table?`;
               )
               .pop()?.content || '';
 
+          // Check if user is responding to TED talk question
+          if (
+            userMessage.toLowerCase().includes('yes') &&
+            lastAssistantMessage.toLowerCase().includes('ted talk')
+          ) {
+            mockResult = `How long should the TED talk be (in minutes)?`;
+          }
           // If user said "yes" and the last assistant message was about tables, show table
           // OR if user explicitly requested table
-          if (
+          else if (
             (userMessage.toLowerCase().includes('yes') &&
-              lastAssistantMessage.toLowerCase().includes('table')) ||
+              lastAssistantMessage.toLowerCase().includes('table') &&
+              !lastAssistantMessage.toLowerCase().includes('ted')) ||
             userMessage.toLowerCase().includes('table')
           ) {
             mockResult = `| # | Tension | Resolution |
@@ -250,6 +258,68 @@ Would you like me to write a script based on the above story flow outline that w
             // User said "yes" but not to a table question, handle other cases
             mockResult = `What modifications would you like to make to the Attack Point?`;
           }
+        } else if (
+          // Check if user is providing TED talk duration in mock mode
+          userMessage.match(/\d+/) &&
+          (userMessage.toLowerCase().includes('minute') ||
+            userMessage.toLowerCase().includes('min'))
+        ) {
+          const duration = userMessage.match(/\d+/)?.[0] || '15';
+          mockResult = `# TED Talk Script: "The Silent Revolution in Medicine"
+## Duration: ${duration} minutes
+
+[Walk to center stage, pause, make eye contact with audience]
+
+**Opening Hook (0:00-1:30)**
+
+In the pediatric ICU, 8-year-old Emma's leukemia cells had survived every conventional treatment. [Pause] Chemotherapy, radiation, even a bone marrow transplant. Her CD19+ B-cells had become invisible to traditional treatments. As her parents watched her condition deteriorate, her oncologist prepared to discuss palliative care.
+
+[Move closer to audience]
+
+But hidden within Emma's own immune system lay engineered T-cells, reprogrammed with chimeric antigen receptors, waiting to launch a precision strike that would redefine the boundaries between life and death in pediatric oncology.
+
+**The Problem (1:30-3:00)**
+
+[Gesture to audience]
+
+How many of you have felt that moment? When conventional medicine reaches its limits? When the textbooks fall silent and hope seems to slip away?
+
+This is the story of how we're not just treating disease anymore—we're rewriting the very code of life itself.
+
+**Journey Through Discovery (3:00-${Math.floor(parseInt(duration) * 0.8)}:00)**
+
+[Share personal anecdotes and build tension through each resolution point]
+
+The first breakthrough came when we realized that the problem wasn't our weapons—it was our targeting system...
+
+[Continue with tension-resolution narrative structure]
+
+**The Revelation (${Math.floor(parseInt(duration) * 0.8)}:00-${Math.floor(parseInt(duration) * 0.95)}:00)**
+
+[Build to climactic moment]
+
+What we discovered wasn't just a new treatment. We discovered that we could turn the patient's own immune system into the most sophisticated, personalized medicine ever created.
+
+**Call to Action (${Math.floor(parseInt(duration) * 0.95)}:00-${duration}:00)**
+
+[Return to center stage, direct eye contact]
+
+Emma is now cancer-free. But her story is just the beginning. The question isn't whether we can revolutionize medicine—it's whether we have the courage to embrace that revolution.
+
+[Final pause]
+
+The future of medicine isn't in our hospitals. It's in our cells. And that future starts now.
+
+[End with confident stance, hold for applause]
+
+---
+
+**Speaker Notes:**
+- Total word count: approximately ${parseInt(duration) * 160} words
+- Key timing markers included
+- Emphasize emotional connection points
+- Use strategic pauses for impact
+- Maintain eye contact during key moments`;
         } else {
           mockResult = `What modifications would you like to make to the Attack Point?`;
         }
@@ -268,7 +338,7 @@ Would you like me to write a script based on the above story flow outline that w
       console.log('User message:', userMessage);
       console.log('Conversation context:', conversationContext);
 
-      // Check if user is responding "yes" to a table question
+      // Check if user is responding "yes" to a table question or TED talk question
       const lastAssistantMessage =
         conversationHistory
           .filter(
@@ -278,11 +348,45 @@ Would you like me to write a script based on the above story flow outline that w
 
       const isTableRequest =
         userMessage.toLowerCase().includes('yes') &&
-        lastAssistantMessage.toLowerCase().includes('table');
+        lastAssistantMessage.toLowerCase().includes('table') &&
+        !lastAssistantMessage.toLowerCase().includes('ted');
+
+      const isTedTalkRequest =
+        userMessage.toLowerCase().includes('yes') &&
+        lastAssistantMessage.toLowerCase().includes('ted talk');
 
       let continuePrompt = '';
 
-      if (isTableRequest) {
+      if (isTedTalkRequest) {
+        // Special handling for TED talk script generation
+        continuePrompt = `You are helping create a TED talk script based on a Story Flow Outline. The user has confirmed they want a TED talk script.
+
+PARAMETERS:
+- Core Story Concept: ${coreStoryConcept}
+- Audience: ${audience}
+
+CONVERSATION CONTEXT:
+${conversationContext}
+
+CRITICAL INSTRUCTIONS:
+The user has said "yes" to creating a TED talk script. You must now ask how long the talk should be (in minutes) and then generate a complete TED talk script.
+
+First ask: "How long should the TED talk be (in minutes)?"
+
+If the user provides a duration, then generate a complete TED talk script using this guidance:
+You are an extremely successful and accomplished TED presenter who has given 10 different TED talks each of which garnered over 10 million views. Deliver a script for a TED talk using the same approach you took for your previous talks.
+
+The script should:
+- Use the attack point as the opening hook
+- Incorporate the tension-resolution points as the main narrative structure
+- Build to the core story concept as the climactic insight
+- Include speaker directions in [brackets]
+- Be engaging, personal, and transformative
+- Follow TED talk best practices with storytelling, data, and emotional connection
+- Aim for the specified length in minutes
+
+Extract all the story elements (attack point, tension-resolution points, conclusion) from the previous conversation and weave them into a compelling TED talk narrative.`;
+      } else if (isTableRequest) {
         // Special handling for table creation
         continuePrompt = `You are helping create a Story Flow Outline. The user has requested that the tension-resolution points be put into a table format.
 
@@ -307,6 +411,53 @@ Extract the attack point, tension-resolution points, and conclusion from the pre
 After creating the table, ask: "Would you like me to write a script based on the above story flow outline that would be suitable for a highly engaging TED talk?"
 
 DO NOT ask about the table again. The user has already confirmed they want the table.`;
+      } else if (
+        // Check if user is providing TED talk duration
+        (userMessage.match(/\d+/) &&
+          (userMessage.toLowerCase().includes('minute') ||
+            userMessage.toLowerCase().includes('min') ||
+            lastAssistantMessage.toLowerCase().includes('how long should the ted talk be'))) ||
+        // Or if previous message asked for duration and user provided a number
+        (lastAssistantMessage.toLowerCase().includes('how long should the ted talk be') &&
+          userMessage.match(/\d+/))
+      ) {
+        // Generate TED talk script with specified duration
+        const duration = userMessage.match(/\d+/)?.[0] || '15';
+
+        continuePrompt = `You are an extremely successful and accomplished TED presenter who has given 10 different TED talks each of which garnered over 10 million views. 
+
+The user wants a ${duration}-minute TED talk script based on the story flow outline from the conversation.
+
+PARAMETERS:
+- Core Story Concept: ${coreStoryConcept}
+- Audience: ${audience}
+- Duration: ${duration} minutes
+
+CONVERSATION CONTEXT:
+${conversationContext}
+
+CRITICAL INSTRUCTIONS:
+Generate a complete TED talk script for ${duration} minutes using the story flow outline from the conversation.
+
+The script should:
+- Use the attack point as the opening hook
+- Incorporate the tension-resolution points as the main narrative structure  
+- Build to the core story concept as the climactic insight
+- Include speaker directions in [brackets]
+- Be engaging, personal, and transformative
+- Follow TED talk best practices with storytelling, data, and emotional connection
+- Aim for approximately ${duration} minutes (roughly 150-180 words per minute)
+
+Extract all the story elements (attack point, tension-resolution points, conclusion) from the previous conversation and weave them into a compelling TED talk narrative.
+
+Structure the script with:
+1. Opening hook (attack point)
+2. Problem setup and tension building
+3. Journey through tension-resolution points
+4. Climactic revelation (core story concept)
+5. Call to action/transformation
+
+Include timing cues and speaker directions throughout.`;
       } else {
         // Regular conversation flow
         continuePrompt = `You are continuing to help create a Story Flow Outline with Attack Point and Tension-Resolution Points using the comprehensive AI Prompt for Creating Story Flow Outline.

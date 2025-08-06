@@ -18,6 +18,7 @@ export default function TensionResolution() {
   const [references, setReferences] = useState('');
   const [conversationStarted, setConversationStarted] = useState(false);
   const [tableData, setTableData] = useState<{ headers: string[]; rows: string[][] } | null>(null);
+  const [tedTalkScript, setTedTalkScript] = useState('');
 
   // State for selections and saving
   const [selectedAttackPoint, setSelectedAttackPoint] = useState<string>('');
@@ -41,11 +42,20 @@ export default function TensionResolution() {
         conclusion ||
         references ||
         tableData ||
+        tedTalkScript ||
         result)
     ) {
       resultsScrollRef.current.scrollTop = resultsScrollRef.current.scrollHeight;
     }
-  }, [attackPoints, tensionResolutionPoints, conclusion, references, tableData, result]);
+  }, [
+    attackPoints,
+    tensionResolutionPoints,
+    conclusion,
+    references,
+    tableData,
+    tedTalkScript,
+    result,
+  ]);
 
   // Initialize messages with core story concept from localStorage
   useEffect(() => {
@@ -497,6 +507,36 @@ export default function TensionResolution() {
     };
   };
 
+  // Helper function to parse TED talk scripts from AI response
+  const parseTedTalkScript = (text: string): string | null => {
+    console.log('Parsing TED talk script from text:', text);
+
+    // Look for TED talk script patterns
+    const tedTalkPatterns = [
+      /# TED Talk Script:/i,
+      /TED Talk Script:/i,
+      /## Duration:/i,
+      /\[Walk to center stage/i,
+      /Opening Hook \(/i,
+      /The Problem \(/i,
+      /Journey Through Discovery \(/i,
+      /The Revelation \(/i,
+      /Call to Action \(/i,
+      /Speaker Notes:/i,
+    ];
+
+    // Check if the response contains TED talk script indicators
+    const containsTedTalk = tedTalkPatterns.some((pattern) => pattern.test(text));
+
+    if (containsTedTalk) {
+      console.log('TED talk script detected');
+      return text.trim();
+    }
+
+    console.log('No TED talk script found');
+    return null;
+  };
+
   // Function to separate content from questions in AI response
   const parseAIResponse = (response: string) => {
     // Look for questions that should appear in chat
@@ -861,6 +901,13 @@ export default function TensionResolution() {
           setTableData(tableResult);
         }
 
+        // Check if the response contains a TED talk script
+        const tedTalkResult = parseTedTalkScript(data.result);
+        console.log('TED talk parsing result:', tedTalkResult);
+        if (tedTalkResult) {
+          setTedTalkScript(tedTalkResult);
+        }
+
         // Parse the content to extract different sections
         const parsedContent = parseContentResponse(data.result);
 
@@ -900,15 +947,30 @@ export default function TensionResolution() {
           setResult(content);
         }
 
-        // Add AI response to chat
-        const responseContent = question || data.result;
-        setMessages((msgs) => [
-          ...msgs,
-          {
-            role: 'assistant',
-            content: responseContent,
-          },
-        ]);
+        // Add AI response to chat - but exclude TED talk scripts from chat
+        let responseContent = question || data.result;
+
+        // If this is a TED talk script, don't add it to chat messages
+        if (tedTalkResult) {
+          // Only add the question part to chat, not the full script
+          if (question) {
+            responseContent = question;
+          } else {
+            // If no question was extracted but we have a TED talk script, don't add anything to chat
+            responseContent = '';
+          }
+        }
+
+        // Only add to chat if there's content to add
+        if (responseContent.trim()) {
+          setMessages((msgs) => [
+            ...msgs,
+            {
+              role: 'assistant',
+              content: responseContent,
+            },
+          ]);
+        }
       } catch (err) {
         toast.error('Something went wrong.');
         console.error(err);
@@ -1101,6 +1163,16 @@ export default function TensionResolution() {
                           ))}
                         </tbody>
                       </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* TED Talk Script Display */}
+                {tedTalkScript && (
+                  <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                    <h3 className="text-lg font-semibold text-purple-800 mb-4">TED Talk Script</h3>
+                    <div className="text-gray-800 whitespace-pre-wrap font-sans">
+                      {tedTalkScript}
                     </div>
                   </div>
                 )}
