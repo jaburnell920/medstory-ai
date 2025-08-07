@@ -235,7 +235,7 @@ export default function LandmarkPublicationsPage() {
         ...newMessages,
         {
           role: 'assistant' as const,
-          content: 'Thanks, Please wait while I find landmark publications based on your answers',
+          content: 'Thanks, Please wait while I find key publications based on your answers',
         },
       ]);
       setShowFinalMessage(true);
@@ -294,9 +294,9 @@ export default function LandmarkPublicationsPage() {
         </span>
       }
     >
-      <div className="flex gap-4 h-full">
+      <div className="flex gap-1 h-full">
         {/* Chat Interface - Left Side */}
-        <div className="w-3/5 h-full">
+        <div className="w-1/2 h-full">
           <ChatInterface
             messages={messages}
             input={input}

@@ -867,9 +867,9 @@ export default function CreateStoryFlowMap() {
       sectionName="Story Flow"
       taskName="Create story flow map"
     >
-      <div className="flex gap-4 h-full">
+      <div className="flex gap-1 h-full">
         {/* Chat Interface - Left Side */}
-        <div className="w-3/5 h-full">
+        <div className="w-1/2 h-full">
           <ChatInterface
             messages={messages}
             input={input}

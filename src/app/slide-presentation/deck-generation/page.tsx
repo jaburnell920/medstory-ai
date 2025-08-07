@@ -698,15 +698,15 @@ When creating the Powerpoint file for downloading:
           alt="Core Story Chat"
           width={72}
           height={72}
-          className="w-26 h-30"
+          className="w-24 h-26"
         />
       }
       sectionName="MEDSTORY Slide Deck"
       taskName="Create MEDSTORY deck"
     >
-      <div className="flex gap-4 h-full">
+      <div className="flex gap-1 h-full">
         {/* Chat Interface - Left Side */}
-        <div className="w-3/5 h-full">
+        <div className="w-1/2 h-full">
           <ChatInterface
             messages={messages}
             input={input}

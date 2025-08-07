@@ -1008,9 +1008,9 @@ export default function TensionResolution() {
         </span>
       }
     >
-      <div className="flex gap-4 h-full">
+      <div className="flex gap-1 h-full">
         {/* Chat Interface - Left Side */}
-        <div className="w-3/5 h-full">
+        <div className="w-1/2 h-full">
           <ChatInterface
             messages={messages}
             input={input}
@@ -1126,7 +1126,7 @@ export default function TensionResolution() {
                 {/* Conclusion */}
                 {conclusion && (
                   <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                    <h3 className="text-lg font-semibold text-blue-800 mb-2">Conclusion</h3>
+                    <h3 className="text-lg font-semibold text-blue-800 mb-2">Summary</h3>
                     <pre className="text-gray-800 whitespace-pre-wrap font-sans">{conclusion}</pre>
                   </div>
                 )}
