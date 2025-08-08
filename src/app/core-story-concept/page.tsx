@@ -40,7 +40,7 @@ export default function CoreStoryConcept() {
 
   // Auto-scroll to bottom when new content is generated
   useEffect(() => {
-    if (resultsScrollRef.current && concepts.length > 0) {
+    if (resultsScrollRef.current && concepts.length > 1) {
       resultsScrollRef.current.scrollTop = resultsScrollRef.current.scrollHeight;
     }
   }, [concepts]);

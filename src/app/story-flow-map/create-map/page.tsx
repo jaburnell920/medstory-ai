@@ -861,7 +861,7 @@ export default function CreateStoryFlowMap() {
           alt="Story Flow Map"
           width={72}
           height={72}
-          className="w-28 h-32"
+          className="w-24 h-26"
         />
       }
       sectionName="Story Flow"

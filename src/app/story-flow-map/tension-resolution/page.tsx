@@ -994,7 +994,7 @@ export default function TensionResolution() {
           alt="Story Flow Map"
           width={72}
           height={72}
-          className="w-26 h-30"
+          className="w-24 h-26"
         />
       }
       sectionName="Story Flow Map"
