@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
+const openai = process.env.OPENAI_API_KEY
+  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  : null;
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -59,7 +61,7 @@ Your first response should be brief - simply acknowledge that you're pleased to 
       }
 
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4',
+        model: 'gpt-5',
         messages: [
           {
             role: 'system',
@@ -145,7 +147,7 @@ Respond directly to the interviewer's question or comment, maintaining your expe
             "From a clinical perspective, patient selection for advanced therapies like cardiac transplantation remains one of our biggest challenges. We need to balance the potential benefits with the risks and ensure we're optimizing outcomes for each individual patient.",
             "The field of mechanical circulatory support has evolved tremendously. We're seeing better outcomes with newer generation devices, but we still face challenges with device-related complications and patient quality of life.",
             "Collaboration between basic scientists and clinicians is absolutely crucial. The translational research we're doing today will determine the therapies we have available for patients tomorrow.",
-            "One of the most exciting developments is the potential for personalized medicine in heart failure. We're beginning to understand how genetic factors influence treatment response."
+            "One of the most exciting developments is the potential for personalized medicine in heart failure. We're beginning to understand how genetic factors influence treatment response.",
           ];
           const randomResponse = mockResponses[Math.floor(Math.random() * mockResponses.length)];
           return NextResponse.json({ result: randomResponse });
@@ -153,7 +155,7 @@ Respond directly to the interviewer's question or comment, maintaining your expe
       }
 
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4',
+        model: 'gpt-5',
         messages: [
           {
             role: 'system',
@@ -212,7 +214,7 @@ KEY HIGHLIGHTS:`;
       }
 
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4',
+        model: 'gpt-5',
         messages: [
           {
             role: 'system',

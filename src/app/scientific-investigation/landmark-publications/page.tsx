@@ -303,7 +303,7 @@ export default function LandmarkPublicationsPage() {
             setInput={setInput}
             onSubmit={handleSubmit}
             loading={loading}
-            showInput={!showFinalMessage}
+            showInput={true}
             placeholder="Type your response..."
             onReset={handleReset}
           />
@@ -314,7 +314,7 @@ export default function LandmarkPublicationsPage() {
           {studies.length > 0 ? (
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex flex-col">
               <div className="flex justify-between items-center mb-4 flex-shrink-0">
-                <h2 className="text-xl font-bold text-blue-900">Landmark Publications</h2>
+                <h2 className="text-xl font-bold text-blue-900">Key Publications</h2>
                 <div className="flex items-center gap-3">
                   <span className="text-sm text-gray-600">{selectedStudies.size} selected</span>
                   {selectedStudies.size > 0 && (
