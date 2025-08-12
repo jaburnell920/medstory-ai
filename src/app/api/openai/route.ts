@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
       });
 
       const chatCompletion = await openai.chat.completions.create({
-        model: 'gpt-5',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
       });
 
       const chatCompletion = await openai.chat.completions.create({
-        model: 'gpt-5',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
@@ -134,7 +134,7 @@ Create a Core Story Concept using the guidelines above.
     });
 
     const chatCompletion = await openai.chat.completions.create({
-      model: 'gpt-5',
+      model: 'gpt-4',
       messages: [
         {
           role: 'system',

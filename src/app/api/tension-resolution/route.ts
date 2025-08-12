@@ -147,7 +147,7 @@ PARAMETERS PROVIDED:
 Begin with creating the Attack Point.`;
 
       const completion = await openai.chat.completions.create({
-        model: 'gpt-5',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
@@ -515,7 +515,7 @@ Respond appropriately to the user's latest message, following the conversation f
       }
 
       const completion = await openai.chat.completions.create({
-        model: 'gpt-5',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
