@@ -166,14 +166,13 @@ export default function Home() {
           </div>
 
           {/* Invisible button at the bottom */}
-          <div className="fixed bottom-0 left-0 w-full h-16">
-            <button
-              onClick={() => setShowPasswordChange(!showPasswordChange)}
-              className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-8 bg-transparent border-0 outline-0 cursor-pointer"
-              style={{ opacity: 0 }}
-              title="Change Password"
-            />
-          </div>
+          {/* <div className="fixed bottom-0 left-0 w-full h-16"> */}
+          {/* Change Password button fixed to bottom left */}
+          <button
+            onClick={() => setShowPasswordChange(!showPasswordChange)}
+            title="Change Password"
+            className="fixed bottom-4 left-[21rem] w-32 h-8 bg-transparent border-0 outline-0 cursor-pointer"
+          ></button>
         </main>
       </div>
     </>
