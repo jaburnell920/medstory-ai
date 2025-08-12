@@ -40,6 +40,7 @@ export default function LandmarkPublicationsPage() {
   const [result, setResult] = useState('');
   const [studies, setStudies] = useState<Study[]>([]);
   const [selectedStudies, setSelectedStudies] = useState<Set<string>>(new Set());
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showFinalMessage, setShowFinalMessage] = useState(false);
   const [initialResultsLoaded, setInitialResultsLoaded] = useState(false);
   const resultRef = useRef<HTMLDivElement | null>(null);

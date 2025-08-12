@@ -4,13 +4,13 @@ import { validatePassword } from '../../../lib/password';
 export async function POST(req: NextRequest) {
   try {
     const { password } = await req.json();
-    
+
     if (validatePassword(password)) {
       return NextResponse.json({ success: true });
     } else {
       return NextResponse.json({ success: false, error: 'Incorrect password' }, { status: 401 });
     }
-  } catch (error) {
+  } catch {
     return NextResponse.json({ success: false, error: 'Invalid request' }, { status: 400 });
   }
 }
