@@ -382,16 +382,8 @@ export default function CreateStoryFlowMap() {
         setShowMap(true);
         setStep(1);
 
-        // Create a table of the current story points without the tension/resolution values
-        const storyPointsTable = createStoryPointsTable(data.storyFlowData.storyPoints);
-
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: 'assistant',
-            content: `Here is your Story Flow Map based on the selected data.\n\n${storyPointsTable}\n\nWould you like to modify this Story Flow Map?`,
-          },
-        ]);
+        // Don't add any additional messages - just show the map
+        // The user specifically requested no additional responses after the confirmation message
       } else {
         toast.error('Failed to create story flow map');
         setMessages((prev) => [
@@ -637,18 +629,18 @@ export default function CreateStoryFlowMap() {
 
     const { storyPoints } = storyFlowData;
 
-    // Calculate positions based on requirements
+    // Calculate positions based on requirements with better spacing
     // AP at (0, AP tension value)
-    // Tension points at (x, tension value) starting from x=10, increasing by 20
-    // Resolution points at (x+10, resolution value)
+    // Tension points at (x, tension value) starting from x=10, increasing by 120 (more spread)
+    // Resolution points at (x+60, resolution value) - more space between tension and resolution
     // CSC at next x coordinate with y=25
 
     const tensionResolutionPairs = storyPoints.filter((p) => p.label !== 'AP' && p.label !== 'CSC');
-    const svgWidth = Math.max(800, 10 + tensionResolutionPairs.length * 20 + 100);
-    const svgHeight = 180;
+    const svgWidth = Math.max(1400, 150 + tensionResolutionPairs.length * 150 + 250); // Even wider for longer lines
+    const svgHeight = 300; // Taller for better visibility
 
     // Scale factor to fit values in SVG (values are 0-100, we want them in reasonable SVG coordinates)
-    const yScale = (svgHeight - 80) / 100; // Leave 40px margin top and bottom
+    const yScale = (svgHeight - 120) / 100; // Leave 60px margin top and bottom
 
     return (
       <div className="bg-white p-6 rounded-lg shadow-lg mb-6">
@@ -690,15 +682,15 @@ export default function CreateStoryFlowMap() {
               storyPoints.forEach((point, index) => {
                 if (point.label === 'AP') {
                   // Attack Point at (0, AP tension value) - but we need to offset for visibility
-                  const x = 60; // Offset from left edge
-                  const y = svgHeight - 40 - point.tensionValue * yScale;
+                  const x = 110; // Offset from left edge to accommodate circle
+                  const y = svgHeight - 60 - point.tensionValue * yScale;
 
                   circles.push(
                     <g key={`ap-${index}`}>
                       <circle
                         cx={x}
                         cy={y}
-                        r={30}
+                        r={35}
                         fill="#ff8c00" // orange
                         stroke="none"
                       />
@@ -715,19 +707,19 @@ export default function CreateStoryFlowMap() {
                     </g>
                   );
 
-                  previousX = x + 30; // Right edge of circle
+                  previousX = x + 35; // Right edge of circle
                   previousY = y;
                 } else if (point.label === 'CSC') {
                   // Core Story Concept at next x coordinate with y=25
-                  const x = 60 + 10 + tensionResolutionPairs.length * 20 + 10;
-                  const y = svgHeight - 40 - 25 * yScale;
+                  const x = 150 + 75 + tensionResolutionPairs.length * 150 + 75;
+                  const y = svgHeight - 60 - 25 * yScale;
 
                   circles.push(
                     <g key={`csc-${index}`}>
                       <circle
                         cx={x}
                         cy={y}
-                        r={30}
+                        r={35}
                         fill="#32cd32" // green
                         stroke="none"
                       />
@@ -751,20 +743,20 @@ export default function CreateStoryFlowMap() {
                         key={`line-to-csc-${index}`}
                         x1={previousX}
                         y1={previousY}
-                        x2={x - 30}
+                        x2={x - 35}
                         y2={y}
                         stroke="#404040"
-                        strokeWidth="3"
+                        strokeWidth="4"
                       />
                     );
                   }
                 } else {
                   // Tension-Resolution pairs
                   const pairIndex = parseInt(point.label) - 1;
-                  const tensionX = 60 + 10 + pairIndex * 20;
-                  const resolutionX = tensionX + 10;
-                  const tensionY = svgHeight - 40 - point.tensionValue * yScale;
-                  const resolutionY = svgHeight - 40 - point.resolutionValue * yScale;
+                  const tensionX = 150 + 75 + pairIndex * 150;
+                  const resolutionX = tensionX + 75;
+                  const tensionY = svgHeight - 60 - point.tensionValue * yScale;
+                  const resolutionY = svgHeight - 60 - point.resolutionValue * yScale;
 
                   // Tension circle (dark red)
                   circles.push(
@@ -772,7 +764,7 @@ export default function CreateStoryFlowMap() {
                       <circle
                         cx={tensionX}
                         cy={tensionY}
-                        r={30}
+                        r={35}
                         fill="#8b0000" // dark red
                         stroke="none"
                       />
@@ -795,7 +787,7 @@ export default function CreateStoryFlowMap() {
                       <circle
                         cx={resolutionX}
                         cy={resolutionY}
-                        r={30}
+                        r={35}
                         fill="#0000ff" // blue
                         stroke="none"
                       />
@@ -819,10 +811,10 @@ export default function CreateStoryFlowMap() {
                         key={`line-to-tension-${index}`}
                         x1={previousX}
                         y1={previousY}
-                        x2={tensionX - 30}
+                        x2={tensionX - 35}
                         y2={tensionY}
                         stroke="#404040"
-                        strokeWidth="3"
+                        strokeWidth="4"
                       />
                     );
                   }
@@ -831,16 +823,16 @@ export default function CreateStoryFlowMap() {
                   lines.push(
                     <line
                       key={`tension-resolution-${index}`}
-                      x1={tensionX + 30}
+                      x1={tensionX + 35}
                       y1={tensionY}
-                      x2={resolutionX - 30}
+                      x2={resolutionX - 35}
                       y2={resolutionY}
                       stroke="#404040"
-                      strokeWidth="3"
+                      strokeWidth="4"
                     />
                   );
 
-                  previousX = resolutionX + 30; // Right edge of resolution circle
+                  previousX = resolutionX + 35; // Right edge of resolution circle
                   previousY = resolutionY;
                 }
               });

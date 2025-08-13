@@ -251,8 +251,8 @@ export default function TensionResolution() {
   const cleanTensionResolutionPoint = (point: string): string => {
     let cleaned = point.trim();
 
-    // Remove the header line first
-    cleaned = cleaned.replace(/^\*?\*?Tension-Resolution #\d+.*?\n?/i, '');
+    // Remove the header line first (handle both formats: "Tension-Resolution" and "TensionResolution")
+    cleaned = cleaned.replace(/^\*?\*?Tension-?Resolution #\d+.*?\n?/i, '');
 
     // Insert an empty line after a title if it exists
     cleaned = cleaned.replace(/^(.+?)\n(Tension:)/i, '$1\n\n$2');
@@ -388,8 +388,8 @@ export default function TensionResolution() {
         continue;
       }
 
-      // Check for Tension-Resolution Point
-      if (line.match(/^\*?\*?Tension-Resolution #\d+/i)) {
+      // Check for Tension-Resolution Point (handle both formats: "Tension-Resolution" and "TensionResolution")
+      if (line.match(/^\*?\*?Tension-?Resolution #\d+/i)) {
         if (currentSection && currentContent.length > 0) {
           // Save previous section
           if (currentSection === 'attack') {
