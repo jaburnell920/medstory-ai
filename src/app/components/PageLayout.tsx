@@ -23,7 +23,7 @@ export default function PageLayout({
         {/* Logo section with white background */}
         <div className="bg-white p-6 pl-13 pb-4 flex-col">
           <Image
-            src="/msailogo.png"
+            src="/MedstoryAI_logo_on_light_background.png"
             alt="MEDSTORYAI Logo"
             width={200}
             height={64}
@@ -49,9 +49,7 @@ export default function PageLayout({
         </div>
 
         {/* Fixed Content Area - No scrolling */}
-        <div className="flex-1 px-12 pb-12 overflow-hidden">
-          {children}
-        </div>
+        <div className="flex-1 px-12 pb-12 overflow-hidden">{children}</div>
       </main>
     </div>
   );

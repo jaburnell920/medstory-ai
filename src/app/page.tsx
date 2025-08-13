@@ -62,7 +62,7 @@ export default function Home() {
       <aside className="w-80 bg-white flex flex-col flex-shrink-0 h-screen fixed font-sans">
         <div className="bg-white pl-13 p-6 pb-4 flex-col">
           <Image
-            src="/msailogo.png"
+            src="/MedstoryAI_logo_on_light_background.png"
             alt="MEDSTORYAI Logo"
             width={200}
             height={64}
