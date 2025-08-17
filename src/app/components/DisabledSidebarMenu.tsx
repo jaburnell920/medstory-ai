@@ -90,12 +90,13 @@ function DisabledSidebarMenu() {
 
       {/* Exit button at the bottom */}
       <div className="mt-auto pt-4 pl-50">
-        <button
-          disabled
-          className="inline-block px-4 py-2 bg-gray-400 text-gray-600 rounded-full cursor-not-allowed font-bold border border-gray-300"
+        <a
+          href="https://sciencebranding.com"
+          rel="noopener noreferrer"
+          className="inline-block px-4 py-2 bg-white text-[#002F6C] rounded-full hover:bg-gray-100 transition-colors duration-200 font-bold border border-gray-300"
         >
           Exit
-        </button>
+        </a>
       </div>
     </nav>
   );
