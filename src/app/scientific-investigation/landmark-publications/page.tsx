@@ -150,6 +150,55 @@ export default function LandmarkPublicationsPage() {
     setSelectedStudies(newSelected);
   };
 
+  // Extract search terms from citation for better PubMed linking
+  const extractSearchTerms = (citation: string): string => {
+    // Remove the study number prefix
+    const cleanCitation = citation.replace(/^\d+\.\s*/, '');
+
+    // Extract author surname (first word before comma or space)
+    const authorMatch = cleanCitation.match(/^([A-Za-z-]+)/);
+    const author = authorMatch ? authorMatch[1] : '';
+
+    // Extract year from citation
+    const yearMatch = cleanCitation.match(/(\d{4})/);
+    const year = yearMatch ? yearMatch[1] : '';
+
+    // Extract journal name (look for common journal abbreviations)
+    const journalMatch = cleanCitation.match(
+      /(N Engl J Med|JAMA|Lancet|Circulation|Ann Thorac Surg|BMJ|J Thorac Cardiovasc Surg|S Afr Med J|Obesity)/i
+    );
+    const journal = journalMatch ? journalMatch[1] : '';
+
+    // Extract title (text between author and journal, or before year)
+    let title = '';
+    if (journal) {
+      const titleMatch = cleanCitation.match(
+        /^[^.]+\.\s*(.+?)\.\s*(?:N Engl J Med|JAMA|Lancet|Circulation|Ann Thorac Surg|BMJ|J Thorac Cardiovasc Surg|S Afr Med J|Obesity)/i
+      );
+      title = titleMatch ? titleMatch[1] : '';
+    } else {
+      // Fallback: extract text before year
+      const titleMatch = cleanCitation.match(/^[^.]+\.\s*(.+?)\.\s*\d{4}/);
+      title = titleMatch ? titleMatch[1] : '';
+    }
+
+    // Clean up title - remove "et al" and extra spaces
+    title = title
+      .replace(/,?\s*et al\.?/gi, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    // Combine search terms, prioritizing title and author
+    const searchTerms = [title, author, year, journal]
+      .filter((term) => term.length > 0)
+      .join(' ')
+      .replace(/[^\w\s-]/g, ' ') // Remove special characters except hyphens
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    return searchTerms || cleanCitation; // Fallback to original citation if extraction fails
+  };
+
   // Handle saving selected studies to session storage
   const handleSaveSelected = () => {
     // Save to session storage
@@ -219,11 +268,50 @@ export default function LandmarkPublicationsPage() {
     e.preventDefault();
     if (!input.trim()) return;
 
+    // Check if user provided comma-separated answers (for all questions at once)
+    const inputParts = input.split(',').map((part) => part.trim());
+    const isCommaSeparatedInput = inputParts.length === 7 && step === 0;
+
     const newMessages = [...messages, { role: 'user' as const, content: input }];
     setMessages(newMessages);
     setInput('');
 
-    if (step < questions.length - 1) {
+    if (isCommaSeparatedInput) {
+      // Handle comma-separated input for all questions
+      setAnswers(inputParts);
+      setMessages([
+        ...newMessages,
+        {
+          role: 'assistant' as const,
+          content: 'Thanks, Please wait while I find key publications based on your answers',
+        },
+      ]);
+      setShowFinalMessage(true);
+      setLoading(true);
+      setStep(questions.length); // Set to final step
+
+      const query = inputParts.join(',');
+
+      try {
+        const res = await fetch('/api/openai-landmark-studies', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query }),
+        });
+        const data = await res.json();
+        const formattedResult = formatLandmarkResult(data.result);
+        setResult(formattedResult);
+        setStudies(parseStudies(formattedResult));
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 100);
+      } catch {
+        setMessages((prev) => [...prev, { role: 'assistant', content: 'Failed to load results.' }]);
+      } finally {
+        setLoading(false);
+      }
+    } else if (step < questions.length - 1) {
+      // Handle single question at a time
       setAnswers([...answers, input]);
       setMessages([
         ...newMessages,
@@ -231,6 +319,7 @@ export default function LandmarkPublicationsPage() {
       ]);
       setStep(step + 1);
     } else {
+      // Handle final question in step-by-step mode
       setAnswers([...answers, input]);
       setMessages([
         ...newMessages,
@@ -344,7 +433,7 @@ export default function LandmarkPublicationsPage() {
                       />
                       <div className="flex-1">
                         <a
-                          href={`https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(study.citation)}`}
+                          href={`https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(extractSearchTerms(study.citation))}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="block cursor-pointer hover:text-blue-700"
