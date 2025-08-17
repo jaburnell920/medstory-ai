@@ -262,6 +262,15 @@ export default function TopPublicationsPage() {
         setExpertInfo(expertInfoCollected);
         setInterviewStarted(true);
 
+        // Add the transition message before starting the interview
+        const transitionMessage =
+          "Thank you. I will now start the simulated interview with the expert you designated. Let's begin...";
+        const messagesWithTransition = [
+          ...newMessages,
+          { role: 'assistant' as const, content: transitionMessage },
+        ];
+        setMessages(messagesWithTransition);
+
         try {
           const res = await fetch('/api/expert-interview', {
             method: 'POST',
@@ -273,7 +282,7 @@ export default function TopPublicationsPage() {
           });
           const data = await res.json();
 
-          setMessages([...newMessages, { role: 'assistant', content: data.result }]);
+          setMessages([...messagesWithTransition, { role: 'assistant', content: data.result }]);
         } catch (err) {
           console.error('Error starting interview:', err);
           setMessages((prev) => [
