@@ -102,7 +102,6 @@ The interviewer has indicated they want to end the interview with this message: 
 Please respond with:
 1. A nice comment that you enjoyed the interview 
 2. A wish for their success in creating a dynamic educational program
-3. Then ask "Would you like me to extract key highlights from this interview?"
 
 Keep your response warm, professional, and concise. Do not include any other content in your response.
 `;
@@ -138,7 +137,7 @@ Respond directly to the interviewer's question or comment, maintaining your expe
       if (!openai) {
         // Mock responses when OpenAI API is not available
         if (isEndInterview) {
-          const mockEndResponse = `Thank you so much for this engaging interview! I really enjoyed our discussion about cardiovascular medicine and the challenges we face in treating heart failure patients. I wish you the very best of luck in creating your dynamic educational program. Would you like me to extract key highlights from this interview?`;
+          const mockEndResponse = `Thank you so much for this engaging interview! I really enjoyed our discussion about cardiovascular medicine and the challenges we face in treating heart failure patients. I wish you the very best of luck in creating your dynamic educational program.`;
           return NextResponse.json({ result: mockEndResponse });
         } else {
           // Mock response for regular interview questions

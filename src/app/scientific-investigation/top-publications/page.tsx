@@ -24,7 +24,6 @@ export default function TopPublicationsPage() {
   const [interviewStarted, setInterviewStarted] = useState(false);
   const [expertInfo, setExpertInfo] = useState('');
   const [interviewEnded, setInterviewEnded] = useState(false);
-  const [awaitingHighlightResponse, setAwaitingHighlightResponse] = useState(false);
   const [keyPoints, setKeyPoints] = useState<KeyPoint[]>([]);
   const [selectedKeyPoints, setSelectedKeyPoints] = useState<Set<string>>(new Set());
   const [initialKeyPointsLoaded, setInitialKeyPointsLoaded] = useState(false);
@@ -55,7 +54,6 @@ export default function TopPublicationsPage() {
     setLoading(false);
     setInterviewStarted(false);
     setInterviewEnded(false);
-    setAwaitingHighlightResponse(false);
     setExpertInfo('');
     setKeyPoints([]);
     setSelectedKeyPoints(new Set());
@@ -196,7 +194,31 @@ export default function TopPublicationsPage() {
       const data = await res.json();
 
       setMessages([...newMessages, { role: 'assistant', content: data.result }]);
-      setAwaitingHighlightResponse(true);
+      setInterviewEnded(true);
+
+      // Automatically extract highlights after a brief delay
+      setTimeout(async () => {
+        try {
+          await handleExtractHighlights();
+          // Combine the thank you message with the highlights summary
+          setMessages((prev) => {
+            const lastMessage = prev[prev.length - 1];
+            if (lastMessage && lastMessage.role === 'assistant') {
+              // Update the last message to include the highlights summary
+              const updatedMessage = {
+                ...lastMessage,
+                content:
+                  lastMessage.content +
+                  "\n\n---\n\nHere is a summary of the highlights from this interview. Please select the one(s) you'd like to save",
+              };
+              return [...prev.slice(0, -1), updatedMessage];
+            }
+            return prev;
+          });
+        } catch (err) {
+          console.error('Error auto-extracting highlights:', err);
+        }
+      }, 1000);
     } catch (err) {
       console.error('Error ending interview:', err);
       setMessages((prev) => [
@@ -219,14 +241,6 @@ export default function TopPublicationsPage() {
     const isEndInterview =
       input.toLowerCase().includes('end interview') ||
       input.toLowerCase().includes('interview complete');
-
-    // Check if this is a response to the highlight extraction question
-    const isHighlightResponse =
-      awaitingHighlightResponse &&
-      (input.toLowerCase().includes('yes') ||
-        input.toLowerCase().includes('no') ||
-        input.toLowerCase().includes('extract') ||
-        input.toLowerCase().includes('highlight'));
 
     if (!interviewStarted) {
       // First response - collect expert info
@@ -295,49 +309,6 @@ export default function TopPublicationsPage() {
       } else {
         setLoading(false);
       }
-    } else if (isHighlightResponse) {
-      // Handle response to highlight extraction question
-      setLoading(true);
-      setAwaitingHighlightResponse(false);
-
-      const userWantsHighlights =
-        input.toLowerCase().includes('yes') || input.toLowerCase().includes('extract');
-
-      if (userWantsHighlights) {
-        // Extract highlights
-        try {
-          await handleExtractHighlights();
-          setMessages([
-            ...newMessages,
-            {
-              role: 'assistant',
-              content:
-                "I've extracted the key medical highlights from our interview. You can see them on the right side of the screen. Each highlight includes a checkbox so you can select the ones most relevant for your educational program.",
-            },
-          ]);
-        } catch (err) {
-          console.error('Error extracting highlights:', err);
-          setMessages([
-            ...newMessages,
-            {
-              role: 'assistant',
-              content:
-                'I apologize, but I encountered an error while extracting the highlights. Please try again.',
-            },
-          ]);
-        }
-      } else {
-        // User doesn't want highlights
-        setMessages([
-          ...newMessages,
-          {
-            role: 'assistant',
-            content:
-              'No problem! Thank you again for the engaging interview. Best of luck with your educational program!',
-          },
-        ]);
-      }
-      setLoading(false);
     } else {
       // Continue interview - append instruction to not ask questions
       const modifiedInput = isEndInterview
@@ -360,10 +331,32 @@ export default function TopPublicationsPage() {
 
         setMessages([...newMessages, { role: 'assistant', content: data.result }]);
 
-        // If this was an end interview command, set the state to await highlight response
+        // If this was an end interview command, automatically extract highlights
         if (isEndInterview) {
           setInterviewEnded(true);
-          setAwaitingHighlightResponse(true);
+          // Automatically extract highlights after a brief delay
+          setTimeout(async () => {
+            try {
+              await handleExtractHighlights();
+              // Combine the thank you message with the highlights summary
+              setMessages((prev) => {
+                const lastMessage = prev[prev.length - 1];
+                if (lastMessage && lastMessage.role === 'assistant') {
+                  // Update the last message to include the highlights summary
+                  const updatedMessage = {
+                    ...lastMessage,
+                    content:
+                      lastMessage.content +
+                      "\n\n---\n\nHere is a summary of the highlights from this interview. Please select the one(s) you'd like to save",
+                  };
+                  return [...prev.slice(0, -1), updatedMessage];
+                }
+                return prev;
+              });
+            } catch (err) {
+              console.error('Error auto-extracting highlights:', err);
+            }
+          }, 1000);
         }
       } catch (err) {
         console.error('Error continuing interview:', err);
@@ -411,11 +404,9 @@ export default function TopPublicationsPage() {
             onSubmit={handleSubmit}
             loading={loading}
             placeholder={
-              awaitingHighlightResponse
-                ? 'Type "yes" to extract highlights or "no" to skip...'
-                : interviewStarted
-                  ? 'Ask your question... (type "end interview" when finished)'
-                  : 'Enter your response...'
+              interviewStarted
+                ? 'Ask your question... (type "end interview" when finished)'
+                : 'Enter your response...'
             }
             removeExpertPrefix={true}
             onReset={handleReset}
