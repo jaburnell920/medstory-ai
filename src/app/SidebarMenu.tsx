@@ -21,6 +21,10 @@ function SidebarMenu() {
           href: '/scientific-investigation/landmark-publications',
           label: 'Find key publications',
         },
+        {
+          href: '',
+          label: 'Add key publications',
+        },
         { href: '', label: 'Identify top thought leaders' },
         { href: '', label: 'Uncover unmet needs' },
       ],

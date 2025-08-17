@@ -132,8 +132,6 @@ export default function CoreStoryConcept() {
     if (selectedConceptData) {
       localStorage.setItem('selectedCoreStoryConceptData', JSON.stringify(selectedConceptData));
     }
-
-    toast.success('Core Story Concept selected!');
   };
 
   // Handle saving selected concept to localStorage (explicit save action)

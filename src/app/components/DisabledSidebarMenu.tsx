@@ -10,6 +10,7 @@ function DisabledSidebarMenu() {
       name: 'Scientific Investigation',
       links: [
         { label: 'Find key publications' },
+        { label: 'Add key publications' },
         { label: 'Identify top thought leaders' },
         { label: 'Uncover unmet needs' },
       ],
