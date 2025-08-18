@@ -82,6 +82,9 @@ export default function ChatInterface({
       content = content.replace(/^Expert:\s*/gm, '');
     }
 
+    // Remove any "Assistant:" prefixes from MEDSTORYAI responses
+    content = content.replace(/^Assistant:\s*/gm, '');
+
     // Format numbered responses - each number on new line, remove vertical bars and quotes
     content = content.replace(/(\d+)\.\s*/g, '\n$1. ');
     content = content.replace(/\|/g, '');

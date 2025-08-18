@@ -168,10 +168,43 @@ export default function TensionResolution() {
 
   // Helper function to clean attack points by removing unwanted strings and formatting
   const cleanAttackPoint = (attackPoint: string): string => {
-    const unwantedString =
-      'Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?';
+    // Remove any "Assistant:" prefixes and introductory text first
+    let cleaned = attackPoint.replace(/^Assistant:\s*/gm, '').trim();
 
-    let cleaned = attackPoint.replace(unwantedString, '').trim();
+    // Remove common introductory phrases before Attack Point headers
+    cleaned = cleaned
+      .replace(
+        /^.*?(?:Alright,|Let's|Here is|Here's|Please find below|I understand.*?Please find below).*?(?:create|new|attack point|Attack Point).*?(?:Here is|Here's|below)?[:\.]?\s*/gi,
+        ''
+      )
+      .trim();
+
+    // Remove any text before "Attack Point #" that might be introductory
+    cleaned = cleaned.replace(/^.*?(?=Attack Point #\d+)/gi, '').trim();
+
+    // Remove questions that might be embedded within the attack point content
+    // This handles questions that appear after the main content but before follow-up questions
+    cleaned = cleaned.replace(/\?\s*\n\s*Now,.*$/gi, '').trim();
+    cleaned = cleaned.replace(/Can we find.*?\?\s*$/gi, '').trim();
+    cleaned = cleaned.replace(/What if.*?\?\s*$/gi, '').trim();
+    cleaned = cleaned.replace(/How can.*?\?\s*$/gi, '').trim();
+    cleaned = cleaned.replace(/Is it possible.*?\?\s*$/gi, '').trim();
+
+    // Remove any question that starts with "Would you like" or "Do you want" and ends with "?"
+    cleaned = cleaned.replace(/Would you like.*?\?/gi, '').trim();
+    cleaned = cleaned.replace(/Do you want.*?\?/gi, '').trim();
+    cleaned = cleaned.replace(/What would you like.*?\?/gi, '').trim();
+    cleaned = cleaned.replace(/How would you like.*?\?/gi, '').trim();
+    cleaned = cleaned.replace(/Which would you prefer.*?\?/gi, '').trim();
+    cleaned = cleaned.replace(/Are you satisfied.*?\?/gi, '').trim();
+    cleaned = cleaned.replace(/What modifications.*?\?/gi, '').trim();
+
+    // Remove standalone fragments like "Now," at the beginning or end
+    cleaned = cleaned.replace(/^\s*Now,\s*/gi, '').trim();
+    cleaned = cleaned.replace(/\s*Now,\s*$/gi, '').trim();
+
+    // Remove any standalone question marks at the end
+    cleaned = cleaned.replace(/\?\s*$/, '').trim();
 
     // Remove asterisks, colons, and dashes from the content
     cleaned = cleaned
