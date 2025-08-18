@@ -970,15 +970,29 @@ export default function TensionResolution() {
         // Parse the content to extract different sections
         const parsedContent = parseContentResponse(data.result);
 
-        // Determine if this is a modification or new creation based on user input and AI response
-        const previousAIMessage = messages.length >= 2 ? messages[messages.length - 2] : null;
+        // Determine if this is a modification or new creation based on user input
+        const userWantsModification = trimmed.toLowerCase().includes('modify') || 
+                                    trimmed.toLowerCase().includes('change') ||
+                                    trimmed.toLowerCase().includes('edit') ||
+                                    trimmed.toLowerCase().includes('update') ||
+                                    trimmed.toLowerCase().includes('revise');
+        
+        const userWantsNew = trimmed.toLowerCase().includes('new') || 
+                           trimmed.toLowerCase().includes('create') ||
+                           trimmed.toLowerCase().includes('another') ||
+                           trimmed.toLowerCase().includes('different');
 
         if (parsedContent.attackPoints.length > 0) {
           const cleaned = parsedContent.attackPoints.map(cleanAttackPoint);
-          if (previousAIMessage && previousAIMessage.content.includes('modif')) {
+          
+          if (userWantsModification && !userWantsNew) {
+            // User explicitly wants to modify the existing attack point
             updateAttackPoints(cleaned, 'modify');
+          } else if (userWantsNew || persistentAttackPoints.length === 0) {
+            // User wants a new attack point OR this is the first attack point
+            updateAttackPoints(cleaned, 'add');
           } else {
-            // Default to 'add' so Attack Point #1, #2, etc., accumulate
+            // Default behavior - if unclear, treat as new
             updateAttackPoints(cleaned, 'add');
           }
         }
@@ -1015,8 +1029,22 @@ export default function TensionResolution() {
           responseContent = '';
         }
 
-        // Only add to chat if there's content to add and it's not a TED talk script
-        if (responseContent.trim() && !tedTalkResult) {
+        // Check if we generated attack points and need to ask the follow-up question
+        const shouldAskFollowUp = parsedContent.attackPoints.length > 0 && 
+                                !trimmed.toLowerCase().includes('move on') &&
+                                !trimmed.toLowerCase().includes('tension');
+        
+        if (shouldAskFollowUp) {
+          // Always ask the follow-up question after generating attack points
+          setMessages((msgs) => [
+            ...msgs,
+            {
+              role: 'assistant',
+              content: 'Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?',
+            },
+          ]);
+        } else if (responseContent.trim() && !tedTalkResult) {
+          // Only add to chat if there's content to add and it's not a TED talk script
           setMessages((msgs) => [
             ...msgs,
             {

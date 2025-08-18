@@ -78,7 +78,11 @@ CRITICAL FORMATTING RULES:
 
 Return only the filledout template—no commentary.
 
-After delivering any attack point ask: "Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?" If answered 'modify', ask the user "What modifications would you like to make?" and use the answer to modify the existing Attack Point. In this case, keep the number of the Attack Point the same. Only uptick the Attack Point number if a new Attack Point is requested. If answered 'new', create a brand new Attack Point using the same and uptick its number. If answered "move on", move on to delivering tension-resolution points.
+After delivering any attack point ask: "Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?" 
+
+CRITICAL: ALWAYS ask this question after every attack point generation, whether it's new or modified.
+
+If answered 'modify', ask the user "What modifications would you like to make?" and use the answer to modify the existing Attack Point. In this case, keep the number of the Attack Point the same. Only uptick the Attack Point number if a new Attack Point is requested. If answered 'new', create a brand new Attack Point using the same and uptick its number. If answered "move on", move on to delivering tension-resolution points.
 
 Training: Tension-Resolution Points
 You are a scientific story architect hired to turn raw ideas into narrative blueprints that grip practicing physicians from the first sentence to the final insight. The tension-resolution points must: 
@@ -185,6 +189,30 @@ Please start with the Attack Point phase.`,
           userMessage.toLowerCase().includes('tension')
         ) {
           mockResult = `Would you like a short narrative (3-5 tension-resolution points), full narrative (8-12 tension-resolution points), or would you like to specify the number of tension-resolution points?`;
+        } else if (userMessage.toLowerCase().includes('modify')) {
+          // Check if this is the initial "modify" request or the actual modification details
+          if (userMessage.toLowerCase().trim() === 'modify') {
+            mockResult = `What modifications would you like to make to the Attack Point?`;
+          } else {
+            // User is providing modification details - generate modified attack point (keep same number)
+            mockResult = `Attack Point #1
+
+In the pediatric ICU, time was running out for 8-year-old Emma. Her leukemia had become a relentless predator, devouring every conventional weapon in the oncologist's arsenal—chemotherapy, radiation, even a bone marrow transplant—all had failed. Her CD19+ B-cells, once vulnerable targets, had evolved into invisible phantoms, slipping past traditional treatments like shadows in the night. As her parents held vigil, watching their daughter's life force ebb away, her oncologist reluctantly prepared the palliative care conversation. But in the depths of Emma's failing immune system, a revolutionary army of engineered T-cells lay dormant, reprogrammed with chimeric antigen receptors, poised to launch the most precise and devastating counterattack that would either save her life or mark the final chapter in pediatric oncology's fight against the impossible.
+
+Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?`;
+          }
+        } else if (
+          userMessage.toLowerCase().includes('dramatic') ||
+          userMessage.toLowerCase().includes('urgent') ||
+          userMessage.toLowerCase().includes('more') ||
+          (userMessage.toLowerCase().includes('make') && userMessage.toLowerCase().includes('it'))
+        ) {
+          // User is providing modification details without using the word "modify"
+          mockResult = `Attack Point #1
+
+In the pediatric ICU, time was running out for 8-year-old Emma. Her leukemia had become a relentless predator, devouring every conventional weapon in the oncologist's arsenal—chemotherapy, radiation, even a bone marrow transplant—all had failed. Her CD19+ B-cells, once vulnerable targets, had evolved into invisible phantoms, slipping past traditional treatments like shadows in the night. As her parents held vigil, watching their daughter's life force ebb away, her oncologist reluctantly prepared the palliative care conversation. But in the depths of Emma's failing immune system, a revolutionary army of engineered T-cells lay dormant, reprogrammed with chimeric antigen receptors, poised to launch the most precise and devastating counterattack that would either save her life or mark the final chapter in pediatric oncology's fight against the impossible.
+
+Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?`;
         } else if (
           userMessage.toLowerCase().includes('new') ||
           userMessage.toLowerCase().includes('create')
@@ -482,9 +510,11 @@ FOLLOW THE COMPLETE PROMPT GUIDELINES:
 Training: Attack Point
 After delivering any attack point ask: "Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?" 
 
+CRITICAL: ALWAYS ask this question after every attack point generation, whether it's new or modified.
+
 IMPORTANT RESPONSE HANDLING:
-- If user says 'modify' or asks for modifications: ask "What modifications would you like to make?" and modify the existing Attack Point keeping the same number.
-- If user says 'new', 'create', 'create a new one', 'new attack point', or similar: create a brand new Attack Point with the next sequential number (e.g., Attack Point #2, #3, etc.). DO NOT ask for modifications.
+- If user says 'modify' or asks for modifications: ask "What modifications would you like to make?" and use the answer to modify the existing Attack Point keeping the same number. After modification, ALWAYS ask the follow-up question again.
+- If user says 'new', 'create', 'create a new one', 'new attack point', or similar: create a brand new Attack Point with the next sequential number (e.g., Attack Point #2, #3, etc.). After creation, ALWAYS ask the follow-up question.
 - If user says "move on" or "tension-resolution": move on to delivering tension-resolution points.
 
 When creating a NEW attack point, increment the number and create completely new content. Do not modify the existing attack point.
