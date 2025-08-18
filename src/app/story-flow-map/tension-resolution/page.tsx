@@ -1117,44 +1117,49 @@ export default function TensionResolution() {
                 ))}
 
                 {/* Tension-Resolution Points */}
-                {tensionResolutionPoints.map((point, index) => (
-                  <div
-                    key={`tension-${index}`}
-                    className="bg-blue-50 p-4 rounded-lg border border-blue-200"
-                  >
-                    <div className="flex items-start gap-3">
-                      <input
-                        type="checkbox"
-                        id={`tension-${index}`}
-                        checked={selectedTensionPoints.has(index.toString())}
-                        onChange={(e) => handleTensionPointSelection(index, e.target.checked)}
-                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-blue-800 mb-2">
-                          Tension-Resolution #{index + 1}
-                        </h3>
-                        <div className="text-gray-800 whitespace-pre-wrap font-sans">
-                          {point
-                            // Format TENSION headers with proper styling and spacing
-                            .replace(
-                              /^TENSION:/gim,
-                              '<div class="font-bold text-blue-800 text-base mt-6 mb-4">TENSION</div>\n'
-                            )
-                            // Format RESOLUTION headers with proper styling and spacing
-                            .replace(
-                              /^RESOLUTION:/gim,
-                              '<div class="font-bold text-blue-800 text-base mt-6 mb-4">RESOLUTION</div>\n'
-                            )
-                            .split('\n')
-                            .map((line, i) => (
-                              <div key={i} dangerouslySetInnerHTML={{ __html: line }} />
-                            ))}
+                {tensionResolutionPoints.map((point, index) => {
+                  // Remove anything before the first "TENSION:"
+                  const cleanedPoint = point.replace(/^[\s\S]*?(?=TENSION:)/i, '');
+
+                  return (
+                    <div
+                      key={`tension-${index}`}
+                      className="bg-blue-50 p-4 rounded-lg border border-blue-200"
+                    >
+                      <div className="flex items-start gap-3">
+                        <input
+                          type="checkbox"
+                          id={`tension-${index}`}
+                          checked={selectedTensionPoints.has(index.toString())}
+                          onChange={(e) => handleTensionPointSelection(index, e.target.checked)}
+                          className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                            Tension-Resolution #{index + 1}
+                          </h3>
+                          <div className="text-gray-800 whitespace-pre-wrap font-sans">
+                            {cleanedPoint
+                              // Format TENSION headers with proper styling and spacing
+                              .replace(
+                                /^TENSION:/gim,
+                                '<div class="font-bold text-blue-800 text-base mt-6 mb-4">TENSION</div>\n'
+                              )
+                              // Format RESOLUTION headers with proper styling and spacing
+                              .replace(
+                                /^RESOLUTION:/gim,
+                                '<div class="font-bold text-blue-800 text-base mt-6 mb-4">RESOLUTION</div>\n'
+                              )
+                              .split('\n')
+                              .map((line, i) => (
+                                <div key={i} dangerouslySetInnerHTML={{ __html: line }} />
+                              ))}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
 
                 {/* Conclusion */}
                 {conclusion && (
