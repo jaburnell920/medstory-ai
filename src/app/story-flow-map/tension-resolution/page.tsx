@@ -174,13 +174,25 @@ export default function TensionResolution() {
     // Remove common introductory phrases before Attack Point headers
     cleaned = cleaned
       .replace(
-        /^.*?(?:Alright,|Let's|Here is|Here's|Please find below|I understand.*?Please find below).*?(?:create|new|attack point|Attack Point).*?(?:Here is|Here's|below)?[:\.]?\s*/gi,
+        /^.*?(?:Alright,|Let's|Here is|Here's|Please find below|I understand.*?Please find below|Thank you.*?Allow me to modify.*?Attack Point).*?(?:create|new|attack point|Attack Point).*?(?:Here is|Here's|below)?[:\.]?\s*/gi,
+        ''
+      )
+      .replace(
+        /^.*?(?:Thank you.*?Allow me to modify.*?Attack Point).*?$/gmi,
         ''
       )
       .trim();
 
     // Remove any text before "Attack Point #" that might be introductory
     cleaned = cleaned.replace(/^.*?(?=Attack Point #\d+)/gi, '').trim();
+    
+    // Remove specific conversational phrases that might appear
+    cleaned = cleaned
+      .replace(/^Thank you for your input\.\s*/gmi, '')
+      .replace(/^Allow me to modify the Attack Point.*?\.\s*/gmi, '')
+      .replace(/^I'll modify.*?Attack Point.*?\.\s*/gmi, '')
+      .replace(/^Let me modify.*?Attack Point.*?\.\s*/gmi, '')
+      .trim();
 
     // Split into lines to process more carefully
     const lines = cleaned.split('\n');
@@ -1038,7 +1050,11 @@ export default function TensionResolution() {
                                     trimmed.toLowerCase().includes('revise') ||
                                     // Check if user is providing modification details after being asked
                                     (messages.length >= 2 && 
-                                     messages[messages.length - 2]?.content?.toLowerCase().includes('what modifications'));
+                                     messages[messages.length - 2]?.content?.toLowerCase().includes('what modifications')) ||
+                                    // Check if the previous AI message asked for modifications
+                                    (messages.length >= 1 && 
+                                     messages[messages.length - 1]?.role === 'assistant' &&
+                                     messages[messages.length - 1]?.content?.toLowerCase().includes('what modifications'));
         
         const userWantsNew = trimmed.toLowerCase().includes('new') || 
                            trimmed.toLowerCase().includes('create') ||
