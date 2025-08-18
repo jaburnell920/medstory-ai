@@ -422,7 +422,10 @@ export default function TensionResolution() {
       }
 
       // Check for Tension-Resolution Point (handle both formats: "Tension-Resolution" and "TensionResolution")
-      if (line.match(/^\*?\*?Tension-?Resolution #\d+/i)) {
+      if (
+        line.match(/^\*?\*?Tension-?Resolution #\d+/i) ||
+        line.match(/^\*\*TensionResolution #\d+/i)
+      ) {
         if (currentSection && currentContent.length > 0) {
           // Save previous section
           if (currentSection === 'attack') {
@@ -442,7 +445,13 @@ export default function TensionResolution() {
       }
 
       // Check for Conclusion - improved pattern to catch various formats
-      if (line.match(/^\*?\*?Conclusion\*?\*?/i) || line.match(/^Conclusion:/i)) {
+      if (
+        line.match(/^\*?\*?Conclusion\*?\*?/i) ||
+        line.match(/^Conclusion:/i) ||
+        line.match(/^\*\*Conclusion\*\*/i) ||
+        line.match(/^\*\*Conclusion:\*\*/i) ||
+        line.match(/^\*\*Conclusion:/i)
+      ) {
         if (currentSection && currentContent.length > 0) {
           // Save previous section
           if (currentSection === 'attack') {
@@ -462,7 +471,13 @@ export default function TensionResolution() {
       }
 
       // Check for References - improved pattern to catch various formats
-      if (line.match(/^\*?\*?References?\*?\*?$/i) || line.match(/^References?:/i)) {
+      if (
+        line.match(/^\*?\*?References?\*?\*?$/i) ||
+        line.match(/^References?:/i) ||
+        line.match(/^\*\*References?\*\*$/i) ||
+        line.match(/^\*\*References?:\*\*$/i) ||
+        line.match(/^\*\*References?:/i)
+      ) {
         if (currentSection && currentContent.length > 0) {
           // Save previous section
           if (currentSection === 'attack') {
@@ -1177,6 +1192,10 @@ export default function TensionResolution() {
                       {references
                         .replace(
                           /\n?Would you like the tension-resolution points put into a table\??\.?$/i,
+                          ''
+                        )
+                        .replace(
+                          /\n?Now, would you like these tension-resolution points put into a table?\??\.?$/i,
                           ''
                         )
                         .trim()}
