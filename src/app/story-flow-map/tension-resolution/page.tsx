@@ -177,21 +177,18 @@ export default function TensionResolution() {
         /^.*?(?:Alright,|Let's|Here is|Here's|Please find below|I understand.*?Please find below|Thank you.*?Allow me to modify.*?Attack Point).*?(?:create|new|attack point|Attack Point).*?(?:Here is|Here's|below)?[:\.]?\s*/gi,
         ''
       )
-      .replace(
-        /^.*?(?:Thank you.*?Allow me to modify.*?Attack Point).*?$/gmi,
-        ''
-      )
+      .replace(/^.*?(?:Thank you.*?Allow me to modify.*?Attack Point).*?$/gim, '')
       .trim();
 
     // Remove any text before "Attack Point #" that might be introductory
     cleaned = cleaned.replace(/^.*?(?=Attack Point #\d+)/gi, '').trim();
-    
+
     // Remove specific conversational phrases that might appear
     cleaned = cleaned
-      .replace(/^Thank you for your input\.\s*/gmi, '')
-      .replace(/^Allow me to modify the Attack Point.*?\.\s*/gmi, '')
-      .replace(/^I'll modify.*?Attack Point.*?\.\s*/gmi, '')
-      .replace(/^Let me modify.*?Attack Point.*?\.\s*/gmi, '')
+      .replace(/^Thank you for your input\.\s*/gim, '')
+      .replace(/^Allow me to modify the Attack Point.*?\.\s*/gim, '')
+      .replace(/^I'll modify.*?Attack Point.*?\.\s*/gim, '')
+      .replace(/^Let me modify.*?Attack Point.*?\.\s*/gim, '')
       .trim();
 
     // Split into lines to process more carefully
@@ -202,7 +199,7 @@ export default function TensionResolution() {
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
-      
+
       // Check if this is an Attack Point header
       if (/^Attack Point #\d+/i.test(line)) {
         foundAttackPointHeader = true;
@@ -211,21 +208,26 @@ export default function TensionResolution() {
       }
 
       // Check if this is a follow-up question - stop processing here
-      if (line.match(/^Would you like.*?\?/i) || 
-          line.match(/^Do you want.*?\?/i) ||
-          line.match(/^What.*?would you like.*?\?/i) ||
-          line.match(/^How.*?would you like.*?\?/i) ||
-          line.match(/^Which.*?would you prefer.*?\?/i) ||
-          line.match(/^Are you satisfied.*?\?/i) ||
-          line.match(/^What modifications.*?\?/i)) {
+      if (
+        line.match(/^Would you like.*?\?/i) ||
+        line.match(/^Do you want.*?\?/i) ||
+        line.match(/^What.*?would you like.*?\?/i) ||
+        line.match(/^How.*?would you like.*?\?/i) ||
+        line.match(/^Which.*?would you prefer.*?\?/i) ||
+        line.match(/^Are you satisfied.*?\?/i) ||
+        line.match(/^What modifications.*?\?/i)
+      ) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         foundFollowUpQuestion = true;
         break;
       }
 
       // If we've found the attack point header, include content lines
       // OR if we haven't found a header yet but this looks like content, include it
-      if ((foundAttackPointHeader && line.length > 0) || 
-          (!foundAttackPointHeader && line.length > 0 && !line.match(/^(ATTACK POINT|Attack Point)/i))) {
+      if (
+        (foundAttackPointHeader && line.length > 0) ||
+        (!foundAttackPointHeader && line.length > 0 && !line.match(/^(ATTACK POINT|Attack Point)/i))
+      ) {
         contentLines.push(line);
       }
     }
@@ -441,7 +443,7 @@ export default function TensionResolution() {
     // This happens when the AI returns modified content
     const hasAttackPointHeader = /Attack Point #\d+/i.test(response);
     const hasFollowUpQuestion = /Would you like.*?modify.*?create.*?move on/i.test(response);
-    
+
     // If there's no explicit header but there's a follow-up question, treat the content as an attack point
     if (!hasAttackPointHeader && hasFollowUpQuestion) {
       // Extract content before the follow-up question
@@ -967,9 +969,9 @@ export default function TensionResolution() {
           setConversationStarted(true);
         } catch (err) {
           console.error('Full error details:', err);
-          console.error('Error message:', err.message);
-          console.error('Error stack:', err.stack);
-          toast.error(`Something went wrong: ${err.message}`);
+          console.error('Error message:', err instanceof Error ? err.message : String(err));
+          console.error('Error stack:', err instanceof Error ? err.stack : 'No stack trace');
+          toast.error(`Something went wrong: ${err instanceof Error ? err.message : String(err)}`);
         } finally {
           setLoading(false);
         }
@@ -1007,7 +1009,7 @@ export default function TensionResolution() {
 
         const data = await res.json();
         console.log('Raw API Response:', data.result);
-        
+
         const { content, question } = parseAIResponse(data.result);
         console.log('Parsed content:', content);
         console.log('Parsed question:', question);
@@ -1024,10 +1026,11 @@ export default function TensionResolution() {
         }
 
         // Check if the response contains a TED talk script (only if user asked for one)
-        const userAskedForTedTalk = trimmed.toLowerCase().includes('ted') || 
-                                   trimmed.toLowerCase().includes('script') ||
-                                   data.result.toLowerCase().includes('ted talk script');
-        
+        const userAskedForTedTalk =
+          trimmed.toLowerCase().includes('ted') ||
+          trimmed.toLowerCase().includes('script') ||
+          data.result.toLowerCase().includes('ted talk script');
+
         let tedTalkResult = null;
         if (userAskedForTedTalk) {
           tedTalkResult = parseTedTalkScript(data.result);
@@ -1043,27 +1046,29 @@ export default function TensionResolution() {
         console.log('Parsed content response:', parsedContent);
 
         // Determine if this is a modification or new creation based on user input and conversation context
-        const userWantsModification = trimmed.toLowerCase().includes('modify') || 
-                                    trimmed.toLowerCase().includes('change') ||
-                                    trimmed.toLowerCase().includes('edit') ||
-                                    trimmed.toLowerCase().includes('update') ||
-                                    trimmed.toLowerCase().includes('revise') ||
-                                    // Check if user is providing modification details after being asked
-                                    (messages.length >= 2 && 
-                                     messages[messages.length - 2]?.content?.toLowerCase().includes('what modifications')) ||
-                                    // Check if the previous AI message asked for modifications
-                                    (messages.length >= 1 && 
-                                     messages[messages.length - 1]?.role === 'assistant' &&
-                                     messages[messages.length - 1]?.content?.toLowerCase().includes('what modifications'));
-        
-        const userWantsNew = trimmed.toLowerCase().includes('new') || 
-                           trimmed.toLowerCase().includes('create') ||
-                           trimmed.toLowerCase().includes('another') ||
-                           trimmed.toLowerCase().includes('different');
+        const userWantsModification =
+          trimmed.toLowerCase().includes('modify') ||
+          trimmed.toLowerCase().includes('change') ||
+          trimmed.toLowerCase().includes('edit') ||
+          trimmed.toLowerCase().includes('update') ||
+          trimmed.toLowerCase().includes('revise') ||
+          // Check if user is providing modification details after being asked
+          (messages.length >= 2 &&
+            messages[messages.length - 2]?.content?.toLowerCase().includes('what modifications')) ||
+          // Check if the previous AI message asked for modifications
+          (messages.length >= 1 &&
+            messages[messages.length - 1]?.role === 'assistant' &&
+            messages[messages.length - 1]?.content?.toLowerCase().includes('what modifications'));
+
+        const userWantsNew =
+          trimmed.toLowerCase().includes('new') ||
+          trimmed.toLowerCase().includes('create') ||
+          trimmed.toLowerCase().includes('another') ||
+          trimmed.toLowerCase().includes('different');
 
         if (parsedContent.attackPoints.length > 0) {
           const cleaned = parsedContent.attackPoints.map(cleanAttackPoint);
-          
+
           if (userWantsModification && !userWantsNew) {
             // User explicitly wants to modify the existing attack point
             updateAttackPoints(cleaned, 'modify');
@@ -1109,17 +1114,19 @@ export default function TensionResolution() {
         }
 
         // Check if we generated attack points and need to ask the follow-up question
-        const shouldAskFollowUp = parsedContent.attackPoints.length > 0 && 
-                                !trimmed.toLowerCase().includes('move on') &&
-                                !trimmed.toLowerCase().includes('tension');
-        
+        const shouldAskFollowUp =
+          parsedContent.attackPoints.length > 0 &&
+          !trimmed.toLowerCase().includes('move on') &&
+          !trimmed.toLowerCase().includes('tension');
+
         if (shouldAskFollowUp) {
           // Always ask the follow-up question after generating attack points
           setMessages((msgs) => [
             ...msgs,
             {
               role: 'assistant',
-              content: 'Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?',
+              content:
+                'Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?',
             },
           ]);
         } else if (responseContent.trim() && !tedTalkResult) {
@@ -1134,9 +1141,9 @@ export default function TensionResolution() {
         }
       } catch (err) {
         console.error('Full error details:', err);
-        console.error('Error message:', err.message);
-        console.error('Error stack:', err.stack);
-        toast.error(`Something went wrong: ${err.message}`);
+        console.error('Error message:', err instanceof Error ? err.message : String(err));
+        console.error('Error stack:', err instanceof Error ? err.stack : 'No stack trace');
+        toast.error(`Something went wrong: ${err instanceof Error ? err.message : String(err)}`);
       } finally {
         setLoading(false);
       }
