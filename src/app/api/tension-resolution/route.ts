@@ -202,6 +202,17 @@ In the pediatric ICU, time was running out for 8-year-old Emma. Her leukemia had
 Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?`;
           }
         } else if (
+          userMessage.toLowerCase().includes('diuretics') ||
+          userMessage.toLowerCase().includes('medication') ||
+          userMessage.toLowerCase().includes('mention')
+        ) {
+          // User is asking to mention diuretics or other medications
+          mockResult = `Attack Point #1
+
+In the relentless race against hypertension, cardiologists frequently grapple with the resistance or intolerance to first-line medications including diuretics. The pursuit for a more effective, well-tolerated, and long-lasting treatment continues. Frequently overlooked in this battle is a humble yet potential-packed tool - Lisinopril.
+
+Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?`;
+        } else if (
           userMessage.toLowerCase().includes('dramatic') ||
           userMessage.toLowerCase().includes('urgent') ||
           userMessage.toLowerCase().includes('more') ||

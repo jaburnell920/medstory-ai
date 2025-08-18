@@ -168,7 +168,7 @@ export default function TensionResolution() {
 
   // Helper function to clean attack points by removing unwanted strings and formatting
   const cleanAttackPoint = (attackPoint: string): string => {
-    // Remove any "Assistant:" prefixes and introductory text first
+    // Remove any "Assistant:" prefixes first
     let cleaned = attackPoint.replace(/^Assistant:\s*/gm, '').trim();
 
     // Remove common introductory phrases before Attack Point headers
@@ -182,31 +182,54 @@ export default function TensionResolution() {
     // Remove any text before "Attack Point #" that might be introductory
     cleaned = cleaned.replace(/^.*?(?=Attack Point #\d+)/gi, '').trim();
 
-    // Remove questions that might be embedded within the attack point content
-    // This handles questions that appear after the main content but before follow-up questions
-    cleaned = cleaned.replace(/\?\s*\n\s*Now,.*$/gi, '').trim();
-    cleaned = cleaned.replace(/Can we find.*?\?\s*$/gi, '').trim();
-    cleaned = cleaned.replace(/What if.*?\?\s*$/gi, '').trim();
-    cleaned = cleaned.replace(/How can.*?\?\s*$/gi, '').trim();
-    cleaned = cleaned.replace(/Is it possible.*?\?\s*$/gi, '').trim();
+    // Split into lines to process more carefully
+    const lines = cleaned.split('\n');
+    const contentLines = [];
+    let foundAttackPointHeader = false;
+    let foundFollowUpQuestion = false;
 
-    // Remove any question that starts with "Would you like" or "Do you want" and ends with "?"
-    cleaned = cleaned.replace(/Would you like.*?\?/gi, '').trim();
-    cleaned = cleaned.replace(/Do you want.*?\?/gi, '').trim();
-    cleaned = cleaned.replace(/What would you like.*?\?/gi, '').trim();
-    cleaned = cleaned.replace(/How would you like.*?\?/gi, '').trim();
-    cleaned = cleaned.replace(/Which would you prefer.*?\?/gi, '').trim();
-    cleaned = cleaned.replace(/Are you satisfied.*?\?/gi, '').trim();
-    cleaned = cleaned.replace(/What modifications.*?\?/gi, '').trim();
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      
+      // Check if this is an Attack Point header
+      if (/^Attack Point #\d+/i.test(line)) {
+        foundAttackPointHeader = true;
+        contentLines.push(line);
+        continue;
+      }
 
-    // Remove standalone fragments like "Now," at the beginning or end
-    cleaned = cleaned.replace(/^\s*Now,\s*/gi, '').trim();
-    cleaned = cleaned.replace(/\s*Now,\s*$/gi, '').trim();
+      // Check if this is a follow-up question - stop processing here
+      if (line.match(/^Would you like.*?\?/i) || 
+          line.match(/^Do you want.*?\?/i) ||
+          line.match(/^What.*?would you like.*?\?/i) ||
+          line.match(/^How.*?would you like.*?\?/i) ||
+          line.match(/^Which.*?would you prefer.*?\?/i) ||
+          line.match(/^Are you satisfied.*?\?/i) ||
+          line.match(/^What modifications.*?\?/i)) {
+        foundFollowUpQuestion = true;
+        break;
+      }
 
-    // Remove any standalone question marks at the end
+      // If we've found the attack point header, include content lines
+      // OR if we haven't found a header yet but this looks like content, include it
+      if ((foundAttackPointHeader && line.length > 0) || 
+          (!foundAttackPointHeader && line.length > 0 && !line.match(/^(ATTACK POINT|Attack Point)/i))) {
+        contentLines.push(line);
+      }
+    }
+
+    // If no header was found but we have content, add a default header
+    if (!foundAttackPointHeader && contentLines.length > 0) {
+      contentLines.unshift('Attack Point #1');
+    }
+
+    // Join the content lines back together
+    cleaned = contentLines.join('\n').trim();
+
+    // Remove any remaining standalone question marks at the end
     cleaned = cleaned.replace(/\?\s*$/, '').trim();
 
-    // Remove asterisks, colons, and dashes from the content
+    // Clean up formatting but preserve the content
     cleaned = cleaned
       .replace(/\*+/g, '') // Remove all asterisks
       .replace(/^:\s*/gm, '') // Remove colons at start of lines
@@ -401,6 +424,28 @@ export default function TensionResolution() {
 
     let currentSection = '';
     let currentContent: string[] = [];
+
+    // Check if this response contains an attack point without explicit header
+    // This happens when the AI returns modified content
+    const hasAttackPointHeader = /Attack Point #\d+/i.test(response);
+    const hasFollowUpQuestion = /Would you like.*?modify.*?create.*?move on/i.test(response);
+    
+    // If there's no explicit header but there's a follow-up question, treat the content as an attack point
+    if (!hasAttackPointHeader && hasFollowUpQuestion) {
+      // Extract content before the follow-up question
+      const questionMatch = response.match(/(Would you like.*?(?:modify|create|move on).*?\?)/i);
+      if (questionMatch) {
+        const contentBeforeQuestion = response.substring(0, questionMatch.index).trim();
+        if (contentBeforeQuestion.length > 0) {
+          // Add a header and treat as attack point
+          const attackPointContent = `Attack Point #1\n\n${contentBeforeQuestion}`;
+          const cleanedAttackPoint = cleanAttackPoint(attackPointContent);
+          if (cleanedAttackPoint) {
+            attackPointsFound.push(cleanedAttackPoint);
+          }
+        }
+      }
+    }
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
@@ -909,8 +954,10 @@ export default function TensionResolution() {
 
           setConversationStarted(true);
         } catch (err) {
-          toast.error('Something went wrong.');
-          console.error(err);
+          console.error('Full error details:', err);
+          console.error('Error message:', err.message);
+          console.error('Error stack:', err.stack);
+          toast.error(`Something went wrong: ${err.message}`);
         } finally {
           setLoading(false);
         }
@@ -947,7 +994,11 @@ export default function TensionResolution() {
         });
 
         const data = await res.json();
+        console.log('Raw API Response:', data.result);
+        
         const { content, question } = parseAIResponse(data.result);
+        console.log('Parsed content:', content);
+        console.log('Parsed question:', question);
 
         // Debug logging
         console.log('API Response:', data.result);
@@ -960,22 +1011,34 @@ export default function TensionResolution() {
           setTableData(tableResult);
         }
 
-        // Check if the response contains a TED talk script
-        const tedTalkResult = parseTedTalkScript(data.result);
-        console.log('TED talk parsing result:', tedTalkResult);
-        if (tedTalkResult) {
-          setTedTalkScript(tedTalkResult);
+        // Check if the response contains a TED talk script (only if user asked for one)
+        const userAskedForTedTalk = trimmed.toLowerCase().includes('ted') || 
+                                   trimmed.toLowerCase().includes('script') ||
+                                   data.result.toLowerCase().includes('ted talk script');
+        
+        let tedTalkResult = null;
+        if (userAskedForTedTalk) {
+          tedTalkResult = parseTedTalkScript(data.result);
+          console.log('TED talk parsing result:', tedTalkResult);
+          if (tedTalkResult) {
+            setTedTalkScript(tedTalkResult);
+          }
         }
 
         // Parse the content to extract different sections
+        console.log('About to parse content response...');
         const parsedContent = parseContentResponse(data.result);
+        console.log('Parsed content response:', parsedContent);
 
-        // Determine if this is a modification or new creation based on user input
+        // Determine if this is a modification or new creation based on user input and conversation context
         const userWantsModification = trimmed.toLowerCase().includes('modify') || 
                                     trimmed.toLowerCase().includes('change') ||
                                     trimmed.toLowerCase().includes('edit') ||
                                     trimmed.toLowerCase().includes('update') ||
-                                    trimmed.toLowerCase().includes('revise');
+                                    trimmed.toLowerCase().includes('revise') ||
+                                    // Check if user is providing modification details after being asked
+                                    (messages.length >= 2 && 
+                                     messages[messages.length - 2]?.content?.toLowerCase().includes('what modifications'));
         
         const userWantsNew = trimmed.toLowerCase().includes('new') || 
                            trimmed.toLowerCase().includes('create') ||
@@ -1054,8 +1117,10 @@ export default function TensionResolution() {
           ]);
         }
       } catch (err) {
-        toast.error('Something went wrong.');
-        console.error(err);
+        console.error('Full error details:', err);
+        console.error('Error message:', err.message);
+        console.error('Error stack:', err.stack);
+        toast.error(`Something went wrong: ${err.message}`);
       } finally {
         setLoading(false);
       }
