@@ -702,7 +702,7 @@ When creating the Powerpoint file for downloading:
         />
       }
       sectionName="MEDSTORY Slide Deck"
-      taskName="Create MEDSTORY deck"
+      taskName="Create MEDSTORY deck blueprint"
     >
       <div className="flex gap-1 h-full">
         {/* Chat Interface - Left Side */}

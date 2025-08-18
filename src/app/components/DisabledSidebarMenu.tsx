@@ -46,7 +46,8 @@ function DisabledSidebarMenu() {
       number: '5',
       name: 'MEDSTORY Slide Deck',
       links: [
-        { label: 'Create MEDSTORY deck' },
+        { label: 'Create MEDSTORY deck blueprint' },
+        { href: '', label: 'Create MEDSTORY deck presentation' },
         { label: 'Optimize MEDSTORY deck' },
         { label: 'Evaluate MEDSTORY deck' },
       ],

@@ -60,7 +60,8 @@ function SidebarMenu() {
       number: '5',
       name: 'MEDSTORY Slide Deck',
       links: [
-        { href: '/slide-presentation/deck-generation', label: 'Create MEDSTORY deck' },
+        { href: '/slide-presentation/deck-generation', label: 'Create MEDSTORY deck blueprint' },
+        { href: '', label: 'Create MEDSTORY deck presentation' },
         { href: '', label: 'Optimize MEDSTORY deck' },
         { href: '', label: 'Evaluate MEDSTORY deck' },
       ],
