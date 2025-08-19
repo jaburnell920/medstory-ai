@@ -90,6 +90,12 @@ export default function TensionResolution() {
     }
   }, []);
 
+  const extractMiddleContent = (response) => {
+    const text = response.result;
+    const match = text.match(/\n([\s\S]+?)\n(?=[^\n]*$)/);
+    return match ? match[1].trim() : '';
+  };
+
   const handleReset = () => {
     setStep(0);
     setInput('');
@@ -171,14 +177,37 @@ export default function TensionResolution() {
     // Remove any "Assistant:" prefixes first
     let cleaned = attackPoint.replace(/^Assistant:\s*/gm, '').trim();
 
-    // Remove common introductory phrases before Attack Point headers
-    cleaned = cleaned
-      .replace(
-        /^.*?(?:Alright,|Let's|Here is|Here's|Please find below|I understand.*?Please find below|Thank you.*?Allow me to modify.*?Attack Point).*?(?:create|new|attack point|Attack Point).*?(?:Here is|Here's|below)?[:\.]?\s*/gi,
-        ''
-      )
-      .replace(/^.*?(?:Thank you.*?Allow me to modify.*?Attack Point).*?$/gim, '')
-      .trim();
+    // Check if the content is wrapped in quotes and extract just the quoted content
+    const quotedContentMatch = cleaned.match(/["'"](.*?)["'"]/s);
+    if (quotedContentMatch) {
+      // If we found quoted content, use only that
+      cleaned = quotedContentMatch[1].trim();
+
+      // Add Attack Point header if it doesn't exist
+      if (!cleaned.match(/^Attack Point #\d+/i)) {
+        cleaned = `Attack Point #1\n\n${cleaned}`;
+      }
+
+      return cleaned;
+    }
+
+    // Look for **Attack Point** pattern first and extract content after it
+    const attackPointMatch = cleaned.match(
+      /\*\*Attack Point\*\*\s*([\s\S]*?)(?=Would you like to modify|$)/i
+    );
+    if (attackPointMatch) {
+      cleaned = `Attack Point #1\n\n${attackPointMatch[1].trim()}`;
+      // Remove the follow-up question if it exists
+      cleaned = cleaned
+        .replace(/\n*Would you like to modify this Attack Point.*?\?.*$/gi, '')
+        .trim();
+      return cleaned;
+    }
+
+    // Handle the specific case: "Sure, let's modify the intervention to diuretics. Here's the new Attack Point with diuretics:"
+    if (cleaned.includes("Sure, let's modify") && cleaned.includes("Here's the new Attack Point")) {
+      return extractMiddleContent(cleaned);
+    }
 
     // Remove any text before "Attack Point #" that might be introductory
     cleaned = cleaned.replace(/^.*?(?=Attack Point #\d+)/gi, '').trim();
@@ -189,6 +218,10 @@ export default function TensionResolution() {
       .replace(/^Allow me to modify the Attack Point.*?\.\s*/gim, '')
       .replace(/^I'll modify.*?Attack Point.*?\.\s*/gim, '')
       .replace(/^Let me modify.*?Attack Point.*?\.\s*/gim, '')
+      .replace(/^Understood\.\s*/gim, '')
+      .replace(/^Sure,.*?\.\s*/gim, '')
+      .replace(/^How about this:\s*/gim, '')
+      .replace(/^Here's the new Attack Point.*?:\s*/gim, '')
       .trim();
 
     // Split into lines to process more carefully
@@ -1215,42 +1248,46 @@ export default function TensionResolution() {
 
               <div ref={resultsScrollRef} className="space-y-6 overflow-y-auto flex-1">
                 {/* Attack Points */}
-                {attackPoints.map((attackPoint, index) => (
-                  <div
-                    key={`attack-${index}`}
-                    className="bg-blue-50 p-4 rounded-lg border border-blue-200"
-                  >
-                    <div className="flex items-start gap-3">
-                      <input
-                        type="radio"
-                        id={`attack-${index}`}
-                        name="attackPoint"
-                        checked={selectedAttackPoint === index.toString()}
-                        onChange={() => handleAttackPointSelection(index)}
-                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                      />
-                      <div className="flex-1">
-                        <pre className="text-gray-800 whitespace-pre-wrap font-sans">
-                          {attackPoint
-                            .replace(
-                              /Attack Point #\d+:?/gi,
-                              () =>
-                                `<div class="font-bold text-blue-800 text-lg mb-4">Attack Point #${index + 1}</div>`
-                            )
-                            .replace(
-                              /Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points\??/gi,
-                              ''
-                            )
-                            .trim()
-                            .split('\n')
-                            .map((line, i) => (
+                {attackPoints.map((attackPoint, index) => {
+                  const cleanedAttackPoint = attackPoint
+                    // Remove the matched 'Attack Point #x' label (optional colon), store match
+                    .replace(/^Attack Point #\d+:?\s*/i, '')
+                    // Remove unwanted sentence
+                    .replace(
+                      /Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points\??/gi,
+                      ''
+                    )
+                    // Trim and remove leading space from entire block (after "Attack Point #x" is removed)
+                    .trim();
+
+                  return (
+                    <div
+                      key={`attack-${index}`}
+                      className="bg-blue-50 p-4 rounded-lg border border-blue-200"
+                    >
+                      <div className="flex items-start gap-3">
+                        <input
+                          type="radio"
+                          id={`attack-${index}`}
+                          name="attackPoint"
+                          checked={selectedAttackPoint === index.toString()}
+                          onChange={() => handleAttackPointSelection(index)}
+                          className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                        />
+                        <div className="flex-1">
+                          <div className="font-bold text-blue-800 text-lg mb-4">
+                            {`Attack Point #${index + 1}`}
+                          </div>
+                          <pre className="text-gray-800 whitespace-pre-wrap font-sans">
+                            {cleanedAttackPoint.split('\n').map((line, i) => (
                               <div key={i} dangerouslySetInnerHTML={{ __html: line }} />
                             ))}
-                        </pre>
+                          </pre>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
 
                 {/* Tension-Resolution Points */}
                 {tensionResolutionPoints.map((point, index) => {
@@ -1317,6 +1354,10 @@ export default function TensionResolution() {
                         )
                         .replace(
                           /\n?Now, would you like these tension-resolution points put into a table?\??\.?$/i,
+                          ''
+                        )
+                        .replace(
+                          /\n?Would you like these tension-resolution points put into a table?\??\.?$/i,
                           ''
                         )
                         .trim()}
