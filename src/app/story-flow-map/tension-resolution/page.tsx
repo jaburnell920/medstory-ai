@@ -1237,6 +1237,11 @@ export default function TensionResolution() {
                               () =>
                                 `<div class="font-bold text-blue-800 text-lg mb-4">Attack Point #${index + 1}</div>`
                             )
+                            .replace(
+                              /Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points\??/gi,
+                              ''
+                            )
+                            .trim()
                             .split('\n')
                             .map((line, i) => (
                               <div key={i} dangerouslySetInnerHTML={{ __html: line }} />
