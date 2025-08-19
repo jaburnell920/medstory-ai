@@ -323,12 +323,19 @@ export default function TensionResolution() {
     const tableLines = lines.slice(tableStart, tableEnd + 1);
     console.log('Table lines:', tableLines);
 
-    // Parse headers (first line)
+    // Parse headers (first line) preserving empty first header
     const headerLine = tableLines[0];
-    const headers = headerLine
+    let headers = headerLine
       .split('|')
-      .map((cell) => cell.trim())
-      .filter((cell) => cell.length > 0);
+      .slice(1, -1) // remove leading and trailing empty due to pipes
+      .map((cell) => cell.trim());
+
+    // Ensure exactly 3 headers for consistency
+    if (headers.length < 3) {
+      headers = [...headers, ...Array(3 - headers.length).fill('')];
+    } else if (headers.length > 3) {
+      headers = headers.slice(0, 3);
+    }
 
     console.log('Headers:', headers);
 
@@ -336,12 +343,24 @@ export default function TensionResolution() {
     const dataLines = tableLines.slice(2);
     console.log('Data lines:', dataLines);
 
-    // Parse data rows
+    // Parse data rows preserving empty cells and normalize to 3 columns
     const rows = dataLines.map((line) => {
-      return line
+      let cells = line
         .split('|')
-        .map((cell) => cell.trim())
-        .filter((cell) => cell.length > 0);
+        .slice(1, -1) // drop boundary pipes
+        .map((cell) => cell.trim());
+
+      // Normalize to 3 columns
+      if (cells.length < 3) cells = [...cells, ...Array(3 - cells.length).fill('')];
+      if (cells.length > 3) cells = cells.slice(0, 3);
+
+      // If row starts with CSC in the number column, move CSC to far-right (Resolution) column
+      if (cells[0].toUpperCase() === 'CSC') {
+        cells[0] = '';
+        cells[2] = cells[2] ? `CSC: ${cells[2]}` : 'CSC';
+      }
+
+      return cells;
     });
 
     console.log('Parsed rows:', rows);
