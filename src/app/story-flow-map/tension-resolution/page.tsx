@@ -90,7 +90,11 @@ export default function TensionResolution() {
     }
   }, []);
 
-  const extractMiddleContent = (response) => {
+  interface ExtractMiddleContentResponse {
+    result: string;
+  }
+
+  const extractMiddleContent = (response: ExtractMiddleContentResponse): string => {
     const text = response.result;
     const match = text.match(/\n([\s\S]+?)\n(?=[^\n]*$)/);
     return match ? match[1].trim() : '';
