@@ -150,7 +150,7 @@ export default function LandmarkPublicationsPage() {
     setSelectedStudies(newSelected);
   };
 
-  // Extract search terms from citation for better PubMed linking
+  // Extract search terms from citation for better Google search linking
   const extractSearchTerms = (citation: string): string => {
     // Remove the study number prefix
     const cleanCitation = citation.replace(/^\d+\.\s*/, '');
@@ -163,40 +163,60 @@ export default function LandmarkPublicationsPage() {
     const yearMatch = cleanCitation.match(/(\d{4})/);
     const year = yearMatch ? yearMatch[1] : '';
 
-    // Extract journal name (look for common journal abbreviations)
+    // Extract journal name (look for common journal abbreviations and full names)
     const journalMatch = cleanCitation.match(
-      /(N Engl J Med|JAMA|Lancet|Circulation|Ann Thorac Surg|BMJ|J Thorac Cardiovasc Surg|S Afr Med J|Obesity)/i
+      /(N Engl J Med|New England Journal of Medicine|JAMA|Journal of the American Medical Association|Lancet|The Lancet|Circulation|Ann Thorac Surg|Annals of Thoracic Surgery|BMJ|British Medical Journal|J Thorac Cardiovasc Surg|Journal of Thoracic and Cardiovascular Surgery|S Afr Med J|South African Medical Journal|Obesity|Nature|Science|Cell|NEJM)/i
     );
     const journal = journalMatch ? journalMatch[1] : '';
 
-    // Extract title (text between author and journal, or before year)
+    // Extract title - more flexible approach for Google search
     let title = '';
+    
+    // Try to find title between author and journal
     if (journal) {
-      const titleMatch = cleanCitation.match(
-        /^[^.]+\.\s*(.+?)\.\s*(?:N Engl J Med|JAMA|Lancet|Circulation|Ann Thorac Surg|BMJ|J Thorac Cardiovasc Surg|S Afr Med J|Obesity)/i
-      );
+      const titlePattern = new RegExp(`^[^.]+\\.\\s*(.+?)\\s*\\.?\\s*${journal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'i');
+      const titleMatch = cleanCitation.match(titlePattern);
       title = titleMatch ? titleMatch[1] : '';
-    } else {
-      // Fallback: extract text before year
-      const titleMatch = cleanCitation.match(/^[^.]+\.\s*(.+?)\.\s*\d{4}/);
+    }
+    
+    // Fallback: extract text between first period and year
+    if (!title && year) {
+      const titleMatch = cleanCitation.match(/^[^.]+\.\s*(.+?)\s*\.?\s*\d{4}/);
+      title = titleMatch ? titleMatch[1] : '';
+    }
+    
+    // Another fallback: extract text between first period and journal/year
+    if (!title) {
+      const titleMatch = cleanCitation.match(/^[^.]+\.\s*(.+?)\s*\./);
       title = titleMatch ? titleMatch[1] : '';
     }
 
-    // Clean up title - remove "et al" and extra spaces
+    // Clean up title - remove "et al" and extra punctuation
     title = title
       .replace(/,?\s*et al\.?/gi, '')
+      .replace(/[;:]/g, '')
       .replace(/\s+/g, ' ')
       .trim();
 
-    // Combine search terms, prioritizing title and author
-    const searchTerms = [title, author, year, journal]
-      .filter((term) => term.length > 0)
-      .join(' ')
-      .replace(/[^\w\s-]/g, ' ') // Remove special characters except hyphens
+    // For Google search, prioritize title and add quotes for exact phrase matching
+    let searchQuery = '';
+    if (title && title.length > 10) {
+      // Use quoted title for exact matching, plus author and year for context
+      searchQuery = `"${title}" ${author} ${year}`;
+    } else {
+      // Fallback to combining available terms
+      searchQuery = [title, author, year, journal]
+        .filter((term) => term.length > 0)
+        .join(' ');
+    }
+
+    // Clean up the search query
+    searchQuery = searchQuery
+      .replace(/[^\w\s"-]/g, ' ') // Keep quotes and hyphens
       .replace(/\s+/g, ' ')
       .trim();
 
-    return searchTerms || cleanCitation; // Fallback to original citation if extraction fails
+    return searchQuery || cleanCitation; // Fallback to original citation if extraction fails
   };
 
   // Handle saving selected studies to session storage
@@ -433,7 +453,7 @@ export default function LandmarkPublicationsPage() {
                       />
                       <div className="flex-1">
                         <a
-                          href={`https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(extractSearchTerms(study.citation))}`}
+                          href={`https://www.google.com/search?q=${encodeURIComponent(extractSearchTerms(study.citation))}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="block cursor-pointer hover:text-blue-700"
