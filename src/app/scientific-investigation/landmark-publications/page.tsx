@@ -150,7 +150,7 @@ export default function LandmarkPublicationsPage() {
     setSelectedStudies(newSelected);
   };
 
-  // Extract search terms from citation for better Google search linking
+  // Extract search terms from citation for Google search linking (without quotes)
   const extractSearchTerms = (citation: string): string => {
     // Remove the study number prefix
     const cleanCitation = citation.replace(/^\d+\.\s*/, '');
@@ -198,21 +198,11 @@ export default function LandmarkPublicationsPage() {
       .replace(/\s+/g, ' ')
       .trim();
 
-    // For Google search, prioritize title and add quotes for exact phrase matching
-    let searchQuery = '';
-    if (title && title.length > 10) {
-      // Use quoted title for exact matching, plus author and year for context
-      searchQuery = `"${title}" ${author} ${year}`;
-    } else {
-      // Fallback to combining available terms
-      searchQuery = [title, author, year, journal]
-        .filter((term) => term.length > 0)
-        .join(' ');
-    }
-
-    // Clean up the search query
-    searchQuery = searchQuery
-      .replace(/[^\w\s"-]/g, ' ') // Keep quotes and hyphens
+    // For Google search, combine terms without quotes
+    const searchQuery = [title, author, year, journal]
+      .filter((term) => term.length > 0)
+      .join(' ')
+      .replace(/[^\w\s-]/g, ' ') // Remove special characters except hyphens
       .replace(/\s+/g, ' ')
       .trim();
 
