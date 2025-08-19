@@ -453,7 +453,7 @@ export default function LandmarkPublicationsPage() {
                       />
                       <div className="flex-1">
                         <a
-                          href={`https://www.google.com/search?q=${encodeURIComponent(extractSearchTerms(study.citation))}`}
+                          href={`/api/google-search-redirect?q=${encodeURIComponent(extractSearchTerms(study.citation))}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="block cursor-pointer hover:text-blue-700"
