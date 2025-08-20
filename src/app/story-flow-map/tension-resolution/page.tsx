@@ -1288,6 +1288,7 @@ export default function TensionResolution() {
                       /Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points\??/gi,
                       ''
                     )
+                    .replace(/Attack Point:\??/gi, '')
                     // Trim and remove leading space from entire block (after "Attack Point #x" is removed)
                     .trim();
 
