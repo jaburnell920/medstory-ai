@@ -7,7 +7,7 @@ const openai = process.env.OPENAI_API_KEY
     })
   : null;
 
-// Function to clean AI response by extracting actual content
+// Function to clean AI response by removing commentary while preserving structure
 function cleanAIResponse(response: string): string {
   if (!response) return response;
   
@@ -27,22 +27,35 @@ function cleanAIResponse(response: string): string {
     return quotedContent + (followUp ? '\n\n' + followUp : '');
   }
   
-  // If no quotes, look for content after a colon
-  const colonMatch = cleaned.match(/^[^:\n]*:\s*(.+)/s);
-  if (colonMatch) {
-    cleaned = colonMatch[1];
-  }
-  
-  // If there's a line break followed by substantial content, extract from there
+  // Remove conversational lead-ins but preserve Attack Point structure
   const lines = cleaned.split('\n');
   let contentStartIndex = 0;
   
-  // Skip initial lines that look like commentary (short lines without "Attack Point")
+  // First pass: Look specifically for "Attack Point" lines
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
-    if (line.length > 50 || line.includes('Attack Point') || line.includes('Tension') || line.includes('Resolution')) {
+    if (line.match(/^Attack Point/i)) {
       contentStartIndex = i;
       break;
+    }
+  }
+  
+  // If no "Attack Point" found, look for other content indicators
+  if (contentStartIndex === 0) {
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      
+      // If we find substantial content (long line), start from there
+      if (line.length > 50) {
+        contentStartIndex = i;
+        break;
+      }
+      
+      // If we find other content indicators, start from there
+      if (line.includes('Tension') || line.includes('Resolution')) {
+        contentStartIndex = i;
+        break;
+      }
     }
   }
   
