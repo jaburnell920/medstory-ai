@@ -177,7 +177,8 @@ export default function TensionResolution() {
     let cleaned = attackPoint.replace(/^Assistant:\s*/gm, '').trim();
 
     // Check if the content is wrapped in quotes and extract just the quoted content
-    const quotedContentMatch = cleaned.match(/["'"](.*?)["'"]/s);
+    // Only match if the entire content (or most of it) is wrapped in quotes
+    const quotedContentMatch = cleaned.match(/^["'"]([\s\S]*?)["'"]$/s);
     if (quotedContentMatch) {
       // If we found quoted content, use only that
       cleaned = quotedContentMatch[1].trim();
