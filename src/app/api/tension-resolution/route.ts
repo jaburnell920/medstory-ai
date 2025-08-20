@@ -7,7 +7,7 @@ const openai = process.env.OPENAI_API_KEY
     })
   : null;
 
-// Function to clean AI response by removing conversational commentary
+// Function to clean AI response by extracting actual content
 function cleanAIResponse(response: string): string {
   if (!response) return response;
   
@@ -16,67 +16,38 @@ function cleanAIResponse(response: string): string {
   // Remove "Assistant:" prefix
   cleaned = cleaned.replace(/^Assistant:\s*/i, '');
   
-  // Remove common conversational lead-ins
-  const leadInPatterns = [
-    /^I understand you'd like to.*?\. Here's a revised version:\s*/i,
-    /^I understand you'd like to.*?\. Here's.*?:\s*/i,
-    /^I understand.*?\. Here's.*?:\s*/i,
-    /^Certainly\.\s*Here's your extended Attack Point:\s*/i,
-    /^Here's your extended Attack Point:\s*/i,
-    /^Certainly\.\s*Here's the modified Attack Point:\s*/i,
-    /^Here's the modified Attack Point:\s*/i,
-    /^Here's your modified Attack Point:\s*/i,
-    /^Here's a revised version:\s*/i,
-    /^Here's the revised Attack Point:\s*/i,
-    /^Certainly\.\s*Here's the Attack Point:\s*/i,
-    /^Here's the Attack Point:\s*/i,
-    /^Let me create a.*?:\s*/i,
-    /^Let me revise.*?:\s*/i,
-    /^Let me make.*?:\s*/i,
-    /^Certainly\.\s*/i,
-    /^Here's\s+/i,
-    /^Let me\s+/i,
-    /^How about this:\s*/i,
-    /^Understood\.\s*/i,
-  ];
-  
-  for (const pattern of leadInPatterns) {
-    cleaned = cleaned.replace(pattern, '');
+  // Extract content within quotes if present
+  const quotedMatch = cleaned.match(/"([^"]*(?:\n[^"]*)*?)"/);
+  if (quotedMatch) {
+    const quotedContent = quotedMatch[1];
+    // Find the follow-up question
+    const followUpMatch = cleaned.match(/Would you like to[^?]*\?/);
+    const followUp = followUpMatch ? followUpMatch[0] : '';
+    
+    return quotedContent + (followUp ? '\n\n' + followUp : '');
   }
   
-  // Remove quotes around the main content if they wrap the entire content
-  // But preserve quotes that are part of the actual content
+  // If no quotes, look for content after a colon
+  const colonMatch = cleaned.match(/^[^:\n]*:\s*(.+)/s);
+  if (colonMatch) {
+    cleaned = colonMatch[1];
+  }
+  
+  // If there's a line break followed by substantial content, extract from there
   const lines = cleaned.split('\n');
-  if (lines.length > 0) {
-    // Check if first non-empty line starts with quote and last content line ends with quote
-    let firstContentLineIndex = 0;
-    let lastContentLineIndex = lines.length - 1;
-    
-    // Find first non-empty line
-    while (firstContentLineIndex < lines.length && lines[firstContentLineIndex].trim() === '') {
-      firstContentLineIndex++;
+  let contentStartIndex = 0;
+  
+  // Skip initial lines that look like commentary (short lines without "Attack Point")
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line.length > 50 || line.includes('Attack Point') || line.includes('Tension') || line.includes('Resolution')) {
+      contentStartIndex = i;
+      break;
     }
-    
-    // Find last line that contains actual content (not just the follow-up question)
-    while (lastContentLineIndex >= 0) {
-      const line = lines[lastContentLineIndex].trim();
-      if (line && !line.startsWith('Would you like to')) {
-        break;
-      }
-      lastContentLineIndex--;
-    }
-    
-    if (firstContentLineIndex < lines.length && lastContentLineIndex >= firstContentLineIndex) {
-      const firstLine = lines[firstContentLineIndex].trim();
-      const lastLine = lines[lastContentLineIndex].trim();
-      
-      if (firstLine.startsWith('"') && lastLine.endsWith('"')) {
-        // Remove the wrapping quotes
-        lines[firstContentLineIndex] = lines[firstContentLineIndex].replace(/^\s*"/, '');
-        lines[lastContentLineIndex] = lines[lastContentLineIndex].replace(/"$/, '');
-        cleaned = lines.join('\n');
-      }
-    }
+  }
+  
+  if (contentStartIndex > 0) {
+    cleaned = lines.slice(contentStartIndex).join('\n');
   }
   
   // Clean up extra whitespace
