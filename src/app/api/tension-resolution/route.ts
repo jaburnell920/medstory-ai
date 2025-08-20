@@ -18,13 +18,21 @@ function cleanAIResponse(response: string): string {
   
   // Remove common conversational lead-ins
   const leadInPatterns = [
+    /^I understand you'd like to.*?\. Here's a revised version:\s*/i,
+    /^I understand you'd like to.*?\. Here's.*?:\s*/i,
+    /^I understand.*?\. Here's.*?:\s*/i,
     /^Certainly\.\s*Here's your extended Attack Point:\s*/i,
     /^Here's your extended Attack Point:\s*/i,
     /^Certainly\.\s*Here's the modified Attack Point:\s*/i,
     /^Here's the modified Attack Point:\s*/i,
     /^Here's your modified Attack Point:\s*/i,
+    /^Here's a revised version:\s*/i,
+    /^Here's the revised Attack Point:\s*/i,
     /^Certainly\.\s*Here's the Attack Point:\s*/i,
     /^Here's the Attack Point:\s*/i,
+    /^Let me create a.*?:\s*/i,
+    /^Let me revise.*?:\s*/i,
+    /^Let me make.*?:\s*/i,
     /^Certainly\.\s*/i,
     /^Here's\s+/i,
     /^Let me\s+/i,
