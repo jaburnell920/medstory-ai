@@ -7,6 +7,76 @@ const openai = process.env.OPENAI_API_KEY
     })
   : null;
 
+// Function to clean AI response by removing conversational commentary
+function cleanAIResponse(response: string): string {
+  if (!response) return response;
+  
+  let cleaned = response;
+  
+  // Remove "Assistant:" prefix
+  cleaned = cleaned.replace(/^Assistant:\s*/i, '');
+  
+  // Remove common conversational lead-ins
+  const leadInPatterns = [
+    /^Certainly\.\s*Here's your extended Attack Point:\s*/i,
+    /^Here's your extended Attack Point:\s*/i,
+    /^Certainly\.\s*Here's the modified Attack Point:\s*/i,
+    /^Here's the modified Attack Point:\s*/i,
+    /^Here's your modified Attack Point:\s*/i,
+    /^Certainly\.\s*Here's the Attack Point:\s*/i,
+    /^Here's the Attack Point:\s*/i,
+    /^Certainly\.\s*/i,
+    /^Here's\s+/i,
+    /^Let me\s+/i,
+    /^How about this:\s*/i,
+    /^Understood\.\s*/i,
+  ];
+  
+  for (const pattern of leadInPatterns) {
+    cleaned = cleaned.replace(pattern, '');
+  }
+  
+  // Remove quotes around the main content if they wrap the entire content
+  // But preserve quotes that are part of the actual content
+  const lines = cleaned.split('\n');
+  if (lines.length > 0) {
+    // Check if first non-empty line starts with quote and last content line ends with quote
+    let firstContentLineIndex = 0;
+    let lastContentLineIndex = lines.length - 1;
+    
+    // Find first non-empty line
+    while (firstContentLineIndex < lines.length && lines[firstContentLineIndex].trim() === '') {
+      firstContentLineIndex++;
+    }
+    
+    // Find last line that contains actual content (not just the follow-up question)
+    while (lastContentLineIndex >= 0) {
+      const line = lines[lastContentLineIndex].trim();
+      if (line && !line.startsWith('Would you like to')) {
+        break;
+      }
+      lastContentLineIndex--;
+    }
+    
+    if (firstContentLineIndex < lines.length && lastContentLineIndex >= firstContentLineIndex) {
+      const firstLine = lines[firstContentLineIndex].trim();
+      const lastLine = lines[lastContentLineIndex].trim();
+      
+      if (firstLine.startsWith('"') && lastLine.endsWith('"')) {
+        // Remove the wrapping quotes
+        lines[firstContentLineIndex] = lines[firstContentLineIndex].replace(/^\s*"/, '');
+        lines[lastContentLineIndex] = lines[lastContentLineIndex].replace(/"$/, '');
+        cleaned = lines.join('\n');
+      }
+    }
+  }
+  
+  // Clean up extra whitespace
+  cleaned = cleaned.replace(/\n\n\n+/g, '\n\n').trim();
+  
+  return cleaned;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { coreStoryConcept, audience, action, userMessage, conversationHistory } =
@@ -184,7 +254,8 @@ Please start with the Attack Point phase.`,
         max_tokens: 2000,
       });
 
-      const result = completion.choices[0]?.message?.content || 'No response generated.';
+      const rawResult = completion.choices[0]?.message?.content || 'No response generated.';
+      const result = cleanAIResponse(rawResult);
       return NextResponse.json({ result });
     } else if (action === 'continue') {
       // Mock response for testing when no OpenAI API key is available
@@ -582,7 +653,8 @@ Respond appropriately to the user's latest message, following the conversation f
         max_tokens: 4000,
       });
 
-      const result = completion.choices[0]?.message?.content || 'No response generated.';
+      const rawResult = completion.choices[0]?.message?.content || 'No response generated.';
+      const result = cleanAIResponse(rawResult);
       return NextResponse.json({ result });
     }
 
