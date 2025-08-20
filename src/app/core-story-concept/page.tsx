@@ -203,6 +203,9 @@ export default function CoreStoryConcept() {
       } else if (trimmed.toLowerCase().includes('new')) {
         // Generate a new concept
         try {
+          // Use default length if empty
+          const effectiveLength = context.length || '40';
+          
           const res = await fetch('/api/openai', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -215,13 +218,13 @@ export default function CoreStoryConcept() {
                 },
                 {
                   role: 'user',
-                  content: `Create a new Core Story Concept Candidate #${nextConceptNumber} for ${context.drug} in ${context.disease} for the target audience ${context.audience} with a length of ${context.length}.`,
+                  content: `Create a new Core Story Concept Candidate #${nextConceptNumber} for ${context.drug} in ${context.disease} for the target audience ${context.audience} with a length of ${effectiveLength}.`,
                 },
               ],
               disease: context.disease,
               drug: context.drug,
               audience: context.audience,
-              length: context.length,
+              length: effectiveLength,
             }),
           });
 
@@ -341,6 +344,9 @@ export default function CoreStoryConcept() {
     ) {
       setLoading(true);
       try {
+        // Use default length if empty
+        const effectiveLength = context.length || '40';
+        
         const res = await fetch('/api/openai', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -353,7 +359,7 @@ export default function CoreStoryConcept() {
               },
               {
                 role: 'user',
-                content: `Modify this Core Story Concept Candidate #${currentlyModifyingConcept ? currentlyModifyingConcept.conceptNumber : 1} for ${context.drug} in ${context.disease} based on the following feedback: ${trimmed}. Keep the length at ${context.length}. Keep the same candidate number in the response.`,
+                content: `Modify this Core Story Concept Candidate #${currentlyModifyingConcept ? currentlyModifyingConcept.conceptNumber : 1} for ${context.drug} in ${context.disease} based on the following feedback: ${trimmed}. Keep the length at ${effectiveLength}. Keep the same candidate number in the response.`,
               },
               {
                 role: 'assistant',
@@ -363,7 +369,7 @@ export default function CoreStoryConcept() {
             disease: context.disease,
             drug: context.drug,
             audience: context.audience,
-            length: context.length,
+            length: effectiveLength,
           }),
         });
 
@@ -439,6 +445,9 @@ export default function CoreStoryConcept() {
       setLoading(true);
 
       try {
+        // Use default length if empty
+        const effectiveLength = context.length || '40';
+        
         const res = await fetch('/api/openai', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -451,13 +460,13 @@ export default function CoreStoryConcept() {
               },
               {
                 role: 'user',
-                content: `Create a Core Story Concept Candidate #1 for ${context.drug} in ${context.disease} for the target audience ${context.audience} with a length of ${context.length}.`,
+                content: `Create a Core Story Concept Candidate #1 for ${context.drug} in ${context.disease} for the target audience ${context.audience} with a length of ${effectiveLength}.`,
               },
             ],
             disease: context.disease,
             drug: context.drug,
             audience: context.audience,
-            length: context.length,
+            length: effectiveLength,
           }),
         });
 

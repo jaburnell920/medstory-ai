@@ -55,6 +55,9 @@ export async function POST(req: NextRequest) {
         apiKey: process.env.OPENAI_API_KEY,
       });
 
+      // Use default length if empty
+      const effectiveLength = length || '40';
+
       const chatCompletion = await openai.chat.completions.create({
         model: 'gpt-4',
         messages: [
@@ -82,7 +85,7 @@ Use the following to find an optimal Core Story Concept:
 weight in formulating the Core Story Concept.
 3. Use the following title: "Core Story Concept Candidate #X" where X is the number of the current core story concept, then add a blank line after this. For the first concept in a session, always use #1. 
 4. Following the title, distill each truth into a memorable mini-narrative that is structured in the form of
-a tension section which is ${length} number of words and a resolution section which is ${length}
+a tension section which is ${effectiveLength} number of words and a resolution section which is ${effectiveLength}
 number of words. The resolution pays off the tension in hand-in-glove fashion that makes perfect
 sense. For the section titles, use only the words "TENSION" and "RESOLUTION" without any asterisks, 
 quotation marks, or colons. Always include a blank line after each section title.
@@ -93,7 +96,32 @@ Return only the concepts in the template above.`,
         ],
       });
 
-      return NextResponse.json({ result: chatCompletion.choices[0].message.content });
+      let result = chatCompletion.choices[0].message.content;
+
+      // Check if the response is the unhelpful length specification message
+      if (result && result.includes('specify the length for the Tension and Resolution sections')) {
+        console.log('Detected unhelpful response, retrying with explicit length...');
+        
+        // Retry with a more explicit prompt
+        const retryCompletion = await openai.chat.completions.create({
+          model: 'gpt-4',
+          messages: [
+            {
+              role: 'system',
+              content: `You are an AI specializing in medical storytelling and narrative development for pharmaceutical products. Your task is to generate structured Core Story Concepts for a specified drug treating a particular disease state.
+
+You must create a Core Story Concept with exactly ${effectiveLength} words in the TENSION section and exactly ${effectiveLength} words in the RESOLUTION section.
+
+Never ask for clarification about length - always generate the content with the specified word count.`,
+            },
+            ...messages,
+          ],
+        });
+        
+        result = retryCompletion.choices[0].message.content;
+      }
+
+      return NextResponse.json({ result });
     } catch (error) {
       console.error('OpenAI Error:', error);
       return NextResponse.json({ error: 'Failed to generate content' }, { status: 500 });
@@ -101,6 +129,9 @@ Return only the concepts in the template above.`,
   }
 
   // Initial core story concept generation
+  // Use default length if empty
+  const effectiveLength = length || '40';
+  
   const prompt = `
 # Core Story Concept
 You are a multidisciplinary medical storyteller hired to create a Core Story Concept for ${drug} in ${disease} for the target audience ${audience}.
@@ -120,7 +151,7 @@ Use the following to find an optimal Core Story Concept:
 2. If there are saved message highlights from an expert interview, give these moderately heavy
 weight in formulating the Core Story Concept.
 3. Use the following title: "Core Story Concept Candidate #1" then add a blank line after this. Always use #1 for the first concept. 
-4. Following the title, distill each truth into a memorable mini-narrative that is structured in the form of a tension section which is ${length} words and a resolution section which is ${length} words. The resolution pays off the tension in hand-in-glove fashion that makes perfect sense. For the section titles, use only the words "TENSION" and "RESOLUTION" without any asterisks, quotation marks, or colons. Always include a blank line after each section title.
+4. Following the title, distill each truth into a memorable mini-narrative that is structured in the form of a tension section which is ${effectiveLength} words and a resolution section which is ${effectiveLength} words. The resolution pays off the tension in hand-in-glove fashion that makes perfect sense. For the section titles, use only the words "TENSION" and "RESOLUTION" without any asterisks, quotation marks, or colons. Always include a blank line after each section title.
 
 Return only the concepts in the template above.
 
@@ -139,7 +170,7 @@ Create a Core Story Concept using the guidelines above.
         {
           role: 'system',
           content:
-            'You are an AI specializing in medical storytelling and narrative development for pharmaceutical products. Your task is to generate structured Core Story Concepts for a specified drug treating a particular disease state.',
+            'You are an AI specializing in medical storytelling and narrative development for pharmaceutical products. Your task is to generate structured Core Story Concepts for a specified drug treating a particular disease state. Never ask for clarification about length - always generate the content with the specified word count.',
         },
         {
           role: 'user',
@@ -148,7 +179,35 @@ Create a Core Story Concept using the guidelines above.
       ],
     });
 
-    return NextResponse.json({ result: chatCompletion.choices[0].message.content });
+    let result = chatCompletion.choices[0].message.content;
+
+    // Check if the response is the unhelpful length specification message
+    if (result && result.includes('specify the length for the Tension and Resolution sections')) {
+      console.log('Detected unhelpful response in initial generation, retrying with explicit length...');
+      
+      // Retry with a more explicit prompt
+      const retryCompletion = await openai.chat.completions.create({
+        model: 'gpt-4',
+        messages: [
+          {
+            role: 'system',
+            content: `You are an AI specializing in medical storytelling and narrative development for pharmaceutical products. Your task is to generate structured Core Story Concepts for a specified drug treating a particular disease state.
+
+You must create a Core Story Concept with exactly ${effectiveLength} words in the TENSION section and exactly ${effectiveLength} words in the RESOLUTION section.
+
+Never ask for clarification about length - always generate the content with the specified word count.`,
+          },
+          {
+            role: 'user',
+            content: `Create a Core Story Concept Candidate #1 for ${drug} in ${disease} for the target audience ${audience}. Use exactly ${effectiveLength} words for both the TENSION and RESOLUTION sections.`,
+          },
+        ],
+      });
+      
+      result = retryCompletion.choices[0].message.content;
+    }
+
+    return NextResponse.json({ result });
   } catch (error) {
     console.error('OpenAI Error:', error);
     return NextResponse.json({ error: 'Failed to generate content' }, { status: 500 });
