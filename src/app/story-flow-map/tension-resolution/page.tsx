@@ -354,10 +354,22 @@ export default function TensionResolution() {
       if (cells.length < 3) cells = [...cells, ...Array(3 - cells.length).fill('')];
       if (cells.length > 3) cells = cells.slice(0, 3);
 
-      // If row starts with CSC in the number column, move CSC to far-right (Resolution) column
-      if (cells[0].toUpperCase() === 'CSC') {
+      // If row starts with CSC in the first column, ensure CSC content is in the Resolution column
+      const cscMatch = cells[0].match(/^CSC\s*:?\s*(.*)$/i);
+      if (cscMatch) {
+        const extraFromFirstCol = (cscMatch[1] || '').trim();
+        // Prefer existing Resolution content; otherwise use Tension; otherwise use any trailing content from the first column label
+        let targetContent = cells[2] || cells[1] || extraFromFirstCol || '';
+        // Prefix with CSC label if not already
+        if (targetContent && !/^CSC\b/i.test(targetContent)) {
+          targetContent = `CSC: ${targetContent}`;
+        } else if (!targetContent) {
+          targetContent = 'CSC';
+        }
+        // Clear first column and move all content to Resolution, leaving Tension blank
         cells[0] = '';
-        cells[2] = cells[2] ? `CSC: ${cells[2]}` : 'CSC';
+        cells[1] = '';
+        cells[2] = targetContent;
       }
 
       return cells;
@@ -1378,6 +1390,7 @@ export default function TensionResolution() {
                           /\n?Would you like these tension-resolution points put into a table?\??\.?$/i,
                           ''
                         )
+                        .replace(/Assistant:.*$/is, '')
                         .trim()}
                     </pre>
                   </div>
