@@ -242,7 +242,6 @@ Audience: ${audience}
 Please start with the Attack Point phase.`,
           },
         ],
-        temperature: 0.7,
         max_tokens: 2000,
       });
 
@@ -641,7 +640,6 @@ Respond appropriately to the user's latest message, following the conversation f
           },
           { role: 'user', content: continuePrompt },
         ],
-        temperature: 0.7,
         max_tokens: 4000,
       });
 

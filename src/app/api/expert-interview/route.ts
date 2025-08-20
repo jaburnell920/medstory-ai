@@ -163,7 +163,6 @@ Respond directly to the interviewer's question or comment, maintaining your expe
           },
           { role: 'user', content: continuePrompt },
         ],
-        temperature: 0.7,
       });
 
       return NextResponse.json({ result: completion.choices[0].message.content });
@@ -222,7 +221,6 @@ KEY HIGHLIGHTS:`;
           },
           { role: 'user', content: extractPrompt },
         ],
-        temperature: 0.3,
       });
 
       return NextResponse.json({ result: completion.choices[0].message.content });
