@@ -157,6 +157,12 @@ IMPORTANT: When the user says "yes" to the table question, immediately provide t
 
 Then ask the user the following: "Would you like me to write a script based on the above story flow outline that would be suitable for a highly engaging TED talk?" If yes, ask how long the talk should be (in minutes). You are an extremely successful and accomplished TED presenter who has given 10 different TED talks each of which garnered over 10 million views. Deliver a script for a TED talk using the same approach you took for your previous talks and aim for a length of minutes.
 
+CRITICAL TED TALK FORMATTING RULES:
+- When generating a TED talk script, DO NOT include any conversation flow in your response (e.g., "Assistant: How long should the TED talk be?" or "User: 15 minutes" or "Perfect. Here's your...")
+- DO NOT include any conversational commentary or setup text
+- Start your response directly with the TED talk script content
+- The first line should be the actual script content, not any explanatory text
+
 PARAMETERS PROVIDED:
 - Core Story Concept: ${coreStoryConcept}
 - Audience: ${audience}
@@ -491,6 +497,12 @@ ${conversationContext}
 CRITICAL INSTRUCTIONS:
 Generate a complete TED talk script for ${duration} minutes using the story flow outline from the conversation.
 
+IMPORTANT FORMATTING RULES:
+- DO NOT include any conversation flow in your response (e.g., "Assistant: How long should the TED talk be?" or "User: 15 minutes" or "Perfect. Here's your...")
+- DO NOT include any conversational commentary or setup text
+- Start your response directly with the TED talk script content
+- The first line should be the actual script content, not any explanatory text
+
 The script should:
 - Use the attack point as the opening hook
 - Incorporate the tension-resolution points as the main narrative structure  
@@ -509,7 +521,9 @@ Structure the script with:
 4. Climactic revelation (core story concept)
 5. Call to action/transformation
 
-Include timing cues and speaker directions throughout.`;
+Include timing cues and speaker directions throughout.
+
+Begin your response immediately with the TED talk script - no introductory text.`;
       } else {
         // Regular conversation flow
         continuePrompt = `You are continuing to help create a Story Flow Outline with Attack Point and Tension-Resolution Points using the comprehensive AI Prompt for Creating Story Flow Outline.
