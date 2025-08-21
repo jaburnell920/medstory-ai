@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
       });
 
       const chatCompletion = await openai.chat.completions.create({
-        model: 'gpt-4',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
       const effectiveLength = length || '40';
 
       const chatCompletion = await openai.chat.completions.create({
-        model: 'gpt-4',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
@@ -104,7 +104,7 @@ Return only the concepts in the template above.`,
         
         // Retry with a more explicit prompt
         const retryCompletion = await openai.chat.completions.create({
-          model: 'gpt-4',
+          model: 'gpt-4o',
           messages: [
             {
               role: 'system',
@@ -165,7 +165,7 @@ Create a Core Story Concept using the guidelines above.
     });
 
     const chatCompletion = await openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-4o',
       messages: [
         {
           role: 'system',
@@ -187,7 +187,7 @@ Create a Core Story Concept using the guidelines above.
       
       // Retry with a more explicit prompt
       const retryCompletion = await openai.chat.completions.create({
-        model: 'gpt-4',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
