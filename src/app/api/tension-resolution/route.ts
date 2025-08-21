@@ -8,22 +8,24 @@ const openai = process.env.OPENAI_API_KEY
   : null;
 
 // Helper to call GPT-5 robustly and fall back to Responses API if chat.completions returns empty
-async function generateWithGpt5(messages: { role: 'system'|'user'|'assistant'; content: string }[], maxTokens: number) {
+async function generateWithGpt5(
+  messages: { role: 'system' | 'user' | 'assistant'; content: string }[],
+  maxTokens: number
+) {
   if (!openai) throw new Error('OpenAI client not initialized');
 
   try {
     const chat = await openai.chat.completions.create({
       model: 'gpt-5',
       messages,
-      max_tokens: maxTokens,
+      max_completion_tokens: maxTokens,
     });
     const content = chat.choices?.[0]?.message?.content?.trim();
     if (content) return content;
 
     // Fallback to Responses API (some GPT-5 variants emit output_text here)
-    const assembled = messages
-      .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
-      .join('\n\n');
+    const assembled = messages.map((m) => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const resp: any = await openai.responses.create({
       model: 'gpt-5',
       input: assembled,
@@ -34,7 +36,10 @@ async function generateWithGpt5(messages: { role: 'system'|'user'|'assistant'; c
     if (outputText) return outputText;
 
     // As a last resort, try to pull from the first text segment if present
-    const firstText = resp?.output?.[0]?.content?.find?.((c: any) => c.type === 'output_text')?.text;
+    const firstText = resp?.output?.[0]?.content?.find?.(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (c: any) => c.type === 'output_text'
+    )?.text;
     if (firstText && typeof firstText === 'string') return firstText.trim();
 
     return '';
@@ -278,19 +283,12 @@ Audience: ${audience}
 Please start with the Attack Point phase.`,
           },
         ],
-<<<<<<< HEAD
         2000
       );
       // Clean and guard against empty GPT-5 responses
       const cleanedStart = cleanAIResponse(rawResult);
-      const result = cleanedStart && cleanedStart.trim().length > 0 ? cleanedStart : 'No response generated.';
-=======
-        max_completion_tokens: 2000,
-      });
-
-      const rawResult = completion.choices[0]?.message?.content || 'No response generated.';
-      const result = cleanAIResponse(rawResult);
->>>>>>> 4a8267f (updated max tokens)
+      const result =
+        cleanedStart && cleanedStart.trim().length > 0 ? cleanedStart : 'No response generated.';
       return NextResponse.json({ result });
     } else if (action === 'continue') {
       // Mock response for testing when no OpenAI API key is available
@@ -683,19 +681,12 @@ Respond appropriately to the user's latest message, following the conversation f
           },
           { role: 'user', content: continuePrompt },
         ],
-<<<<<<< HEAD
         4000
       );
       // Clean and guard against empty GPT-5 responses
       const cleanedStart = cleanAIResponse(rawResult);
-      const result = cleanedStart && cleanedStart.trim().length > 0 ? cleanedStart : 'No response generated.';
-=======
-        max_completion_tokens: 4000,
-      });
-
-      const rawResult = completion.choices[0]?.message?.content || 'No response generated.';
-      const result = cleanAIResponse(rawResult);
->>>>>>> 4a8267f (updated max tokens)
+      const result =
+        cleanedStart && cleanedStart.trim().length > 0 ? cleanedStart : 'No response generated.';
       return NextResponse.json({ result });
     }
 
