@@ -7,6 +7,43 @@ const openai = process.env.OPENAI_API_KEY
     })
   : null;
 
+// Helper to call GPT-5 robustly and fall back to Responses API if chat.completions returns empty
+async function generateWithGpt5(messages: { role: 'system'|'user'|'assistant'; content: string }[], maxTokens: number) {
+  if (!openai) throw new Error('OpenAI client not initialized');
+
+  try {
+    const chat = await openai.chat.completions.create({
+      model: 'gpt-5',
+      messages,
+      max_tokens: maxTokens,
+    });
+    const content = chat.choices?.[0]?.message?.content?.trim();
+    if (content) return content;
+
+    // Fallback to Responses API (some GPT-5 variants emit output_text here)
+    const assembled = messages
+      .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
+      .join('\n\n');
+    const resp: any = await openai.responses.create({
+      model: 'gpt-5',
+      input: assembled,
+      max_output_tokens: Math.min(Math.max(maxTokens || 1000, 256), 4000),
+    });
+
+    const outputText = resp?.output_text?.trim?.();
+    if (outputText) return outputText;
+
+    // As a last resort, try to pull from the first text segment if present
+    const firstText = resp?.output?.[0]?.content?.find?.((c: any) => c.type === 'output_text')?.text;
+    if (firstText && typeof firstText === 'string') return firstText.trim();
+
+    return '';
+  } catch (e) {
+    console.error('GPT-5 generation error:', e);
+    throw e;
+  }
+}
+
 // Function to clean AI response by removing commentary while preserving structure
 function cleanAIResponse(response: string): string {
   if (!response) return response;
@@ -225,9 +262,8 @@ PARAMETERS PROVIDED:
 
 Begin with creating the Attack Point.`;
 
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-5',
-        messages: [
+      const rawResult = await generateWithGpt5(
+        [
           {
             role: 'system',
             content: systemPrompt,
@@ -242,10 +278,8 @@ Audience: ${audience}
 Please start with the Attack Point phase.`,
           },
         ],
-        max_tokens: 2000,
-      });
-
-      const rawResult = completion.choices[0]?.message?.content || 'No response generated.';
+        2000
+      );
       const result = cleanAIResponse(rawResult);
       return NextResponse.json({ result });
     } else if (action === 'continue') {
@@ -630,9 +664,8 @@ Then ask the user the following: "Would you like me to write a script based on t
 Respond appropriately to the user's latest message, following the conversation flow and complete prompt guidelines.`;
       }
 
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-5',
-        messages: [
+      const rawResult = await generateWithGpt5(
+        [
           {
             role: 'system',
             content:
@@ -640,10 +673,8 @@ Respond appropriately to the user's latest message, following the conversation f
           },
           { role: 'user', content: continuePrompt },
         ],
-        max_tokens: 4000,
-      });
-
-      const rawResult = completion.choices[0]?.message?.content || 'No response generated.';
+        4000
+      );
       const result = cleanAIResponse(rawResult);
       return NextResponse.json({ result });
     }
