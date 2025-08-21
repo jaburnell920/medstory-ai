@@ -61,7 +61,7 @@ Your first response should be brief - simply acknowledge that you're pleased to 
       }
 
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
@@ -154,7 +154,7 @@ Respond directly to the interviewer's question or comment, maintaining your expe
       }
 
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
@@ -213,7 +213,7 @@ KEY HIGHLIGHTS:`;
       }
 
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
