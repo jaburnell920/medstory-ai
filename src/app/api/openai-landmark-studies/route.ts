@@ -143,7 +143,7 @@ The PROVE IT-TIMI 22 study established the concept of intensive statin therapy b
           },
           { role: 'user', content: fullPrompt },
         ],
-        max_tokens: 2000,
+        max_completion_tokens: 2000,
         temperature: 0.7,
       });
       return NextResponse.json({ result: completion.choices[0].message.content });

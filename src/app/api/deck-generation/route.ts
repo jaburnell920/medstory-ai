@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
           content: detailedPrompt,
         },
       ],
-      max_tokens: 4000,
+      max_completion_tokens: 4000,
     });
 
     return NextResponse.json({ result: chatCompletion.choices[0].message.content });

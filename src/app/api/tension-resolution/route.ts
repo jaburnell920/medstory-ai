@@ -47,12 +47,12 @@ async function generateWithGpt5(messages: { role: 'system'|'user'|'assistant'; c
 // Function to clean AI response by removing commentary while preserving structure
 function cleanAIResponse(response: string): string {
   if (!response) return response;
-  
+
   let cleaned = response;
-  
+
   // Remove "Assistant:" prefix
   cleaned = cleaned.replace(/^Assistant:\s*/i, '');
-  
+
   // Extract content within quotes if present
   const quotedMatch = cleaned.match(/"([^"]*(?:\n[^"]*)*?)"/);
   if (quotedMatch) {
@@ -60,14 +60,14 @@ function cleanAIResponse(response: string): string {
     // Find the follow-up question
     const followUpMatch = cleaned.match(/Would you like to[^?]*\?/);
     const followUp = followUpMatch ? followUpMatch[0] : '';
-    
+
     return quotedContent + (followUp ? '\n\n' + followUp : '');
   }
-  
+
   // Remove conversational lead-ins but preserve Attack Point structure
   const lines = cleaned.split('\n');
   let contentStartIndex = 0;
-  
+
   // First pass: Look specifically for "Attack Point" lines
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
@@ -76,18 +76,18 @@ function cleanAIResponse(response: string): string {
       break;
     }
   }
-  
+
   // If no "Attack Point" found, look for other content indicators
   if (contentStartIndex === 0) {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
-      
+
       // If we find substantial content (long line), start from there
       if (line.length > 50) {
         contentStartIndex = i;
         break;
       }
-      
+
       // If we find other content indicators, start from there
       if (line.includes('Tension') || line.includes('Resolution')) {
         contentStartIndex = i;
@@ -95,14 +95,14 @@ function cleanAIResponse(response: string): string {
       }
     }
   }
-  
+
   if (contentStartIndex > 0) {
     cleaned = lines.slice(contentStartIndex).join('\n');
   }
-  
+
   // Clean up extra whitespace
   cleaned = cleaned.replace(/\n\n\n+/g, '\n\n').trim();
-  
+
   return cleaned;
 }
 
@@ -278,11 +278,19 @@ Audience: ${audience}
 Please start with the Attack Point phase.`,
           },
         ],
+<<<<<<< HEAD
         2000
       );
       // Clean and guard against empty GPT-5 responses
       const cleanedStart = cleanAIResponse(rawResult);
       const result = cleanedStart && cleanedStart.trim().length > 0 ? cleanedStart : 'No response generated.';
+=======
+        max_completion_tokens: 2000,
+      });
+
+      const rawResult = completion.choices[0]?.message?.content || 'No response generated.';
+      const result = cleanAIResponse(rawResult);
+>>>>>>> 4a8267f (updated max tokens)
       return NextResponse.json({ result });
     } else if (action === 'continue') {
       // Mock response for testing when no OpenAI API key is available
@@ -675,11 +683,19 @@ Respond appropriately to the user's latest message, following the conversation f
           },
           { role: 'user', content: continuePrompt },
         ],
+<<<<<<< HEAD
         4000
       );
       // Clean and guard against empty GPT-5 responses
       const cleanedStart = cleanAIResponse(rawResult);
       const result = cleanedStart && cleanedStart.trim().length > 0 ? cleanedStart : 'No response generated.';
+=======
+        max_completion_tokens: 4000,
+      });
+
+      const rawResult = completion.choices[0]?.message?.content || 'No response generated.';
+      const result = cleanAIResponse(rawResult);
+>>>>>>> 4a8267f (updated max tokens)
       return NextResponse.json({ result });
     }
 

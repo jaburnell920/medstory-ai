@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
 
   // Check if this is a key points extraction request
   if (body.prompt) {
-    const { prompt, max_tokens } = body;
+    const { prompt, max_completion_tokens } = body;
 
     try {
       const openai = new OpenAI({
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
             content: prompt,
           },
         ],
-        max_tokens: max_tokens || 1000,
+        max_completion_tokens: max_completion_tokens || 1000,
       });
 
       return NextResponse.json({ result: chatCompletion.choices[0].message.content });
@@ -101,7 +101,7 @@ Return only the concepts in the template above.`,
       // Check if the response is the unhelpful length specification message
       if (result && result.includes('specify the length for the Tension and Resolution sections')) {
         console.log('Detected unhelpful response, retrying with explicit length...');
-        
+
         // Retry with a more explicit prompt
         const retryCompletion = await openai.chat.completions.create({
           model: 'gpt-5',
@@ -117,7 +117,7 @@ Never ask for clarification about length - always generate the content with the 
             ...messages,
           ],
         });
-        
+
         result = retryCompletion.choices[0].message.content;
       }
 
@@ -131,7 +131,7 @@ Never ask for clarification about length - always generate the content with the 
   // Initial core story concept generation
   // Use default length if empty
   const effectiveLength = length || '40';
-  
+
   const prompt = `
 # Core Story Concept
 You are a multidisciplinary medical storyteller hired to create a Core Story Concept for ${drug} in ${disease} for the target audience ${audience}.
@@ -183,8 +183,10 @@ Create a Core Story Concept using the guidelines above.
 
     // Check if the response is the unhelpful length specification message
     if (result && result.includes('specify the length for the Tension and Resolution sections')) {
-      console.log('Detected unhelpful response in initial generation, retrying with explicit length...');
-      
+      console.log(
+        'Detected unhelpful response in initial generation, retrying with explicit length...'
+      );
+
       // Retry with a more explicit prompt
       const retryCompletion = await openai.chat.completions.create({
         model: 'gpt-5',
@@ -203,7 +205,7 @@ Never ask for clarification about length - always generate the content with the 
           },
         ],
       });
-      
+
       result = retryCompletion.choices[0].message.content;
     }
 

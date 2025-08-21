@@ -21,7 +21,7 @@ async function testOpenAI() {
           content: 'Test message',
         },
       ],
-      max_tokens: 50,
+      max_completion_tokens: 50,
     });
 
     console.log('OpenAI Response:', completion.choices[0].message.content);
