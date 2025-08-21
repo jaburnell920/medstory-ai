@@ -280,7 +280,9 @@ Please start with the Attack Point phase.`,
         ],
         2000
       );
-      const result = cleanAIResponse(rawResult);
+      // Clean and guard against empty GPT-5 responses
+      const cleanedStart = cleanAIResponse(rawResult);
+      const result = cleanedStart && cleanedStart.trim().length > 0 ? cleanedStart : 'No response generated.';
       return NextResponse.json({ result });
     } else if (action === 'continue') {
       // Mock response for testing when no OpenAI API key is available
@@ -675,7 +677,9 @@ Respond appropriately to the user's latest message, following the conversation f
         ],
         4000
       );
-      const result = cleanAIResponse(rawResult);
+      // Clean and guard against empty GPT-5 responses
+      const cleanedStart = cleanAIResponse(rawResult);
+      const result = cleanedStart && cleanedStart.trim().length > 0 ? cleanedStart : 'No response generated.';
       return NextResponse.json({ result });
     }
 
