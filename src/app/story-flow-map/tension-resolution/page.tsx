@@ -364,7 +364,7 @@ export default function TensionResolution() {
         // Leave Tension column empty
         cells[1] = '';
         // Put CSC content in the Resolution column, preferring existing Resolution content if any
-        let resolutionContent = cells[2] || cscContent || '';
+        const resolutionContent = cells[2] || cscContent || '';
         cells[2] = resolutionContent;
       }
 
