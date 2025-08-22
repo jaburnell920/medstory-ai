@@ -151,6 +151,7 @@ export default function LandmarkPublicationsPage() {
   };
 
   // Extract search terms from citation for Google search linking (without quotes)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const extractSearchTerms = (citation: string): string => {
     // Remove the study number prefix
     const cleanCitation = citation.replace(/^\d+\.\s*/, '');
@@ -443,7 +444,7 @@ export default function LandmarkPublicationsPage() {
                       />
                       <div className="flex-1">
                         <a
-                          href={`/api/google-search-redirect?q=${encodeURIComponent(extractSearchTerms(study.citation))}`}
+                          href={`/api/resolve-landmark-link?q=${encodeURIComponent(study.citation)}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="block cursor-pointer hover:text-blue-700"

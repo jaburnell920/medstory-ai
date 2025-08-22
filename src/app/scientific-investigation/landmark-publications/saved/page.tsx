@@ -180,7 +180,7 @@ export default function SavedLandmarkPublicationsPage() {
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex-1">
                       <a
-                        href={`https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(study.citation)}`}
+                        href={`/api/resolve-landmark-link?q=${encodeURIComponent(study.citation)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="block cursor-pointer hover:text-blue-700"
