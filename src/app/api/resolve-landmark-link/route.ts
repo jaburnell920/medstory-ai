@@ -89,6 +89,58 @@ function buildCandidateTerms(parsed: { title: string; year?: string; authorLastN
   return Array.from(new Set(terms));
 }
 
+type CrossrefAuthor = { family?: string; given?: string };
+
+type CrossrefWork = {
+  DOI?: string;
+  title?: string[];
+  author?: CrossrefAuthor[];
+  issued?: { 'date-parts'?: number[][] };
+  URL?: string;
+  'container-title'?: string[];
+};
+
+type CrossrefResponse = { message?: { items?: CrossrefWork[] } };
+
+async function crossrefSearch(parsed: { title: string; year?: string; authorLastNames: string[] }) {
+  if (!parsed.title) return [] as Array<{ doi: string; title: string; authors: string[]; year?: string; url?: string }>;
+  const params = new URLSearchParams();
+  params.set('query.title', parsed.title);
+  if (parsed.authorLastNames[0]) params.set('query.author', parsed.authorLastNames[0]);
+  params.set('rows', '20');
+  params.set('select', 'DOI,title,author,issued,URL,container-title');
+  params.set('sort', 'relevance');
+  if (parsed.year) {
+    const y = parsed.year;
+    params.set('filter', `from-pub-date:${y}-01-01,until-pub-date:${y}-12-31`);
+  }
+  const url = `https://api.crossref.org/works?${params.toString()}`;
+  const res = await fetch(url, { headers: { 'User-Agent': 'medstory-ai/resolve-landmark-link (mailto:support@example.com)' } });
+  if (!res.ok) return [];
+  const data = (await res.json()) as CrossrefResponse;
+  const items = data?.message?.items || [];
+  return items.map((w) => ({
+    doi: w.DOI || '',
+    title: (w.title && w.title[0]) || '',
+    authors: (w.author || []).map((a) => a.family || '').filter(Boolean),
+    year: String(w.issued?.['date-parts']?.[0]?.[0] || ''),
+    url: w.URL,
+  }));
+}
+
+async function pubmedIdFromDoi(doi: string): Promise<string | null> {
+  const fields = ['doi', 'aid'];
+  for (const field of fields) {
+    const url = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&term=${encodeURIComponent(`${doi}[${field}]`)}&retmax=1`;
+    const res = await fetch(url, { headers: { 'User-Agent': 'medstory-ai/resolve-landmark-link (contact: support@example.com)' } });
+    if (!res.ok) continue;
+    const json = await res.json();
+    const id = json?.esearchresult?.idlist?.[0];
+    if (id) return String(id);
+  }
+  return null;
+}
+
 type AuthorSummary = { name?: string };
 
 type ArticleId = { idtype?: string; value?: string };
@@ -148,6 +200,28 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(fallback);
   }
 
+  // 1) Try Crossref (DOI first)
+  try {
+    const works = await crossrefSearch(parsed);
+    let bestDoi: string | null = null;
+    let bestScore = 0;
+    for (const w of works) {
+      const score = scoreCandidate(parsed, { title: w.title, authors: w.authors });
+      if (score > bestScore) {
+        bestScore = score;
+        bestDoi = w.doi || null;
+      }
+    }
+    if (bestDoi && bestScore >= 0.55) {
+      const pmid = await pubmedIdFromDoi(bestDoi);
+      if (pmid) return NextResponse.redirect(`https://pubmed.ncbi.nlm.nih.gov/${pmid}/`);
+      return NextResponse.redirect(`https://doi.org/${bestDoi}`);
+    }
+  } catch {
+    // ignore and continue
+  }
+
+  // 2) Try PubMed fielded queries
   const primaryTerm = buildPubMedQuery(parsed);
   const candidateTerms = buildCandidateTerms(parsed, citation);
 
@@ -174,6 +248,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  // 3) Fallback: PubMed search
   const fallbackSearch = `https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(candidateTerms[0] || primaryTerm || citation)}`;
   return NextResponse.redirect(fallbackSearch);
 }
