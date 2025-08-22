@@ -1018,7 +1018,31 @@ export default function TensionResolution() {
             setResult(content);
           }
 
-          if (question) {
+          // For attack point generation, show the attack point content with title in conversation
+          if (parsedContent.attackPoints.length > 0) {
+            const firstAttackPoint = parsedContent.attackPoints[0];
+            const cleanedAttackPoint = cleanAttackPoint(firstAttackPoint);
+            
+            // Ensure the attack point has the proper title
+            let attackPointWithTitle = cleanedAttackPoint;
+            if (!attackPointWithTitle.match(/^Attack Point #\d+/i)) {
+              // Use the current number of attack points + 1 for new attack points
+              const attackPointNumber = attackPoints.length + 1;
+              attackPointWithTitle = `Attack Point #${attackPointNumber}\n\n${cleanedAttackPoint}`;
+            }
+            
+            setMessages((msgs) => [
+              ...msgs.slice(0, -1), // Remove "Creating..." message
+              {
+                role: 'assistant',
+                content: attackPointWithTitle,
+              },
+              {
+                role: 'assistant',
+                content: question || 'Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?',
+              },
+            ]);
+          } else if (question) {
             setMessages((msgs) => [
               ...msgs.slice(0, -1), // Remove "Creating..." message
               {
@@ -1192,9 +1216,24 @@ export default function TensionResolution() {
           !trimmed.toLowerCase().includes('tension');
 
         if (shouldAskFollowUp) {
-          // Always ask the follow-up question after generating attack points
+          // Show the attack point content with title in conversation, then ask the follow-up question
+          const firstAttackPoint = parsedContent.attackPoints[0];
+          const cleanedAttackPoint = cleanAttackPoint(firstAttackPoint);
+          
+          // Ensure the attack point has the proper title
+          let attackPointWithTitle = cleanedAttackPoint;
+          if (!attackPointWithTitle.match(/^Attack Point #\d+/i)) {
+            // Use the current number of attack points + 1 for new attack points
+            const attackPointNumber = attackPoints.length + 1;
+            attackPointWithTitle = `Attack Point #${attackPointNumber}\n\n${cleanedAttackPoint}`;
+          }
+          
           setMessages((msgs) => [
             ...msgs,
+            {
+              role: 'assistant',
+              content: attackPointWithTitle,
+            },
             {
               role: 'assistant',
               content:
