@@ -57,6 +57,18 @@ export default function TensionResolution() {
     result,
   ]);
 
+  // Automatically save Story Flow Table when it's generated
+  useEffect(() => {
+    if (tableData && typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('storyFlowTable', JSON.stringify(tableData));
+        console.log('Story Flow Table automatically saved to localStorage');
+      } catch (error) {
+        console.error('Error saving Story Flow Table to localStorage:', error);
+      }
+    }
+  }, [tableData]);
+
   // Initialize messages with core story concept from localStorage
   useEffect(() => {
     // Check if we're in a browser environment
