@@ -19,6 +19,7 @@ interface ChatInterfaceProps {
   onReset?: () => void;
   onEndInterview?: () => void;
   interviewEnded?: boolean;
+  interviewStarted?: boolean;
 }
 
 // Loading dots animation is now handled directly in the ChatInterface component
@@ -35,6 +36,7 @@ export default function ChatInterface({
   onReset,
   onEndInterview,
   interviewEnded = false,
+  interviewStarted = false,
 }: ChatInterfaceProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [dots, setDots] = useState('.');
@@ -77,8 +79,13 @@ export default function ChatInterface({
     return placeholder;
   };
 
-  const formatContent = (content: string) => {
-    if (removeExpertPrefix) {
+  const formatContent = (content: string, messageIndex: number) => {
+    // Find the first expert message (after the transition message)
+    const isFirstExpertMessage = interviewStarted && messageIndex > 0 && 
+      messages[messageIndex - 1]?.content?.includes("Thank you. I will now start the simulated interview") &&
+      content.startsWith('EXPERT:');
+
+    if (removeExpertPrefix && !isFirstExpertMessage) {
       content = content.replace(/^Expert:\s*/gm, '');
     }
 
@@ -110,7 +117,7 @@ export default function ChatInterface({
                     <span className="text-white font-bold">AI</span>
                   </div>
                   <div className="px-4 py-3 whitespace-pre-wrap text-gray-800">
-                    {formatContent(m.content)}
+                    {formatContent(m.content, i)}
                     {loading && i === messages.length - 1 && m.role === 'assistant' && (
                       <span>{dots}</span>
                     )}

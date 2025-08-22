@@ -296,7 +296,7 @@ export default function TopPublicationsPage() {
           });
           const data = await res.json();
 
-          setMessages([...messagesWithTransition, { role: 'assistant', content: data.result }]);
+          setMessages([...messagesWithTransition, { role: 'assistant', content: `EXPERT: ${data.result}` }]);
         } catch (err) {
           console.error('Error starting interview:', err);
           setMessages((prev) => [
@@ -412,6 +412,7 @@ export default function TopPublicationsPage() {
             onReset={handleReset}
             onEndInterview={interviewStarted ? handleEndInterview : undefined}
             interviewEnded={false}
+            interviewStarted={interviewStarted}
           />
         </div>
 
