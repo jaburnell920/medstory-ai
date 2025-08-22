@@ -11,6 +11,7 @@ interface Study {
   impactScore: string;
   description: string;
   fullText: string;
+  pmid?: string;
 }
 
 export default function SavedLandmarkPublicationsPage() {
@@ -180,7 +181,7 @@ export default function SavedLandmarkPublicationsPage() {
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex-1">
                       <a
-                        href={`https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(study.citation)}`}
+                        href={study.pmid ? `https://pubmed.ncbi.nlm.nih.gov/${study.pmid}/` : `https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(study.citation)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="block cursor-pointer hover:text-blue-700"
