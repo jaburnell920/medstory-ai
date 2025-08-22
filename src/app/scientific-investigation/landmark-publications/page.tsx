@@ -196,7 +196,7 @@ export default function LandmarkPublicationsPage() {
         const s = items[i];
         const r = results[i];
         if (r && r.found) {
-          filtered.push({ ...s, pmid: r.pmid });
+          filtered.push({ ...s, citation: r.citation || s.citation, pmid: r.pmid });
         } else {
           excluded++;
         }
@@ -521,7 +521,7 @@ export default function LandmarkPublicationsPage() {
                       />
                       <div className="flex-1">
                         <a
-                          href={study.pmid ? `https://pubmed.ncbi.nlm.nih.gov/${study.pmid}/` : `https://pubmed.ncbi.nlm.nih.gov/?term=${buildPubMedTerm(study.citation)}`}
+                          href={`https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(study.citation)}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="block cursor-pointer hover:text-blue-700"
