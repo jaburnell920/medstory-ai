@@ -854,6 +854,7 @@ export default function TensionResolution() {
         // Handle Core Story Concept selection
         if (
           trimmed.toLowerCase().includes('currently selected') ||
+          trimmed.toLowerCase().includes('use current') ||
           trimmed.toLowerCase().includes('current')
         ) {
           // Get core story concept from localStorage
@@ -966,7 +967,7 @@ export default function TensionResolution() {
             body: JSON.stringify({
               action: 'start',
               coreStoryConcept: context.coreStoryConcept,
-              audience: context.audience,
+              audience: trimmed,
             }),
           });
 
