@@ -355,22 +355,17 @@ export default function TensionResolution() {
       if (cells.length < 3) cells = [...cells, ...Array(3 - cells.length).fill('')];
       if (cells.length > 3) cells = cells.slice(0, 3);
 
-      // If row starts with CSC in the first column, ensure CSC content is in the Resolution column
+      // If row starts with CSC in the first column, separate the label from content
       const cscMatch = cells[0].match(/^CSC\s*:?\s*(.*)$/i);
       if (cscMatch) {
-        const extraFromFirstCol = (cscMatch[1] || '').trim();
-        // Prefer existing Resolution content; otherwise use Tension; otherwise use any trailing content from the first column label
-        let targetContent = cells[2] || cells[1] || extraFromFirstCol || '';
-        // Prefix with CSC label if not already
-        if (targetContent && !/^CSC\b/i.test(targetContent)) {
-          targetContent = `CSC: ${targetContent}`;
-        } else if (!targetContent) {
-          targetContent = 'CSC';
-        }
-        // Clear first column and move all content to Resolution, leaving Tension blank
-        cells[0] = '';
+        const cscContent = (cscMatch[1] || '').trim();
+        // Put "CSC" in the first column
+        cells[0] = 'CSC';
+        // Leave Tension column empty
         cells[1] = '';
-        cells[2] = targetContent;
+        // Put CSC content in the Resolution column, preferring existing Resolution content if any
+        let resolutionContent = cells[2] || cscContent || '';
+        cells[2] = resolutionContent;
       }
 
       return cells;
