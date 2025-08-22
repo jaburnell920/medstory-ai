@@ -1,11 +1,13 @@
 # Task List
 
-1. ✅ Analyze current tension-resolution page table generation and saving mechanism
-Found that tableData is set via parseMarkdownTable when AI responses contain tables. Currently no automatic saving.
-2. ✅ Modify tension-resolution page to automatically save Story Flow Table when generated
-Added useEffect to automatically save tableData to localStorage with key 'storyFlowTable' when generated
-3. ✅ Update create-map page to retrieve and display saved Story Flow Table
-Added state for savedStoryFlowTable, retrieval logic in createStoryFlowMap, and renderSavedStoryFlowTable function to display the table in a blue box under the story flow map
-4. 🔄 Test the complete flow from tension-resolution to create-map
-Verify that the table is automatically saved and properly displayed in the create-map page
+1. ✅ Analyze tension-resolution API endpoint and identify root cause of Attack Point formatting bug
+Identified cleanAIResponse function as root cause - inconsistently processing OpenAI responses
+2. ✅ Fix cleanAIResponse function to preserve Attack Point structure and add missing headers
+Enhanced function with robust fallback logic and improved detection patterns
+3. ✅ Update user prompt to be more explicit about required Attack Point format
+Added explicit requirement for 'Attack Point #1' format in user prompt
+4. ✅ Test API endpoints via curl to verify proper formatting
+Both 'start' and 'continue' actions return properly formatted responses
+5. ✅ Test complete UI flow including 'use current' and 'new one' scenarios
+Successfully tested both scenarios - Attack Point formatting is now consistent with proper blue/bold styling
 

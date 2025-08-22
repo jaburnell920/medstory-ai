@@ -27,6 +27,25 @@ function cleanAIResponse(response: string): string {
     return quotedContent + (followUp ? '\n\n' + followUp : '');
   }
   
+  // Check if this looks like an Attack Point response that needs structure
+  const hasFollowUpQuestion = /Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points\?/i.test(cleaned);
+  const hasAttackPointHeader = /^Attack Point #\d+/im.test(cleaned);
+  
+  // If we have a follow-up question but no Attack Point header, this might be a malformed response
+  if (hasFollowUpQuestion && !hasAttackPointHeader) {
+    // Extract content before the follow-up question
+    const questionMatch = cleaned.match(/(Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points\?)/i);
+    if (questionMatch) {
+      const contentBeforeQuestion = cleaned.substring(0, questionMatch.index).trim();
+      const followUpQuestion = questionMatch[1];
+      
+      // If we have substantial content before the question, add Attack Point header
+      if (contentBeforeQuestion.length > 20) {
+        return `Attack Point #1\n\n${contentBeforeQuestion}\n\n${followUpQuestion}`;
+      }
+    }
+  }
+  
   // Remove conversational lead-ins but preserve Attack Point structure
   const lines = cleaned.split('\n');
   let contentStartIndex = 0;
@@ -45,6 +64,11 @@ function cleanAIResponse(response: string): string {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
       
+      // Skip common conversational lead-ins
+      if (line.match(/^(Here's|Let me|I'll|Allow me|Thank you|Understood|Sure)/i)) {
+        continue;
+      }
+      
       // If we find substantial content (long line), start from there
       if (line.length > 50) {
         contentStartIndex = i;
@@ -61,6 +85,25 @@ function cleanAIResponse(response: string): string {
   
   if (contentStartIndex > 0) {
     cleaned = lines.slice(contentStartIndex).join('\n');
+  }
+  
+  // Final check: if we have substantial content but no Attack Point header, add one
+  if (cleaned.length > 20 && !cleaned.match(/^Attack Point #\d+/im)) {
+    // Check if this looks like attack point content (has follow-up question or substantial narrative)
+    const hasFollowUpQuestion = /Would you like to modify this Attack Point/i.test(cleaned);
+    const looksLikeNarrative = cleaned.length > 100 && !cleaned.match(/^(Tension|Resolution|References|Conclusion)/im);
+    
+    if (hasFollowUpQuestion || looksLikeNarrative) {
+      // Extract content before any follow-up question
+      const questionMatch = cleaned.match(/(Would you like to modify this Attack Point[^?]*\?)/i);
+      if (questionMatch) {
+        const contentBeforeQuestion = cleaned.substring(0, questionMatch.index).trim();
+        const followUpQuestion = questionMatch[1];
+        cleaned = `Attack Point #1\n\n${contentBeforeQuestion}\n\n${followUpQuestion}`;
+      } else {
+        cleaned = `Attack Point #1\n\n${cleaned}`;
+      }
+    }
   }
   
   // Clean up extra whitespace
@@ -238,6 +281,8 @@ Begin with creating the Attack Point.`;
 
 Core Story Concept: ${coreStoryConcept}
 Audience: ${audience}
+
+CRITICAL: Your response must start with "Attack Point #1" as the first line, followed by the attack point content, then end with the follow-up question: "Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?"
 
 Please start with the Attack Point phase.`,
           },
