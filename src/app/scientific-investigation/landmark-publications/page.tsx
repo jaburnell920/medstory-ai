@@ -13,6 +13,7 @@ interface Study {
   impactScore: string;
   description: string;
   fullText: string;
+  pmid?: string;
 }
 
 const questions = [
@@ -138,6 +139,79 @@ export default function LandmarkPublicationsPage() {
       };
     });
   };
+
+  // Build a PubMed query from citation text (fallback if PMID missing)
+  const buildPubMedTerm = (citation: string): string => {
+    const cleanCitation = citation.replace(/^\d+\.\s*/, '').trim();
+    const authorMatch = cleanCitation.match(/^([A-Za-z-]+)/);
+    const author = authorMatch ? authorMatch[1] : '';
+    const yearMatch = cleanCitation.match(/(19\d{2}|20\d{2})/);
+    const year = yearMatch ? yearMatch[1] : '';
+    const journalMatch = cleanCitation.match(
+      /(N Engl J Med|New England Journal of Medicine|JAMA|Journal of the American Medical Association|Lancet|The Lancet|Circulation|Ann Thorac Surg|Annals of Thoracic Surgery|BMJ|British Medical Journal|J Thorac Cardiovasc Surg|Journal of Thoracic and Cardiovascular Surgery|S Afr Med J|South African Medical Journal|Obesity|Nature|Science|Cell|NEJM)/i
+    );
+    const journal = journalMatch ? journalMatch[1] : '';
+
+    let title = '';
+    if (journal) {
+      const titlePattern = new RegExp(
+        `^[^.]+\\.\\s*(.+?)\\s*\\.?\\s*${journal.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')}`,
+        'i'
+      );
+      const t1 = cleanCitation.match(titlePattern);
+      title = t1 ? t1[1] : '';
+    }
+    if (!title && year) {
+      const t2 = cleanCitation.match(/^[^.]+\\.\\s*(.+?)\\s*\\.?\\s*(19\\d{2}|20\\d{2})/);
+      title = t2 ? t2[1] : '';
+    }
+    if (!title) {
+      const t3 = cleanCitation.match(/^[^.]+\\.\\s*(.+?)\\s*\./);
+      title = t3 ? t3[1] : '';
+    }
+    title = title.replace(/,?\\s*et al\\.?/gi, '').replace(/[;:]/g, '').replace(/\\s+/g, ' ').trim();
+
+    const parts: string[] = [];
+    if (title) parts.push(`\"${title}\"[Title]`);
+    if (author) parts.push(`${author}[Author]`);
+    if (year) parts.push(`${year}[dp]`);
+    const term = parts.length ? parts.join(' AND ') : cleanCitation;
+    return encodeURIComponent(term);
+  };
+
+  // Verify studies via PubMed and filter out those not found
+  const verifyAndFilterStudies = async (items: Study[]): Promise<Study[]> => {
+    try {
+      if (items.length === 0) return items;
+      const res = await fetch('/api/pubmed-verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ citations: items.map((s) => s.citation) }),
+      });
+      const data = await res.json();
+      const results: Array<{ citation: string; found: boolean; pmid?: string }> = data.results || [];
+      const filtered: Study[] = [];
+      let excluded = 0;
+      for (let i = 0; i < items.length; i++) {
+        const s = items[i];
+        const r = results[i];
+        if (r && r.found) {
+          filtered.push({ ...s, pmid: r.pmid });
+        } else {
+          excluded++;
+        }
+      }
+      if (excluded > 0) {
+        toast(`Excluded ${excluded} ${excluded === 1 ? 'publication' : 'publications'} not found on PubMed`, { icon: 'ℹ️' });
+      }
+      return filtered;
+    } catch {
+      // On verification failure, show nothing rather than potentially wrong links
+      toast.error('Failed to verify publications on PubMed.');
+      return [];
+    }
+  };
+
 
   // Handle checkbox changes
   const handleStudySelection = (studyId: string, isSelected: boolean) => {
@@ -311,7 +385,9 @@ export default function LandmarkPublicationsPage() {
         const data = await res.json();
         const formattedResult = formatLandmarkResult(data.result);
         setResult(formattedResult);
-        setStudies(parseStudies(formattedResult));
+        const parsed = parseStudies(formattedResult);
+        const verified = await verifyAndFilterStudies(parsed);
+        setStudies(verified);
         setTimeout(() => {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 100);
@@ -359,7 +435,9 @@ export default function LandmarkPublicationsPage() {
         const data = await res.json();
         const formattedResult = formatLandmarkResult(data.result);
         setResult(formattedResult);
-        setStudies(parseStudies(formattedResult));
+        const parsed = parseStudies(formattedResult);
+        const verified = await verifyAndFilterStudies(parsed);
+        setStudies(verified);
         setTimeout(() => {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 100);
@@ -443,7 +521,7 @@ export default function LandmarkPublicationsPage() {
                       />
                       <div className="flex-1">
                         <a
-                          href={`/api/google-search-redirect?q=${encodeURIComponent(extractSearchTerms(study.citation))}`}
+                          href={study.pmid ? `https://pubmed.ncbi.nlm.nih.gov/${study.pmid}/` : `https://pubmed.ncbi.nlm.nih.gov/?term=${buildPubMedTerm(study.citation)}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="block cursor-pointer hover:text-blue-700"
