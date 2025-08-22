@@ -58,22 +58,31 @@ function extractComponents(citation: string) {
   return { author, year, journal, title, clean };
 }
 
-function buildPubMedQuery(citation: string) {
-  const { author, year, title } = extractComponents(citation);
-  const parts: string[] = [];
-  if (title) parts.push(`"${title}"[Title]`);
-  if (author) parts.push(`${author}[Author]`);
-  if (year) parts.push(`${year}[dp]`);
+// Build a list of candidate PubMed query terms from strict to lenient
+function buildCandidateTerms(citation: string): string[] {
+  const { author, year, title, journal, clean } = extractComponents(citation);
+  const terms: string[] = [];
 
-  if (parts.length === 0) {
-    return encodeURIComponent(citation);
-  }
-  return encodeURIComponent(parts.join(' AND '));
+  // Prefer title phrase + author + year (most specific)
+  if (title && author && year) terms.push(`"${title}"[ti] AND ${author}[au] AND ${year}[dp]`);
+  if (title && year) terms.push(`"${title}"[ti] AND ${year}[dp]`);
+  if (title && author) terms.push(`"${title}"[ti] AND ${author}[au]`);
+  if (title) terms.push(`"${title}"[ti]`);
+
+  // Journal/year/author combinations as additional signals
+  if (journal && year && author) terms.push(`${journal}[jour] AND ${author}[au] AND ${year}[dp]`);
+  if (journal && year) terms.push(`${journal}[jour] AND ${year}[dp]`);
+  if (author && year) terms.push(`${author}[au] AND ${year}[dp]`);
+
+  // Last resort: search the raw cleaned citation text
+  terms.push(clean);
+
+  return terms;
 }
 
 async function esearch(term: string): Promise<string | null> {
   const base = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi';
-  const url = `${base}?db=pubmed&retmode=json&retmax=1&sort=relevance&term=${term}`;
+  const url = `${base}?db=pubmed&retmode=json&retmax=1&sort=relevance&term=${encodeURIComponent(term)}`;
   const res = await fetch(url, { next: { revalidate: 0 } });
   if (!res.ok) return null;
   const data = (await res.json()) as any;
@@ -91,8 +100,12 @@ export async function POST(req: NextRequest) {
 
     const lookups = citations.map(async (citation) => {
       try {
-        const term = buildPubMedQuery(citation);
-        const pmid = await esearch(term);
+        const candidates = buildCandidateTerms(citation);
+        let pmid: string | null = null;
+        for (const c of candidates) {
+          pmid = await esearch(c);
+          if (pmid) break;
+        }
         const result: VerifyResult = { citation, found: Boolean(pmid) };
         if (pmid) result.pmid = pmid;
         return result;
