@@ -28,6 +28,7 @@ export default function CreateStoryFlowMap() {
   const [storyFlowData, setStoryFlowData] = useState<StoryFlowMapData | null>(null);
   const [showMap, setShowMap] = useState(false);
   const [messages, setMessages] = useState<{ role: 'assistant' | 'user'; content: string }[]>([]);
+  const [savedStoryFlowTable, setSavedStoryFlowTable] = useState<{ headers: string[]; rows: string[][] } | null>(null);
 
   // Initialize with confirmation question
   useEffect(() => {
@@ -60,6 +61,18 @@ export default function CreateStoryFlowMap() {
         content: initialMessage,
       },
     ]);
+
+    // Load saved Story Flow Table on component mount
+    try {
+      const savedTableData = localStorage.getItem('storyFlowTable');
+      if (savedTableData) {
+        const tableData = JSON.parse(savedTableData);
+        setSavedStoryFlowTable(tableData);
+        console.log('Loaded saved Story Flow Table on mount:', tableData);
+      }
+    } catch (error) {
+      console.error('Error loading saved Story Flow Table on mount:', error);
+    }
   }, []);
 
   // Function to check if required data exists in localStorage
@@ -94,11 +107,20 @@ export default function CreateStoryFlowMap() {
 
           // Check different possible structures
           if (conceptData && typeof conceptData === 'object') {
+            // Check for the standard CoreStoryConcept structure
             if (conceptData.content && conceptData.content.trim().length > 0) {
               hasCoreStoryConcept = true;
-            } else if (typeof conceptData === 'string' && conceptData.trim().length > 0) {
+            } 
+            // Check for object with id, disease, and drug properties (valid concept)
+            else if (conceptData.id && conceptData.disease && conceptData.drug) {
               hasCoreStoryConcept = true;
-            } else if (Array.isArray(conceptData) && conceptData.length > 0) {
+            }
+            // Check for string content
+            else if (typeof conceptData === 'string' && conceptData.trim().length > 0) {
+              hasCoreStoryConcept = true;
+            } 
+            // Check for array of concepts
+            else if (Array.isArray(conceptData) && conceptData.length > 0) {
               hasCoreStoryConcept = true;
             }
           } else if (typeof conceptData === 'string' && conceptData.trim().length > 0) {
@@ -233,10 +255,24 @@ export default function CreateStoryFlowMap() {
           }
         }
 
+        // Also check for saved Story Flow Table (from tension-resolution page)
+        const storyFlowTable = localStorage.getItem('storyFlowTable');
+        let hasStoryFlowTable = false;
+        if (storyFlowTable) {
+          try {
+            const tableData = JSON.parse(storyFlowTable);
+            hasStoryFlowTable = tableData && tableData.headers && tableData.rows && tableData.rows.length > 0;
+            console.log('Has Story Flow Table:', hasStoryFlowTable);
+          } catch (e) {
+            console.error('Error parsing Story Flow Table:', e);
+          }
+        }
+
         hasStoryFlowOutline =
           Boolean(hasAttackPoints) ||
           Boolean(hasTensionResolution) ||
-          Boolean(hasSavedTensionResolution);
+          Boolean(hasSavedTensionResolution) ||
+          Boolean(hasStoryFlowTable);
         console.log('Has Story Flow Outline from individual items:', hasStoryFlowOutline);
       }
 
@@ -381,6 +417,18 @@ export default function CreateStoryFlowMap() {
         setStoryFlowData(data.storyFlowData);
         setShowMap(true);
         setStep(1);
+
+        // Retrieve and set the saved Story Flow Table from localStorage
+        try {
+          const savedTableData = localStorage.getItem('storyFlowTable');
+          if (savedTableData) {
+            const tableData = JSON.parse(savedTableData);
+            setSavedStoryFlowTable(tableData);
+            console.log('Retrieved saved Story Flow Table:', tableData);
+          }
+        } catch (error) {
+          console.error('Error retrieving saved Story Flow Table:', error);
+        }
 
         // Don't add any additional messages - just show the map
         // The user specifically requested no additional responses after the confirmation message
@@ -874,6 +922,49 @@ export default function CreateStoryFlowMap() {
     );
   };
 
+  const renderSavedStoryFlowTable = () => {
+    if (!savedStoryFlowTable || !showMap) return null;
+
+    return (
+      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mt-4">
+        <h3 className="text-lg font-semibold text-blue-800 mb-4">Story Flow Table</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse border border-gray-300">
+            <thead>
+              <tr className="bg-blue-100">
+                {savedStoryFlowTable.headers.map((header, index) => (
+                  <th
+                    key={index}
+                    className="border border-gray-300 px-4 py-2 text-left font-semibold text-blue-800"
+                  >
+                    {header || (index === 0 ? '' : index === 1 ? 'Tension' : 'Resolution')}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {savedStoryFlowTable.rows.map((row, rowIndex) => (
+                <tr
+                  key={rowIndex}
+                  className={rowIndex % 2 === 0 ? 'bg-white' : 'bg-blue-25'}
+                >
+                  {row.map((cell, cellIndex) => (
+                    <td
+                      key={cellIndex}
+                      className="border border-gray-300 px-4 py-2 text-sm text-gray-700"
+                    >
+                      {cell}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <PageLayout
       sectionIcon={
@@ -899,12 +990,16 @@ export default function CreateStoryFlowMap() {
             loading={loading}
             placeholder="Type your response..."
           />
+
         </div>
 
         {/* Story Flow Map - Right Side - Fixed */}
-        <div className="flex-1 h-full">
+        <div className="flex-1 h-full overflow-y-auto">
           {showMap ? (
-            <div className="h-full">{renderStoryFlowMap()}</div>
+            <div className="h-full">
+              {renderStoryFlowMap()}
+              {renderSavedStoryFlowTable()}
+            </div>
           ) : (
             <div></div>
             // <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex items-center justify-center">
