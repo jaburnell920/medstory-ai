@@ -52,8 +52,8 @@ function buildPubMedQuery(parsed: { title: string; year?: string; authorLastName
   return parts.join(' AND ');
 }
 
-async function pubmedSearchIds(term: string): Promise<string[]> {
-  const url = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmax=5&retmode=json&sort=relevance&term=${encodeURIComponent(
+async function pubmedSearchIds(term: string, retmax = 20): Promise<string[]> {
+  const url = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmax=${retmax}&retmode=json&sort=relevance&term=${encodeURIComponent(
     term
   )}`;
   const res = await fetch(url, { headers: { 'User-Agent': 'medstory-ai/resolve-landmark-link (contact: support@example.com)' } });
@@ -61,6 +61,32 @@ async function pubmedSearchIds(term: string): Promise<string[]> {
   const json = await res.json();
   const ids = json?.esearchresult?.idlist || [];
   return Array.isArray(ids) ? ids : [];
+}
+
+function buildCandidateTerms(parsed: { title: string; year?: string; authorLastNames: string[] }, citation: string): string[] {
+  const terms: string[] = [];
+  const titlePhrase = parsed.title ? `"${parsed.title}"[Title]` : '';
+  const tiabPhrase = parsed.title ? `"${parsed.title}"[Title/Abstract]` : '';
+  const authors = parsed.authorLastNames.slice(0, 3);
+  const authorClause = authors.length ? `(${authors.map((a) => `${a}[Author]`).join(' OR ')})` : '';
+  const yearClause = parsed.year ? `${parsed.year}[dp]` : '';
+
+  const join = (...parts: string[]) => parts.filter(Boolean).join(' AND ');
+
+  if (titlePhrase && authorClause && yearClause) terms.push(join(titlePhrase, authorClause, yearClause));
+  if (titlePhrase && authorClause) terms.push(join(titlePhrase, authorClause));
+  if (titlePhrase && yearClause) terms.push(join(titlePhrase, yearClause));
+  if (titlePhrase) terms.push(join(titlePhrase));
+  if (tiabPhrase && authors[0]) terms.push(join(tiabPhrase, `${authors[0]}[Author]`));
+
+  // Very lenient fallback to let PubMed apply ATM
+  const loose = [parsed.title, authors[0] || '', parsed.year || ''].filter(Boolean).join(' ');
+  if (loose) terms.push(loose);
+
+  // Final fallback to the raw citation text
+  terms.push(citation);
+
+  return Array.from(new Set(terms));
 }
 
 type AuthorSummary = { name?: string };
@@ -122,28 +148,32 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(fallback);
   }
 
-  const term = buildPubMedQuery(parsed);
-  try {
-    const ids = await pubmedSearchIds(term);
-    const summaries = await pubmedSummary(ids);
+  const primaryTerm = buildPubMedQuery(parsed);
+  const candidateTerms = buildCandidateTerms(parsed, citation);
 
-    let best: PubMedSummary | null = null;
-    let bestScore = 0;
-    for (const s of summaries) {
-      const score = scoreCandidate(parsed, s);
-      if (score > bestScore) {
-        best = s;
-        bestScore = score;
+  for (const term of [primaryTerm, ...candidateTerms]) {
+    try {
+      const ids = await pubmedSearchIds(term, 25);
+      const summaries = await pubmedSummary(ids);
+
+      let best: PubMedSummary | null = null;
+      let bestScore = 0;
+      for (const s of summaries) {
+        const score = scoreCandidate(parsed, s);
+        if (score > bestScore) {
+          best = s;
+          bestScore = score;
+        }
       }
-    }
 
-    if (best && best.uid && bestScore >= 0.6) {
-      return NextResponse.redirect(`https://pubmed.ncbi.nlm.nih.gov/${best.uid}/`);
+      if (best && best.uid && bestScore >= 0.55) {
+        return NextResponse.redirect(`https://pubmed.ncbi.nlm.nih.gov/${best.uid}/`);
+      }
+    } catch {
+      // Continue to next term
     }
-  } catch {
-    // ignore and fallback
   }
 
-  const searchUrl = `https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(term || citation)}`;
-  return NextResponse.redirect(searchUrl);
+  const fallbackSearch = `https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(candidateTerms[0] || primaryTerm || citation)}`;
+  return NextResponse.redirect(fallbackSearch);
 }
