@@ -103,29 +103,48 @@ type CrossrefWork = {
 type CrossrefResponse = { message?: { items?: CrossrefWork[] } };
 
 async function crossrefSearch(parsed: { title: string; year?: string; authorLastNames: string[] }) {
-  if (!parsed.title) return [] as Array<{ doi: string; title: string; authors: string[]; year?: string; url?: string }>;
-  const params = new URLSearchParams();
-  params.set('query.title', parsed.title);
-  if (parsed.authorLastNames[0]) params.set('query.author', parsed.authorLastNames[0]);
-  params.set('rows', '20');
-  params.set('select', 'DOI,title,author,issued,URL,container-title');
-  params.set('sort', 'relevance');
-  if (parsed.year) {
-    const y = parsed.year;
-    params.set('filter', `from-pub-date:${y}-01-01,until-pub-date:${y}-12-31`);
+  type Out = Array<{ doi: string; title: string; authors: string[]; year?: string; url?: string }>;
+  if (!parsed.title) return [] as Out;
+
+  async function query(params: Record<string, string | undefined>) {
+    const sp = new URLSearchParams();
+    if (params.title) sp.set('query.title', params.title);
+    if (params.author) sp.set('query.author', params.author);
+    if (params.filter) sp.set('filter', params.filter);
+    sp.set('rows', '20');
+    sp.set('select', 'DOI,title,author,issued,URL,container-title');
+    sp.set('sort', 'relevance');
+    const url = `https://api.crossref.org/works?${sp.toString()}`;
+    const res = await fetch(url, { headers: { 'User-Agent': 'medstory-ai/resolve-landmark-link (mailto:support@example.com)' } });
+    if (!res.ok) return [] as Out;
+    const data = (await res.json()) as CrossrefResponse;
+    const items = data?.message?.items || [];
+    return items.map((w) => ({
+      doi: w.DOI || '',
+      title: (w.title && w.title[0]) || '',
+      authors: (w.author || []).map((a) => a.family || '').filter(Boolean),
+      year: String(w.issued?.['date-parts']?.[0]?.[0] || ''),
+      url: w.URL,
+    })) as Out;
   }
-  const url = `https://api.crossref.org/works?${params.toString()}`;
-  const res = await fetch(url, { headers: { 'User-Agent': 'medstory-ai/resolve-landmark-link (mailto:support@example.com)' } });
-  if (!res.ok) return [];
-  const data = (await res.json()) as CrossrefResponse;
-  const items = data?.message?.items || [];
-  return items.map((w) => ({
-    doi: w.DOI || '',
-    title: (w.title && w.title[0]) || '',
-    authors: (w.author || []).map((a) => a.family || '').filter(Boolean),
-    year: String(w.issued?.['date-parts']?.[0]?.[0] || ''),
-    url: w.URL,
-  }));
+
+  const author = parsed.authorLastNames[0];
+  const yearFilter = parsed.year ? `from-pub-date:${parsed.year}-01-01,until-pub-date:${parsed.year}-12-31` : undefined;
+
+  // Try progressively broader queries
+  let results: Out = [];
+  results = await query({ title: parsed.title, author, filter: yearFilter });
+  if (results.length) return results;
+
+  results = await query({ title: parsed.title, author });
+  if (results.length) return results;
+
+  results = await query({ title: parsed.title });
+  if (results.length) return results;
+
+  // Last resort: author only with year filter
+  results = await query({ author, filter: yearFilter });
+  return results;
 }
 
 async function pubmedIdFromDoi(doi: string): Promise<string | null> {
