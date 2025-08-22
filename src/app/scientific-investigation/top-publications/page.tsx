@@ -278,7 +278,7 @@ export default function TopPublicationsPage() {
 
         // Add the transition message before starting the interview
         const transitionMessage =
-          "Thank you. I will now start the simulated interview with the expert you designated. Let's begin...";
+          "Thank you. I will now start the simulated interview with the expert you designated. Let's begin";
         const messagesWithTransition = [
           ...newMessages,
           { role: 'assistant' as const, content: transitionMessage },
@@ -296,7 +296,10 @@ export default function TopPublicationsPage() {
           });
           const data = await res.json();
 
-          setMessages([...messagesWithTransition, { role: 'assistant', content: `EXPERT: ${data.result}` }]);
+          setMessages([
+            ...messagesWithTransition,
+            { role: 'assistant', content: `EXPERT: ${data.result}` },
+          ]);
         } catch (err) {
           console.error('Error starting interview:', err);
           setMessages((prev) => [
