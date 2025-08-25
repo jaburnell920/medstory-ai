@@ -1,11 +1,11 @@
 # Task List
 
-1. ✅ Analyze current tension-resolution page table generation and saving mechanism
-Found that tableData is set via parseMarkdownTable when AI responses contain tables. Currently no automatic saving.
-2. ✅ Modify tension-resolution page to automatically save Story Flow Table when generated
-Added useEffect to automatically save tableData to localStorage with key 'storyFlowTable' when generated
-3. ✅ Update create-map page to retrieve and display saved Story Flow Table
-Added state for savedStoryFlowTable, retrieval logic in createStoryFlowMap, and renderSavedStoryFlowTable function to display the table in a blue box under the story flow map
-4. 🔄 Test the complete flow from tension-resolution to create-map
-Verify that the table is automatically saved and properly displayed in the create-map page
+1. ✅ Analyze the root cause of incorrect publication links
+Found that mock data contains real PMIDs/DOIs that don't match the study descriptions, and there's no tirzepatide-specific mock data
+2. ✅ Verify that the PMIDs in the tirzepatide response match the actual studies
+Confirmed that PMIDs 35704399, 34379922, 34774199, 34224675, 33965062 are all incorrect - they point to studies about varicella vaccine, HIV prevention, RSV, etc. instead of tirzepatide studies
+3. ✅ Add tirzepatide-specific mock data with accurate PMIDs and DOIs
+Added tirzepatide case with correct PMIDs: Jastreboff obesity (35658024), Frias vs semaglutide (34170647), SURPASS-1 (34186022), SURPASS-3 (34370970), SURPASS-4 (34672967)
+4. ✅ Test the API with tirzepatide query to ensure correct links
+Verified that the API now returns correct tirzepatide studies with matching PMIDs that link to the actual articles described
 
