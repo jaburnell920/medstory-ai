@@ -131,6 +131,36 @@ DOI: Not available
 PMID: 4170549
 Impact Score (0-100): 90
 Christiaan Barnard's report of the first human heart transplant marked a historic milestone in cardiac surgery. While the patient survived only 18 days, this achievement demonstrated the technical feasibility of heart transplantation and paved the way for the development of modern transplant programs that now routinely save lives.`;
+    } else if (topic.toLowerCase().includes('tirzepatide')) {
+      mockResult = `1. Jastreboff AM, et al. Tirzepatide once weekly for the treatment of obesity. N Engl J Med. 2022;387:205-216.
+DOI: 10.1056/NEJMoa2206038
+PMID: 35658024
+Impact Score (0-100): 95
+This study demonstrated the significant efficacy of tirzepatide, a dual GIP and GLP-1 receptor agonist, in inducing weight loss among individuals with obesity. The trial's results marked a breakthrough in obesity treatment, showing greater weight reduction compared to existing therapies, thus influencing clinical practice and guidelines.
+
+2. Frías JP, et al. Tirzepatide versus semaglutide once weekly in patients with type 2 diabetes. N Engl J Med. 2021;385:503-515.
+DOI: 10.1056/NEJMoa2107519
+PMID: 34170647
+Impact Score (0-100): 92
+This trial compared the efficacy and safety of tirzepatide with semaglutide in managing type 2 diabetes. Tirzepatide showed superior glycemic control and weight loss, establishing it as a potent therapeutic option and shifting the landscape of diabetes treatment.
+
+3. Ludvik B, et al. Efficacy and safety of a novel dual GIP and GLP-1 receptor agonist tirzepatide in patients with type 2 diabetes (SURPASS-1). Lancet. 2021;398:143-155.
+DOI: 10.1016/S0140-6736(21)01324-6
+PMID: 34186022
+Impact Score (0-100): 89
+This study provided evidence that tirzepatide monotherapy was more effective than placebo in achieving glycemic control in type 2 diabetes patients inadequately controlled by diet and exercise alone. This finding has influenced treatment strategies by highlighting tirzepatide's benefits as a standalone treatment option.
+
+4. Ludvik B, et al. Once-weekly tirzepatide versus once-daily insulin degludec as add-on to metformin with or without SGLT2 inhibitors in patients with type 2 diabetes (SURPASS-3). Lancet. 2021;398:583-598.
+DOI: 10.1016/S0140-6736(21)02188-7
+PMID: 34370970
+Impact Score (0-100): 87
+This clinical trial assessed tirzepatide versus insulin degludec as add-on therapy, showing remarkable efficacy in lowering HbA1c and body weight compared to insulin. The study has been pivotal in validating tirzepatide's role as superior to traditional insulin therapy, influencing therapeutic guidelines.
+
+5. Del Prato S, et al. Tirzepatide versus insulin glargine in type 2 diabetes and increased cardiovascular risk (SURPASS-4). Lancet. 2021;398:1811-1824.
+DOI: 10.1016/S0140-6736(21)02188-7
+PMID: 34672967
+Impact Score (0-100): 85
+This head-to-head trial compared tirzepatide with insulin glargine in patients with type 2 diabetes and increased cardiovascular risk, showing tirzepatide's superior efficacy in glycemic control and weight management. The results have informed clinical decision-making, favoring tirzepatide in therapeutic protocols for high-risk patients.`;
     } else {
       // Default generic medical studies
       mockResult = `1. Randomized Controlled Trial Collaborative Group. Randomised trial of intravenous streptokinase, oral aspirin, both, or neither among 17,187 cases of suspected acute myocardial infarction. Lancet. 1988;2:349-360.
