@@ -10,6 +10,8 @@ interface Study {
   id: string;
   number: string;
   citation: string;
+  doi?: string;
+  pmid?: string;
   impactScore: string;
   description: string;
   fullText: string;
@@ -96,13 +98,26 @@ export default function LandmarkPublicationsPage() {
         line.trim().startsWith('Impact Score (0-100):')
       );
 
-      // Reconstruct the citation by joining lines before the impact score
+      // Find DOI and PMID lines
+      const doiLineIndex = lines.findIndex((line) =>
+        line.trim().startsWith('DOI:')
+      );
+      const pmidLineIndex = lines.findIndex((line) =>
+        line.trim().startsWith('PMID:')
+      );
+
+      // Reconstruct the citation by joining lines before DOI/PMID/impact score
       let citationLines: string[] = [];
       let descriptionLines: string[] = [];
 
       if (impactLineIndex >= 0) {
-        // Citation is everything before the impact score line
-        citationLines = lines.slice(0, impactLineIndex);
+        // Find the first metadata line (DOI, PMID, or Impact Score)
+        const firstMetadataIndex = Math.min(
+          ...[doiLineIndex, pmidLineIndex, impactLineIndex].filter(i => i >= 0)
+        );
+        
+        // Citation is everything before the first metadata line
+        citationLines = lines.slice(0, firstMetadataIndex);
         // Description is everything after the impact score line
         descriptionLines = lines.slice(impactLineIndex + 1);
       } else {
@@ -125,6 +140,12 @@ export default function LandmarkPublicationsPage() {
       const impactLine = lines[impactLineIndex] || '';
       const impactScore = impactLine.replace('Impact Score (0-100):', '').trim();
 
+      // Extract DOI and PMID
+      const doiLine = doiLineIndex >= 0 ? lines[doiLineIndex] : '';
+      const doi = doiLine.replace('DOI:', '').trim();
+      const pmidLine = pmidLineIndex >= 0 ? lines[pmidLineIndex] : '';
+      const pmid = pmidLine.replace('PMID:', '').trim();
+
       // Join description lines
       const description = descriptionLines.join(' ').trim();
 
@@ -132,6 +153,8 @@ export default function LandmarkPublicationsPage() {
         id: `study-${number}-${Date.now()}-${index}`,
         number,
         citation,
+        doi: doi && doi !== 'Not available' ? doi : undefined,
+        pmid: pmid && pmid !== 'Not available' ? pmid : undefined,
         impactScore,
         description,
         fullText: block,
@@ -148,6 +171,32 @@ export default function LandmarkPublicationsPage() {
       newSelected.delete(studyId);
     }
     setSelectedStudies(newSelected);
+  };
+
+  // Generate the appropriate link for a study based on available identifiers
+  const generateStudyLink = (study: Study): { url: string; isReliable: boolean } => {
+    // Priority 1: DOI link (most reliable)
+    if (study.doi) {
+      return {
+        url: `https://doi.org/${study.doi}`,
+        isReliable: true
+      };
+    }
+    
+    // Priority 2: PubMed link (very reliable)
+    if (study.pmid) {
+      return {
+        url: `https://pubmed.ncbi.nlm.nih.gov/${study.pmid}/`,
+        isReliable: true
+      };
+    }
+    
+    // Priority 3: Google search fallback (less reliable)
+    const searchTerms = extractSearchTerms(study.citation);
+    return {
+      url: `/api/google-search-redirect?q=${encodeURIComponent(searchTerms)}`,
+      isReliable: false
+    };
   };
 
   // Extract search terms from citation for Google search linking (without quotes)
@@ -442,24 +491,53 @@ export default function LandmarkPublicationsPage() {
                         className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
                       <div className="flex-1">
-                        <a
-                          href={`/api/google-search-redirect?q=${encodeURIComponent(extractSearchTerms(study.citation))}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="block cursor-pointer hover:text-blue-700"
-                        >
-                          <div className="font-medium text-blue-800 mb-2 hover:underline">
-                            {study.number}. {study.citation}
-                          </div>
-                          {study.impactScore && (
-                            <div className="text-sm font-semibold text-blue-600 mb-2">
-                              Impact Score (0-100): {study.impactScore}
-                            </div>
-                          )}
-                          <div className="text-gray-700 text-sm leading-relaxed">
-                            {study.description}
-                          </div>
-                        </a>
+                        {(() => {
+                          const linkInfo = generateStudyLink(study);
+                          const LinkComponent = linkInfo.isReliable ? 'a' : 'div';
+                          
+                          return (
+                            <LinkComponent
+                              {...(linkInfo.isReliable ? {
+                                href: linkInfo.url,
+                                target: "_blank",
+                                rel: "noopener noreferrer",
+                                className: "block cursor-pointer hover:text-blue-700"
+                              } : {
+                                className: "block"
+                              })}
+                            >
+                              <div className={`font-medium mb-2 ${linkInfo.isReliable ? 'text-blue-800 hover:underline cursor-pointer' : 'text-gray-600'}`}>
+                                {study.number}. {study.citation}
+                                {!linkInfo.isReliable && (
+                                  <span className="ml-2 text-xs text-red-500 font-normal">
+                                    (Link unavailable - no DOI/PMID)
+                                  </span>
+                                )}
+                              </div>
+                              
+                              {/* Show DOI and PMID if available */}
+                              {(study.doi || study.pmid) && (
+                                <div className="text-xs text-gray-500 mb-2 space-y-1">
+                                  {study.doi && (
+                                    <div>DOI: {study.doi}</div>
+                                  )}
+                                  {study.pmid && (
+                                    <div>PMID: {study.pmid}</div>
+                                  )}
+                                </div>
+                              )}
+                              
+                              {study.impactScore && (
+                                <div className="text-sm font-semibold text-blue-600 mb-2">
+                                  Impact Score (0-100): {study.impactScore}
+                                </div>
+                              )}
+                              <div className="text-gray-700 text-sm leading-relaxed">
+                                {study.description}
+                              </div>
+                            </LinkComponent>
+                          );
+                        })()}
                       </div>
                     </div>
                   </div>
