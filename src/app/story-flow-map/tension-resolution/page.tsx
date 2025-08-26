@@ -20,6 +20,10 @@ export default function TensionResolution() {
   const [tableData, setTableData] = useState<{ headers: string[]; rows: string[][] } | null>(null);
   const [tedTalkScript, setTedTalkScript] = useState('');
 
+  // Track unsaved state to warn if navigating away
+  const [, setHasUnsaved] = useState(false);
+  const [highlightSave, setHighlightSave] = useState(false);
+
   // State for selections and saving
   const [selectedAttackPoint, setSelectedAttackPoint] = useState<string>('');
   const [selectedTensionPoints, setSelectedTensionPoints] = useState<Set<string>>(new Set());
@@ -57,6 +61,18 @@ export default function TensionResolution() {
     result,
   ]);
 
+  // Listen for highlight save event from Sidebar
+  useEffect(() => {
+    const handler = (e: CustomEvent) => {
+      if ((e as CustomEvent).detail === 'tension-resolution') {
+        setHighlightSave(true);
+        setTimeout(() => setHighlightSave(false), 4000);
+      }
+    };
+    window.addEventListener('triggerHighlightSave', handler as EventListener);
+    return () => window.removeEventListener('triggerHighlightSave', handler as EventListener);
+  }, []);
+
   // Automatically save Story Flow Table when it's generated
   useEffect(() => {
     if (tableData && typeof window !== 'undefined') {
@@ -68,6 +84,23 @@ export default function TensionResolution() {
       }
     }
   }, [tableData]);
+
+    // Track unsaved state and set localStorage flag when content is present
+    useEffect(() => {
+      const unsaved =
+        (attackPoints && attackPoints.length > 0) ||
+        (tensionResolutionPoints && tensionResolutionPoints.length > 0) ||
+        !!conclusion ||
+        !!references ||
+        !!tableData ||
+        !!tedTalkScript ||
+        !!result;
+      setHasUnsaved(unsaved);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('unsaved_tension_resolution', unsaved ? '1' : '0');
+      }
+    }, [attackPoints, tensionResolutionPoints, conclusion, references, tableData, tedTalkScript, result]);
+
 
   // Initialize messages with core story concept from localStorage
   useEffect(() => {
@@ -154,7 +187,12 @@ export default function TensionResolution() {
         },
       ]);
     }
-  };
+  
+      // any reset means no unsaved
+      setHasUnsaved(false);
+      if (typeof window !== 'undefined') localStorage.setItem('unsaved_tension_resolution', '0');
+};
+
 
   // Initialize with default questions
   const [questions, setQuestions] = useState([
@@ -706,6 +744,7 @@ export default function TensionResolution() {
       tensionResolutionPoints: tensionResolutionPointsFound,
       conclusion: conclusionFound,
       references: referencesFound,
+
     };
   };
 
@@ -811,6 +850,8 @@ export default function TensionResolution() {
   // Handle attack point selection (radio button)
   const handleAttackPointSelection = (attackPointIndex: number) => {
     setSelectedAttackPoint(attackPointIndex.toString());
+    setHasUnsaved(true);
+    if (typeof window !== 'undefined') localStorage.setItem('unsaved_tension_resolution', '1');
   };
 
   // Handle tension resolution point selection (checkbox)
@@ -822,6 +863,8 @@ export default function TensionResolution() {
       newSelected.delete(tensionPointIndex.toString());
     }
     setSelectedTensionPoints(newSelected);
+    setHasUnsaved(true);
+    if (typeof window !== 'undefined') localStorage.setItem('unsaved_tension_resolution', '1');
   };
 
   // Handle saving selected items
@@ -866,7 +909,14 @@ export default function TensionResolution() {
 
     const totalSelected = (selectedAttackPoint ? 1 : 0) + selectedTensionPoints.size;
     toast.success(`${totalSelected} item(s) saved successfully!`);
+
+    // Clear unsaved flag since user saved
+    setHasUnsaved(false);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('unsaved_tension_resolution', '0');
+    }
   };
+
 
   // Handle clicking on title to access saved page
   const handleTitleClick = () => {
@@ -1301,7 +1351,7 @@ export default function TensionResolution() {
                   {(selectedAttackPoint || selectedTensionPoints.size > 0) && (
                     <button
                       onClick={handleSaveSelected}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                      className={`${highlightSave ? 'animate-pulse ring-4 ring-orange-300 bg-orange-500' : 'bg-blue-600 hover:bg-blue-700'} px-4 py-2 rounded-lg transition-colors text-sm font-medium text-white`}
                     >
                       Save Selected
                     </button>

@@ -1,11 +1,15 @@
 # Task List
 
-1. ✅ Analyze current tension-resolution page table generation and saving mechanism
-Found that tableData is set via parseMarkdownTable when AI responses contain tables. Currently no automatic saving.
-2. ✅ Modify tension-resolution page to automatically save Story Flow Table when generated
-Added useEffect to automatically save tableData to localStorage with key 'storyFlowTable' when generated
-3. ✅ Update create-map page to retrieve and display saved Story Flow Table
-Added state for savedStoryFlowTable, retrieval logic in createStoryFlowMap, and renderSavedStoryFlowTable function to display the table in a blue box under the story flow map
-4. 🔄 Test the complete flow from tension-resolution to create-map
-Verify that the table is automatically saved and properly displayed in the create-map page
+1. 🔄 Fix CSC: move unsaved mark out of setMessages; correct Save button className
+Lines around 300-314 and 602-610
+2. 🔄 Fix TR: separate highlightSave listener; wrap unsaved tracking in useEffect; move reset unsaved inside handleReset; move clear unsaved inside handleSaveSelected; apply highlightSave classes
+Multiple edits across file
+3. ⏳ Verify Create-Map reads storyFlowTable from localStorage and renders
+
+4. ⏳ Install deps and run build to catch syntax/TS errors
+
+5. ⏳ Manual E2E checks for navigation guard, highlighting, auto-save, and flow between TR and Create-Map
+
+6. ⏳ Commit changes once build passes
+
 

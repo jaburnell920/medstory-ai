@@ -34,6 +34,14 @@ export default function CoreStoryConcept() {
   const [nextConceptNumber, setNextConceptNumber] = useState<number>(1);
   const [currentlyModifyingConcept, setCurrentlyModifyingConcept] =
     useState<CoreStoryConcept | null>(null);
+  const [, setHasUnsaved] = useState(false);
+  // Mark unsaved when concepts array changes or selection changes
+  useEffect(() => {
+    const unsaved = concepts.length > 0 && !selectedConcept;
+    setHasUnsaved(unsaved);
+    localStorage.setItem('unsaved_core_story_concept', unsaved ? '1' : '0');
+  }, [concepts, selectedConcept]);
+
 
   // Ref for auto-scrolling the results section
   const resultsScrollRef = useRef<HTMLDivElement>(null);
@@ -45,6 +53,19 @@ export default function CoreStoryConcept() {
     }
   }, [concepts]);
 
+  // Highlight save button when prompted by SidebarMenu
+  const [highlightSave, setHighlightSave] = useState(false);
+  useEffect(() => {
+    const handler = (e: CustomEvent) => {
+      if ((e as CustomEvent).detail === 'core-story-concept') {
+        setHighlightSave(true);
+        setTimeout(() => setHighlightSave(false), 4000);
+      }
+    };
+    window.addEventListener('triggerHighlightSave', handler as EventListener);
+    return () => window.removeEventListener('triggerHighlightSave', handler as EventListener);
+  }, []);
+
   // Load saved concepts on component mount and clear generated results on page refresh
   useEffect(() => {
     // Always start with concept #1 for a new session
@@ -52,6 +73,7 @@ export default function CoreStoryConcept() {
 
     // Clear any existing concepts data to ensure we start fresh
     localStorage.removeItem('coreStoryConceptsData');
+    localStorage.setItem('unsaved_core_story_concept', '0');
 
     // We don't need to set the next concept number based on saved concepts anymore
     // This ensures we always start with #1
@@ -79,6 +101,8 @@ export default function CoreStoryConcept() {
       setSelectedConcept('');
       setNextConceptNumber(1);
       setCurrentlyModifyingConcept(null);
+      setHasUnsaved(false);
+      localStorage.setItem('unsaved_core_story_concept', '0');
     };
 
     // Add event listener for page unload
@@ -132,6 +156,10 @@ export default function CoreStoryConcept() {
     if (selectedConceptData) {
       localStorage.setItem('selectedCoreStoryConceptData', JSON.stringify(selectedConceptData));
     }
+
+    // Mark unsaved because selection changed but not explicitly saved
+    setHasUnsaved(true);
+    localStorage.setItem('unsaved_core_story_concept', '1');
   };
 
   // Handle saving selected concept to localStorage (explicit save action)
@@ -145,6 +173,10 @@ export default function CoreStoryConcept() {
     // Save to localStorage (same as selection, but with different toast message)
     localStorage.setItem('selectedCoreStoryConceptData', JSON.stringify(selectedConceptData));
     localStorage.setItem('selectedCoreStoryConcept', selectedConcept);
+
+    // Clear unsaved flag
+    setHasUnsaved(false);
+    localStorage.setItem('unsaved_core_story_concept', '0');
 
     // Show success message
     toast.success('Core story concept saved successfully!');
@@ -279,11 +311,15 @@ export default function CoreStoryConcept() {
               'Got it. Would you like to see a table with all the Core Story Concept Candidates?',
           },
         ]);
+        // Mark unsaved because a new concept was generated but not saved yet
+        setHasUnsaved(true);
+        localStorage.setItem('unsaved_core_story_concept', '1');
         setLoading(false);
         return;
       }
+      }
       return;
-    }
+    
 
     // Check if we're in the table request phase
     if (
@@ -359,7 +395,7 @@ export default function CoreStoryConcept() {
               },
               {
                 role: 'user',
-                content: `Modify this Core Story Concept Candidate #${currentlyModifyingConcept ? currentlyModifyingConcept.conceptNumber : 1} for ${context.drug} in ${context.disease} based on the following feedback: ${trimmed}. Keep the length at ${effectiveLength}. Keep the same candidate number in the response.`,
+                content: `Modify this Core Story Concept Candidate #${currentlyModifyingConcept?.conceptNumber ?? 1} for ${context.drug} in ${context.disease} based on the following feedback: ${trimmed}. Keep the length at ${effectiveLength}. Keep the same candidate number in the response.`,
               },
               {
                 role: 'assistant',
@@ -396,9 +432,13 @@ export default function CoreStoryConcept() {
         });
 
         // Update the selected concept data if it's the one being modified
-        if (currentlyModifyingConcept && selectedConcept === currentlyModifyingConcept.id) {
-          const updatedConcept = { ...currentlyModifyingConcept, content: data.result };
-          localStorage.setItem('selectedCoreStoryConceptData', JSON.stringify(updatedConcept));
+        {
+          const cmc = currentlyModifyingConcept;
+          const cmcId = cmc?.id;
+          if (cmcId && selectedConcept === cmcId && cmc) {
+            const updatedConcept = { ...cmc, content: data.result };
+            localStorage.setItem('selectedCoreStoryConceptData', JSON.stringify(updatedConcept));
+          }
         }
 
         setMessages([
@@ -561,6 +601,7 @@ export default function CoreStoryConcept() {
 
         {/* Result Section - Right Side - Fixed */}
         <div className="flex-1 h-full">
+
           {concepts.length > 0 ? (
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex flex-col">
               <div className="flex justify-between items-center mb-4 flex-shrink-0">
@@ -572,8 +613,8 @@ export default function CoreStoryConcept() {
                   {selectedConcept && (
                     <button
                       onClick={handleSaveSelected}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                    >
+                      className={`${highlightSave ? 'animate-pulse ring-4 ring-orange-300 bg-orange-500' : 'bg-blue-600 hover:bg-blue-700'} px-4 py-2 rounded-lg transition-colors text-sm font-medium text-white`}
+                      >
                       Save Selected
                     </button>
                   )}

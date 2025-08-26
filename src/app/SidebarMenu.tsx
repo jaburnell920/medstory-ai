@@ -68,6 +68,41 @@ function SidebarMenu() {
     },
   ];
 
+
+  const handleProtectedNav = (
+    e: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
+    href: string
+  ) => {
+    try {
+      if (typeof window === 'undefined') return;
+
+      const path = window.location.pathname;
+      const isCSC = path === '/core-story-concept';
+      const isTR = path === '/story-flow-map/tension-resolution';
+
+      const hasUnsavedCSC = localStorage.getItem('unsaved_core_story_concept') === '1';
+      const hasUnsavedTR = localStorage.getItem('unsaved_tension_resolution') === '1';
+
+      const tryingToLeaveCSC = isCSC && href !== '/core-story-concept';
+      const tryingToLeaveTR = isTR && href !== '/story-flow-map/tension-resolution';
+
+      if ((tryingToLeaveCSC && hasUnsavedCSC) || (tryingToLeaveTR && hasUnsavedTR)) {
+        e.preventDefault();
+        const detail = isCSC ? 'core-story-concept' : 'tension-resolution';
+        window.dispatchEvent(new CustomEvent('triggerHighlightSave', { detail }));
+
+        const confirmLeave = window.confirm(
+          'You have unsaved generated content. Are you sure you want to leave without saving?'
+        );
+        if (confirmLeave) {
+          window.location.href = href;
+        }
+      }
+    } catch {
+      // no-op
+    }
+  };
+
   return (
     <nav className="flex flex-col space-y-4 text-xs pt-2 h-full">
       {/* START HERE header */}
@@ -104,7 +139,9 @@ function SidebarMenu() {
                         'flex items-start'
                       )}
                       href={link.href}
+                      onClick={(e) => handleProtectedNav(e, link.href!)}
                     >
+
                       <span className="mr-1">•</span> {link.label}
                     </Link>
                   ) : (
