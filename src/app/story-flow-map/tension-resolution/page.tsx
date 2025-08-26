@@ -580,7 +580,12 @@ export default function TensionResolution() {
         line.match(/^Conclusion:/i) ||
         line.match(/^\*\*Conclusion\*\*/i) ||
         line.match(/^\*\*Conclusion:\*\*/i) ||
-        line.match(/^\*\*Conclusion:/i)
+        line.match(/^\*\*Conclusion:/i) ||
+        line.match(/^Conclusion$/i) ||
+        line.match(/^\*Conclusion\*/i) ||
+        line.match(/^Summary\*?\*?/i) ||
+        line.match(/^\*?\*?Summary\*?\*?/i) ||
+        line.match(/^\*?\*?\*\*Conclusion\*\*\*?\*?/i)
       ) {
         if (currentSection && currentContent.length > 0) {
           // Save previous section
@@ -674,6 +679,25 @@ export default function TensionResolution() {
         }
       } else if (currentSection === 'references') {
         referencesFound = currentContent.join('\n').trim();
+      }
+    }
+
+    // Additional fallback: Look for conclusion patterns in the entire response if none found
+    if (!conclusionFound && tensionResolutionPointsFound.length > 0) {
+      // Try to find conclusion content after the last tension-resolution point
+      const conclusionPatterns = [
+        /\*?\*?Conclusion\*?\*?[:\s]*([\s\S]*?)(?=\n\s*\*?\*?References?|$)/i,
+        /\*?\*?Summary\*?\*?[:\s]*([\s\S]*?)(?=\n\s*\*?\*?References?|$)/i,
+        /^Conclusion[:\s]*([\s\S]*?)(?=\n\s*References?|$)/im,
+        /^Summary[:\s]*([\s\S]*?)(?=\n\s*References?|$)/im,
+      ];
+
+      for (const pattern of conclusionPatterns) {
+        const match = response.match(pattern);
+        if (match && match[1] && match[1].trim()) {
+          conclusionFound = cleanConclusion(match[1].trim());
+          break;
+        }
       }
     }
 
