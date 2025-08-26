@@ -12,6 +12,7 @@ interface Study {
   citation: string;
   doi?: string;
   pmid?: string;
+  url?: string;
   impactScore: string;
   description: string;
   fullText: string;
@@ -98,12 +99,15 @@ export default function LandmarkPublicationsPage() {
         line.trim().startsWith('Impact Score (0-100):')
       );
 
-      // Find DOI and PMID lines
+      // Find DOI, PMID, and URL lines
       const doiLineIndex = lines.findIndex((line) =>
         line.trim().startsWith('DOI:')
       );
       const pmidLineIndex = lines.findIndex((line) =>
         line.trim().startsWith('PMID:')
+      );
+      const urlLineIndex = lines.findIndex((line) =>
+        line.trim().startsWith('URL:')
       );
 
       // Reconstruct the citation by joining lines before DOI/PMID/impact score
@@ -111,9 +115,9 @@ export default function LandmarkPublicationsPage() {
       let descriptionLines: string[] = [];
 
       if (impactLineIndex >= 0) {
-        // Find the first metadata line (DOI, PMID, or Impact Score)
+        // Find the first metadata line (DOI, PMID, URL, or Impact Score)
         const firstMetadataIndex = Math.min(
-          ...[doiLineIndex, pmidLineIndex, impactLineIndex].filter(i => i >= 0)
+          ...[doiLineIndex, pmidLineIndex, urlLineIndex, impactLineIndex].filter(i => i >= 0)
         );
         
         // Citation is everything before the first metadata line
@@ -140,11 +144,13 @@ export default function LandmarkPublicationsPage() {
       const impactLine = lines[impactLineIndex] || '';
       const impactScore = impactLine.replace('Impact Score (0-100):', '').trim();
 
-      // Extract DOI and PMID
+      // Extract DOI, PMID, and URL
       const doiLine = doiLineIndex >= 0 ? lines[doiLineIndex] : '';
       const doi = doiLine.replace('DOI:', '').trim();
       const pmidLine = pmidLineIndex >= 0 ? lines[pmidLineIndex] : '';
       const pmid = pmidLine.replace('PMID:', '').trim();
+      const urlLine = urlLineIndex >= 0 ? lines[urlLineIndex] : '';
+      const url = urlLine.replace('URL:', '').trim();
 
       // Join description lines
       const description = descriptionLines.join(' ').trim();
@@ -155,6 +161,7 @@ export default function LandmarkPublicationsPage() {
         citation,
         doi: doi && doi !== 'Not available' ? doi : undefined,
         pmid: pmid && pmid !== 'Not available' ? pmid : undefined,
+        url: url && url !== 'Not available' ? url : undefined,
         impactScore,
         description,
         fullText: block,
@@ -175,7 +182,15 @@ export default function LandmarkPublicationsPage() {
 
   // Generate the appropriate link for a study based on available identifiers
   const generateStudyLink = (study: Study): { url: string; isReliable: boolean } => {
-    // Priority 1: DOI link (most reliable)
+    // Priority 1: AI-provided URL (highest priority - direct from AI)
+    if (study.url) {
+      return {
+        url: study.url,
+        isReliable: true
+      };
+    }
+    
+    // Priority 2: DOI link (most reliable)
     if (study.doi) {
       return {
         url: `https://doi.org/${study.doi}`,
@@ -183,7 +198,7 @@ export default function LandmarkPublicationsPage() {
       };
     }
     
-    // Priority 2: PubMed link (very reliable)
+    // Priority 3: PubMed link (very reliable)
     if (study.pmid) {
       return {
         url: `https://pubmed.ncbi.nlm.nih.gov/${study.pmid}/`,
@@ -191,7 +206,7 @@ export default function LandmarkPublicationsPage() {
       };
     }
     
-    // Priority 3: Google search fallback (less reliable)
+    // Priority 4: Google search fallback (less reliable)
     const searchTerms = extractSearchTerms(study.citation);
     return {
       url: `/api/google-search-redirect?q=${encodeURIComponent(searchTerms)}`,
