@@ -1403,7 +1403,7 @@ export default function TensionResolution() {
                   <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                     <h3 className="text-lg font-semibold text-blue-800 mb-2">Summary</h3>
                     <pre className="text-gray-800 whitespace-pre-wrap font-sans">
-                      {conclusion.replace(/\n?• \??\.?$/i, '')}
+                      {conclusion.replace(/\n?• \??\.?$/i, '').trim()}
                     </pre>
                   </div>
                 )}
