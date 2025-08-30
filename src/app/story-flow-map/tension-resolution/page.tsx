@@ -1187,8 +1187,8 @@ export default function TensionResolution() {
         // Final restoration to ensure attack points are never lost
         // restoreAttackPoints();
 
-        // Update result if there's substantial content
-        if (content && content.length > 50) {
+        // Update result if there's substantial content and it's not a TED talk script
+        if (content && content.length > 50 && !tedTalkResult) {
           setResult(content);
         }
 
