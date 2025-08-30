@@ -1121,19 +1121,11 @@ export default function TensionResolution() {
           setTableData(tableResult);
         }
 
-        // Check if the response contains a TED talk script (only if user asked for one)
-        const userAskedForTedTalk =
-          trimmed.toLowerCase().includes('ted') ||
-          trimmed.toLowerCase().includes('script') ||
-          data.result.toLowerCase().includes('ted talk script');
-
-        let tedTalkResult = null;
-        if (userAskedForTedTalk) {
-          tedTalkResult = parseTedTalkScript(data.result);
-          console.log('TED talk parsing result:', tedTalkResult);
-          if (tedTalkResult) {
-            setTedTalkScript(tedTalkResult);
-          }
+        // Check if the response contains a TED talk script (always try to detect)
+        let tedTalkResult = parseTedTalkScript(data.result);
+        console.log('TED talk parsing result:', tedTalkResult);
+        if (tedTalkResult) {
+          setTedTalkScript(tedTalkResult);
         }
 
         // Parse the content to extract different sections
@@ -1290,6 +1282,7 @@ export default function TensionResolution() {
           conclusion ||
           references ||
           tableData ||
+          tedTalkScript ||
           result ? (
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex flex-col">
               <div className="flex justify-between items-center mb-4 flex-shrink-0">
