@@ -1122,7 +1122,7 @@ export default function TensionResolution() {
         }
 
         // Check if the response contains a TED talk script (always try to detect)
-        let tedTalkResult = parseTedTalkScript(data.result);
+        const tedTalkResult = parseTedTalkScript(data.result);
         console.log('TED talk parsing result:', tedTalkResult);
         if (tedTalkResult) {
           setTedTalkScript(tedTalkResult);
