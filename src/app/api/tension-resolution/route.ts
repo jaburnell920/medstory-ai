@@ -219,6 +219,8 @@ IMPORTANT: When the user says "yes" to the table question, immediately provide t
 
 Then ask the user the following: "Would you like me to write a script based on the above story flow outline that would be suitable for a highly engaging TED talk?" If yes, ask how long the talk should be (in minutes). You are an extremely successful and accomplished TED presenter who has given 10 different TED talks each of which garnered over 10 million views. Deliver a script for a TED talk using the same approach you took for your previous talks and aim for a length of minutes.
 
+IMPORTANT: If the user responds "no" to the TED talk question, end the conversation gracefully with a brief thank you message. Do not ask about the table again or offer any other services.
+
 PARAMETERS PROVIDED:
 - Core Story Concept: ${coreStoryConcept}
 - Audience: ${audience}
@@ -374,6 +376,23 @@ Would you like me to write a script based on the above story flow outline that w
             mockResult = `What modifications would you like to make to the Attack Point?`;
           }
         } else if (
+          // Check if user is declining TED talk in mock mode
+          (userMessage.toLowerCase().includes('no') || userMessage.toLowerCase().trim() === 'no')
+        ) {
+          // Check if this is a response to the TED talk question
+          const lastAssistantMessage =
+            conversationHistory
+              .filter(
+                (msg: { role: 'user' | 'assistant'; content: string }) => msg.role === 'assistant'
+              )
+              .pop()?.content || '';
+
+          if (lastAssistantMessage.toLowerCase().includes('ted talk')) {
+            mockResult = `Thank you for using the Story Flow Outline tool. Your story flow outline is complete and ready to use. Have a great day!`;
+          } else {
+            mockResult = `What modifications would you like to make to the Attack Point?`;
+          }
+        } else if (
           // Check if user is providing TED talk duration in mock mode
           userMessage.match(/\d+/) &&
           (userMessage.toLowerCase().includes('minute') ||
@@ -470,9 +489,20 @@ The future of medicine isn't in our hospitals. It's in our cells. And that futur
         userMessage.toLowerCase().includes('yes') &&
         lastAssistantMessage.toLowerCase().includes('ted talk');
 
+      const isTedTalkDeclined =
+        (userMessage.toLowerCase().includes('no') || userMessage.toLowerCase().trim() === 'no') &&
+        lastAssistantMessage.toLowerCase().includes('ted talk');
+
       let continuePrompt = '';
 
-      if (isTedTalkRequest) {
+      if (isTedTalkDeclined) {
+        // User declined TED talk script - end conversation gracefully
+        continuePrompt = `The user has declined to create a TED talk script. End the conversation gracefully with a brief, polite message thanking them for using the Story Flow Outline tool. Do not ask any more questions or offer additional services. Simply acknowledge their decision and conclude the session.
+
+Example response: "Thank you for using the Story Flow Outline tool. Your story flow outline is complete and ready to use. Have a great day!"
+
+Keep the response brief and professional.`;
+      } else if (isTedTalkRequest) {
         // Special handling for TED talk script generation
         continuePrompt = `You are helping create a TED talk script based on a Story Flow Outline. The user has confirmed they want a TED talk script.
 
@@ -627,6 +657,8 @@ After the references are displayed, ask the user if they want the tension-resolu
 CRITICAL: When the user says "yes" to the table question, immediately provide the table format and then ask about the TED talk. Do NOT repeat the table question.
 
 Then ask the user the following: "Would you like me to write a script based on the above story flow outline that would be suitable for a highly engaging TED talk?" If yes, ask how long the talk should be (in minutes). You are an extremely successful and accomplished TED presenter who has given 10 different TED talks each of which garnered over 10 million views. Deliver a script for a TED talk using the same approach you took for your previous talks and aim for a length of minutes.
+
+IMPORTANT: If the user responds "no" to the TED talk question, end the conversation gracefully with a brief thank you message. Do not ask about the table again or offer any other services.
 
 Respond appropriately to the user's latest message, following the conversation flow and complete prompt guidelines.`;
       }
