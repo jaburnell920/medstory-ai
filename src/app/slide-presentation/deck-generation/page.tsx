@@ -15,6 +15,27 @@ const questions = [
   'Do you want me to write speaker notes for each slide? (Y/N)',
 ];
 
+// Function to clean markdown symbols from content
+const cleanMarkdownSymbols = (content: string): string => {
+  if (!content) return '';
+  
+  return content
+    // Remove markdown bold symbols
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    // Remove standalone asterisks and stars
+    .replace(/^\*+\s*$/gm, '')
+    // Remove horizontal rules (---, ***, ===)
+    .replace(/^[-*=]{3,}\s*$/gm, '')
+    // Remove extra asterisks at the beginning of lines
+    .replace(/^\*+\s*/gm, '')
+    // Remove trailing asterisks
+    .replace(/\s*\*+$/gm, '')
+    // Clean up multiple consecutive newlines
+    .replace(/\n{3,}/g, '\n\n')
+    // Remove leading/trailing whitespace
+    .trim();
+};
+
 export default function DeckGenerationPage() {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
@@ -30,6 +51,8 @@ export default function DeckGenerationPage() {
   const [initialCheckComplete, setInitialCheckComplete] = useState(false);
   const [hasRequiredConcepts, setHasRequiredConcepts] = useState(false);
   const [generationFailed, setGenerationFailed] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const [lastError, setLastError] = useState('');
   const resultRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -184,6 +207,7 @@ export default function DeckGenerationPage() {
     setLoading(true);
     setGenerationFailed(false);
     setResult('');
+    setRetryCount(prev => prev + 1);
 
     // Get the stored concepts and answers
     const coreStoryConceptData =
@@ -328,9 +352,22 @@ When creating the Powerpoint file for downloading:
         }),
       });
       const data = await res.json();
-      setResult(data.result);
+      
+      // Check if the response contains an error
+      if (data.error) {
+        setLastError(data.error);
+        toast.error(data.error);
+        setGenerationFailed(true);
+        return;
+      }
+      
+      // Clean the result content before setting it
+      const cleanedResult = cleanMarkdownSymbols(data.result || '');
+      setResult(cleanedResult);
     } catch (err) {
-      toast.error('Something went wrong.');
+      const errorMessage = 'Network error occurred. Please check your connection and try again.';
+      setLastError(errorMessage);
+      toast.error(errorMessage);
       console.error(err);
       setGenerationFailed(true);
     } finally {
@@ -347,6 +384,8 @@ When creating the Powerpoint file for downloading:
     setInitialCheckComplete(false);
     setHasRequiredConcepts(false);
     setGenerationFailed(false);
+    setRetryCount(0);
+    setLastError('');
     setMessages([
       {
         role: 'assistant',
@@ -675,14 +714,31 @@ When creating the Powerpoint file for downloading:
           }),
         });
         const data = await res.json();
-        setResult(data.result);
+        
+        // Check if the response contains an error
+        if (data.error) {
+          setLastError(data.error);
+          toast.error(data.error);
+          setGenerationFailed(true);
+          setMessages((prev) => [
+            ...prev,
+            { role: 'assistant', content: data.error },
+          ]);
+          return;
+        }
+        
+        // Clean the result content before setting it
+        const cleanedResult = cleanMarkdownSymbols(data.result || '');
+        setResult(cleanedResult);
       } catch (err) {
-        toast.error('Something went wrong.');
+        const errorMessage = 'Network error occurred. Please check your connection and try again.';
+        setLastError(errorMessage);
+        toast.error(errorMessage);
         console.error(err);
         setGenerationFailed(true);
         setMessages((prev) => [
           ...prev,
-          { role: 'assistant', content: 'Failed to generate presentation outline.' },
+          { role: 'assistant', content: errorMessage },
         ]);
       } finally {
         setLoading(false);
@@ -719,14 +775,32 @@ When creating the Powerpoint file for downloading:
           />
           {/* Retry button for failed generation */}
           {generationFailed && (
-            <div className="mt-4 flex justify-center">
-              <button
-                onClick={handleRetry}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
-                disabled={loading}
-              >
-                Retry Generation
-              </button>
+            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="text-sm text-red-700 mb-3">
+                {lastError && (
+                  <p className="mb-2"><strong>Error:</strong> {lastError}</p>
+                )}
+                {retryCount > 0 && (
+                  <p className="mb-2">Retry attempts: {retryCount}</p>
+                )}
+                <p>Generation failed. You can try again or reset to start over.</p>
+              </div>
+              <div className="flex gap-2 justify-center">
+                <button
+                  onClick={handleRetry}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                  disabled={loading}
+                >
+                  {loading ? 'Retrying...' : 'Retry Generation'}
+                </button>
+                <button
+                  onClick={handleReset}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium"
+                  disabled={loading}
+                >
+                  Reset
+                </button>
+              </div>
             </div>
           )}
         </div>
