@@ -102,6 +102,64 @@ export default function TensionResolution() {
     }
   }, []);
 
+  // Ensure table rows always match the count of generated tension-resolution points
+  useEffect(() => {
+    if (!tableData) return;
+
+    const countNumericRows = (rows: string[][]) =>
+      rows.filter((r) => r && r[0] && /^\d+\.?$/.test(r[0].trim())).length;
+
+    // Helper: extract AP content without header or prompts
+    const extractAttackPointContent = (ap: string) =>
+      ap
+        .replace(/^Attack Point #\d+:?\s*/i, '')
+        .replace(
+          /Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points\??/gi,
+          ''
+        )
+        .replace(/Attack Point:\??/gi, '')
+        .trim();
+
+    // Helper: parse a TR point into tension/resolution cells
+    const parseTRCells = (point: string): { tension: string; resolution: string } => {
+      const tensionMatch = point.match(/Tension\s*:\s*([\s\S]*?)(?=\n\s*(?:Resolution\s*:|$))/i);
+      const resolutionMatch = point.match(/Resolution\s*:\s*([\s\S]*)$/i);
+      const tension = (tensionMatch?.[1] || '').trim();
+      const resolution = (resolutionMatch?.[1] || '').trim();
+      return { tension, resolution };
+    };
+
+    const expected = tensionResolutionPoints.length;
+    const numericCount = countNumericRows(tableData.rows);
+
+    // If mismatch, rebuild table from current state to guarantee alignment
+    if (expected > 0 && numericCount !== expected) {
+      const headers = ['', 'Tension', 'Resolution'];
+
+      // Attack point row
+      let apContent = '';
+      if (attackPoints.length > 0) {
+        const apIndex = selectedAttackPoint ? parseInt(selectedAttackPoint) : attackPoints.length - 1;
+        const apRaw = attackPoints[Math.max(0, Math.min(apIndex, attackPoints.length - 1))] || '';
+        apContent = extractAttackPointContent(apRaw);
+      }
+
+      const rows: string[][] = [];
+      rows.push(['AP', apContent, '']);
+
+      // TR rows
+      tensionResolutionPoints.forEach((p, idx) => {
+        const { tension, resolution } = parseTRCells(p);
+        rows.push([String(idx + 1), tension, resolution]);
+      });
+
+      // Conclusion row
+      rows.push(['CSC', '', (conclusion || '').trim()]);
+
+      setTableData({ headers, rows });
+    }
+  }, [tableData, tensionResolutionPoints, attackPoints, selectedAttackPoint, conclusion]);
+
   const extractMiddleContent = (text: string): string => {
     const match = text.match(/\n([\s\S]+?)\n(?=[^\n]*$)/);
     return match ? match[1].trim() : '';
