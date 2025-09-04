@@ -533,7 +533,12 @@ export default function TensionResolution() {
         const trimmedResponse = response.trim();
         if (trimmedResponse.length > 50 && 
             !trimmedResponse.match(/^(Do you want|Who is|Would you like|What|How)/i) &&
-            !trimmedResponse.match(/^(Currently selected|There is no)/i)) {
+            !trimmedResponse.match(/^(Currently selected|There is no)/i) &&
+            !trimmedResponse.match(/Tension-?Resolution/i) &&
+            !trimmedResponse.match(/^\*\*Tension-?Resolution/i) &&
+            !trimmedResponse.match(/Conclusion/i) &&
+            !trimmedResponse.match(/References/i) &&
+            !trimmedResponse.match(/short narrative|full narrative|specify the number/i)) {
           contentToProcess = trimmedResponse;
         }
       }
