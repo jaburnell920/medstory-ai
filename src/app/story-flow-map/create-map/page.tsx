@@ -680,15 +680,27 @@ export default function CreateStoryFlowMap() {
     // Calculate positions with responsive scaling
     const tensionResolutionPairs = storyPoints.filter((p) => p.label !== 'AP' && p.label !== 'CSC');
 
-    // Use viewBox for responsive scaling instead of fixed dimensions
+    // Dynamic spacing calculation based on number of tension-resolution points
+    const minSpacing = 100; // Minimum spacing between points
+    const maxSpacing = 150; // Maximum spacing between points
     const baseWidth = 800; // Base width for calculations
     const baseHeight = 300; // Base height
-    const viewBoxWidth = Math.max(baseWidth, 120 + tensionResolutionPairs.length * 120 + 200);
+    
+    // Calculate optimal spacing based on number of points
+    const numPoints = tensionResolutionPairs.length;
+    const availableWidth = baseWidth - 240; // Account for margins and AP/CSC positions
+    const optimalSpacing = numPoints > 0 ? Math.max(minSpacing, Math.min(maxSpacing, availableWidth / numPoints)) : maxSpacing;
+    
+    // Calculate viewBox width to ensure all elements fit
+    const axisMargin = 60;
+    const apWidth = 80; // Space for Attack Point
+    const cscWidth = 80; // Space for Core Story Concept
+    const tensionResolutionWidth = numPoints * optimalSpacing + (numPoints > 0 ? 75 : 0); // 75px for resolution offset
+    const viewBoxWidth = Math.max(baseWidth, axisMargin + apWidth + tensionResolutionWidth + cscWidth + 40);
     const viewBoxHeight = baseHeight;
 
     // Scale factor to fit values in SVG (values are 0-100, we want them in reasonable SVG coordinates)
     const yScale = (viewBoxHeight - 120) / 100; // Leave more margin for axes
-    const axisMargin = 60; // Space for axis lines and labels
 
     return (
       <div className="bg-white p-6 rounded-lg shadow-lg mb-6">
@@ -696,8 +708,9 @@ export default function CreateStoryFlowMap() {
         <div className="bg-gray-100 p-4 rounded-lg">
           <svg
             viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
-            className="w-full h-auto max-h-80"
+            className="w-full h-auto"
             preserveAspectRatio="xMidYMid meet"
+            style={{ minHeight: '200px', maxHeight: '400px' }}
           >
             {/* Light gray background */}
             <rect width="100%" height="100%" fill="#f5f5f5" />
@@ -787,8 +800,8 @@ export default function CreateStoryFlowMap() {
                   previousX = x + 12; // Right edge of circle
                   previousY = y;
                 } else if (point.label === 'CSC') {
-                  // Core Story Concept - positioned with more spacing
-                  const x = axisMargin + 80 + tensionResolutionPairs.length * 150 + 80;
+                  // Core Story Concept - positioned with dynamic spacing
+                  const x = axisMargin + apWidth + tensionResolutionWidth + cscWidth;
                   const y = viewBoxHeight - axisMargin - 25 * yScale;
 
                   circles.push(
@@ -828,9 +841,9 @@ export default function CreateStoryFlowMap() {
                     );
                   }
                 } else {
-                  // Tension-Resolution pairs with more diagonal spread
+                  // Tension-Resolution pairs with dynamic spacing
                   const pairIndex = parseInt(point.label) - 1;
-                  const tensionX = axisMargin + 80 + pairIndex * 150;
+                  const tensionX = axisMargin + apWidth + pairIndex * optimalSpacing;
                   const resolutionX = tensionX + 75; // More horizontal spread
                   const tensionY = viewBoxHeight - axisMargin - point.tensionValue * yScale;
                   const resolutionY = viewBoxHeight - axisMargin - point.resolutionValue * yScale;
