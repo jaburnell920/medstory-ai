@@ -515,19 +515,39 @@ export default function TensionResolution() {
     const hasAttackPointHeader = /Attack Point #\d+/i.test(response);
     const hasFollowUpQuestion = /Would you like.*?modify.*?create.*?move on/i.test(response);
 
-    // If there's no explicit header but there's a follow-up question, treat the content as an attack point
-    if (!hasAttackPointHeader && hasFollowUpQuestion) {
-      // Extract content before the follow-up question
-      const questionMatch = response.match(/(Would you like.*?(?:modify|create|move on).*?\?)/i);
-      if (questionMatch) {
-        const contentBeforeQuestion = response.substring(0, questionMatch.index).trim();
-        if (contentBeforeQuestion.length > 0) {
-          // Add a header and treat as attack point
-          const attackPointContent = `Attack Point #1\n\n${contentBeforeQuestion}`;
-          const cleanedAttackPoint = cleanAttackPoint(attackPointContent);
-          if (cleanedAttackPoint) {
-            attackPointsFound.push(cleanedAttackPoint);
-          }
+    // If there's no explicit header, treat the content as an attack point in these cases:
+    // 1. There's a follow-up question (modified content)
+    // 2. This is the first response and there's substantial narrative content
+    if (!hasAttackPointHeader) {
+      let contentToProcess = '';
+      
+      if (hasFollowUpQuestion) {
+        // Extract content before the follow-up question
+        const questionMatch = response.match(/(Would you like.*?(?:modify|create|move on).*?\?)/i);
+        if (questionMatch) {
+          contentToProcess = response.substring(0, questionMatch.index).trim();
+        }
+      } else {
+        // Check if this looks like narrative content (first response case)
+        // Look for substantial content that appears to be a story/narrative
+        const trimmedResponse = response.trim();
+        if (trimmedResponse.length > 50 && 
+            !trimmedResponse.match(/^(Do you want|Who is|Would you like|What|How)/i) &&
+            !trimmedResponse.match(/^(Currently selected|There is no)/i)) {
+          contentToProcess = trimmedResponse;
+        }
+      }
+      
+      if (contentToProcess.length > 0) {
+        // Determine the attack point number based on existing attack points
+        const currentAttackPointCount = attackPoints.length + persistentAttackPoints.length;
+        const attackPointNumber = currentAttackPointCount + 1;
+        
+        // Add a header and treat as attack point
+        const attackPointContent = `Attack Point #${attackPointNumber}\n\n${contentToProcess}`;
+        const cleanedAttackPoint = cleanAttackPoint(attackPointContent);
+        if (cleanedAttackPoint) {
+          attackPointsFound.push(cleanedAttackPoint);
         }
       }
     }
