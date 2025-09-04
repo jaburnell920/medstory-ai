@@ -501,6 +501,17 @@ export default function TensionResolution() {
 
   // Function to parse and categorize AI response content
   const parseContentResponse = (response: string) => {
+    // If the response contains a markdown table, skip parsing narrative content to avoid accidental additions
+    const tableCheck = parseMarkdownTable(response);
+    if (tableCheck) {
+      return {
+        attackPoints: [],
+        tensionResolutionPoints: [],
+        conclusion: '',
+        references: '',
+      };
+    }
+
     const lines = response.split('\n');
     const attackPointsFound: string[] = [];
     const tensionResolutionPointsFound: string[] = [];
@@ -1041,8 +1052,16 @@ export default function TensionResolution() {
             setTableData(tableResult);
           }
 
-          // Parse the content to extract different sections
-          const parsedContent = parseContentResponse(data.result);
+          // Parse the content to extract different sections (skip if this is a table-only response)
+          let parsedContent = {
+            attackPoints: [] as string[],
+            tensionResolutionPoints: [] as string[],
+            conclusion: '',
+            references: '',
+          };
+          if (!tableResult) {
+            parsedContent = parseContentResponse(data.result);
+          }
 
           // Update state with parsed content - only add new attack points if found
           if (parsedContent.attackPoints.length > 0) {
@@ -1153,9 +1172,17 @@ export default function TensionResolution() {
           setTedTalkScript(tedTalkResult);
         }
 
-        // Parse the content to extract different sections
+        // Parse the content to extract different sections (skip if this is a table-only response)
         console.log('About to parse content response...');
-        const parsedContent = parseContentResponse(data.result);
+        let parsedContent = {
+          attackPoints: [] as string[],
+          tensionResolutionPoints: [] as string[],
+          conclusion: '',
+          references: '',
+        };
+        if (!tableResult) {
+          parsedContent = parseContentResponse(data.result);
+        }
         console.log('Parsed content response:', parsedContent);
 
         // Determine if this is a modification or new creation based on user input and conversation context
