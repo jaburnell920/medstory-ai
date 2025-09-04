@@ -1226,31 +1226,47 @@ export default function TensionResolution() {
           responseContent = '';
         }
 
-        // Check if we generated attack points and need to ask the follow-up question
-        const shouldAskFollowUp =
-          parsedContent.attackPoints.length > 0 &&
-          !trimmed.toLowerCase().includes('move on') &&
-          !trimmed.toLowerCase().includes('tension');
-
-        if (shouldAskFollowUp) {
-          // Always ask the follow-up question after generating attack points
+        // Determine what question to ask based on the current state and what was just generated
+        if (tableResult) {
+          // If a table was just generated, ask about creating TED talk script
           setMessages((msgs) => [
             ...msgs,
             {
               role: 'assistant',
               content:
-                'Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?',
+                'Would you like me to write a script based on the above story flow outline that would be suitable for a highly engaging TED talk?',
             },
           ]);
-        } else if (responseContent.trim() && !tedTalkResult) {
-          // Only add to chat if there's content to add and it's not a TED talk script
-          setMessages((msgs) => [
-            ...msgs,
-            {
-              role: 'assistant',
-              content: responseContent,
-            },
-          ]);
+        } else {
+          // Check if we generated attack points and need to ask the follow-up question
+          const shouldAskAttackPointFollowUp =
+            parsedContent.attackPoints.length > 0 &&
+            !trimmed.toLowerCase().includes('move on') &&
+            !trimmed.toLowerCase().includes('tension') &&
+            // Only ask attack point follow-up if we don't already have tension-resolution points
+            // (i.e., we're still in the attack point phase)
+            tensionResolutionPoints.length === 0;
+
+          if (shouldAskAttackPointFollowUp) {
+            // Ask the attack point follow-up question
+            setMessages((msgs) => [
+              ...msgs,
+              {
+                role: 'assistant',
+                content:
+                  'Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?',
+              },
+            ]);
+          } else if (responseContent.trim() && !tedTalkResult) {
+            // Only add to chat if there's content to add and it's not a TED talk script
+            setMessages((msgs) => [
+              ...msgs,
+              {
+                role: 'assistant',
+                content: responseContent,
+              },
+            ]);
+          }
         }
       } catch (err) {
         console.error('Full error details:', err);
