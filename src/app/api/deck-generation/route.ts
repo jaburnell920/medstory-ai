@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
         {
           role: 'system',
           content:
-            'You are a world-class expert in generative AI prompting, PowerPoint design, live presentation coaching, TED Talk-style speaking, narrative storytelling structure, cognitive and behavioral psychology, persuasive science/business communication, visual data storytelling and infographic design, and stoic philosophy for clarity, simplicity, and purpose.',
+            'You are a world-class expert in generative AI prompting, PowerPoint design, live presentation coaching, TED Talk-style speaking, narrative storytelling structure, cognitive and behavioral psychology, persuasive science/business communication, visual data storytelling and infographic design, and stoic philosophy for clarity, simplicity, and purpose. Always provide complete, well-structured presentation outlines without markdown formatting symbols like **, ---, or ===. Use clear, clean text formatting.',
         },
         {
           role: 'user',
@@ -121,9 +121,33 @@ export async function POST(req: NextRequest) {
       temperature: 0.7,
     });
 
-    return NextResponse.json({ result: chatCompletion.choices[0].message.content });
+    const content = chatCompletion.choices[0]?.message?.content;
+    
+    // Ensure we have content
+    if (!content || content.trim().length === 0) {
+      console.error('OpenAI returned empty content');
+      return NextResponse.json({ error: 'Failed to generate presentation outline - empty response received' }, { status: 500 });
+    }
+
+    return NextResponse.json({ result: content });
   } catch (error) {
     console.error('OpenAI Error:', error);
-    return NextResponse.json({ error: 'Failed to generate presentation outline' }, { status: 500 });
+    
+    // Provide more specific error messages based on the error type
+    let errorMessage = 'Failed to generate presentation outline';
+    
+    if (error instanceof Error) {
+      if (error.message.includes('rate limit')) {
+        errorMessage = 'Rate limit exceeded. Please try again in a few moments.';
+      } else if (error.message.includes('insufficient_quota')) {
+        errorMessage = 'API quota exceeded. Please check your OpenAI account.';
+      } else if (error.message.includes('invalid_api_key')) {
+        errorMessage = 'Invalid API key. Please check your OpenAI configuration.';
+      } else if (error.message.includes('timeout')) {
+        errorMessage = 'Request timed out. Please try again.';
+      }
+    }
+    
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
