@@ -57,17 +57,8 @@ export default function TensionResolution() {
     result,
   ]);
 
-  // Automatically save Story Flow Table when it's generated
-  useEffect(() => {
-    if (tableData && typeof window !== 'undefined') {
-      try {
-        localStorage.setItem('storyFlowTable', JSON.stringify(tableData));
-        console.log('Story Flow Table automatically saved to localStorage');
-      } catch (error) {
-        console.error('Error saving Story Flow Table to localStorage:', error);
-      }
-    }
-  }, [tableData]);
+  // Note: Story Flow Table is now only saved when user explicitly saves selected items
+  // This prevents showing all generated tension-resolution points in the story map
 
   // Initialize messages with core story concept from localStorage
   useEffect(() => {
@@ -957,6 +948,48 @@ export default function TensionResolution() {
 
     savedData.push(saveData);
     localStorage.setItem('savedTensionResolutionData', JSON.stringify(savedData));
+
+    // Also save a filtered story flow table with only selected tension-resolution points
+    if (tableData && (selectedAttackPoint || selectedTensionPoints.size > 0)) {
+      const filteredTable = {
+        headers: tableData.headers,
+        rows: []
+      };
+
+      // Add attack point row if selected
+      if (selectedAttackPoint) {
+        const apRow = tableData.rows.find(row => row[0] === 'AP');
+        if (apRow) {
+          filteredTable.rows.push(apRow);
+        }
+      }
+
+      // Add only selected tension-resolution rows
+      const selectedIndices = Array.from(selectedTensionPoints).map(index => parseInt(index));
+      selectedIndices.sort((a, b) => a - b); // Sort to maintain order
+
+      selectedIndices.forEach((originalIndex, newIndex) => {
+        // Find the row that corresponds to this tension-resolution point
+        const rowToFind = (originalIndex + 1).toString(); // TR points are 1-indexed in table
+        const trRow = tableData.rows.find(row => row[0] === rowToFind);
+        if (trRow) {
+          // Update the row number to be sequential (1, 2, 3, etc.)
+          const newRow = [...trRow];
+          newRow[0] = (newIndex + 1).toString();
+          filteredTable.rows.push(newRow);
+        }
+      });
+
+      // Add conclusion row if it exists
+      const cscRow = tableData.rows.find(row => row[0] === 'CSC');
+      if (cscRow) {
+        filteredTable.rows.push(cscRow);
+      }
+
+      // Save the filtered table
+      localStorage.setItem('storyFlowTable', JSON.stringify(filteredTable));
+      console.log('Saved filtered Story Flow Table with only selected points:', filteredTable);
+    }
 
     const totalSelected = (selectedAttackPoint ? 1 : 0) + selectedTensionPoints.size;
     toast.success(`${totalSelected} item(s) saved successfully!`);
