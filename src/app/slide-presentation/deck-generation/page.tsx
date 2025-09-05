@@ -20,6 +20,7 @@ const softClean = (content: string): string =>
   (content || '')
     .replace(/\*\*(.*?)\*\*/g, '$1') // drop **bold**
     .replace(/\n{3,}/g, '\n\n') // collapse blank lines
+    .replace(/\n?\s*-{3,}\s*$/g, '') // remove trailing --- separators
     .trim();
 
 // Replace labels with styled HTML, make punctuation optional, and add a blank line after each label
@@ -1017,7 +1018,8 @@ When creating the Powerpoint file for downloading:
                         /^(?:\s*)Slide\s*Title\s*:\s*(.+)$/im,
                         (_m, title) => `Slide ${index + 1}: ${title}`
                       )
-                      .replace(/^---\d+:?\s*/i, '');
+                      .replace(/^---\d+:?\s*/i, '')
+                      .replace(/\n?\s*-{3,}\s*$/g, ''); // Remove trailing --- separators
 
                     // Replace labels with styled HTML, then render safely
                     const html = styleLabelsHtml(formattedSlide);

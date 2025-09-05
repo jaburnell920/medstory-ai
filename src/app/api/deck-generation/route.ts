@@ -116,14 +116,14 @@ export async function POST(req: NextRequest) {
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini', // faster + cheaper; good for outlines
       temperature: 0.7,
-      // Increased token limit to accommodate complete presentation outlines with all sections
-      max_tokens: 4000,
+      // Increased token limit to accommodate complete presentation outlines with all sections (11+ slides)
+      max_tokens: 8000,
       stream: true,
       messages: [
         {
           role: 'system',
           content:
-            'You are a world-class expert in generative AI prompting, PowerPoint design, live presentation coaching, TED Talk-style speaking, narrative storytelling structure, cognitive and behavioral psychology, persuasive science/business communication, visual data storytelling and infographic design, and stoic philosophy for clarity, simplicity, and purpose. Always provide complete, well-structured presentation outlines without markdown formatting symbols like **, ---, or ===. Use clear, clean text formatting. Generate the complete outline without stopping midway.',
+            'You are a world-class expert in generative AI prompting, PowerPoint design, live presentation coaching, TED Talk-style speaking, narrative storytelling structure, cognitive and behavioral psychology, persuasive science/business communication, visual data storytelling and infographic design, and stoic philosophy for clarity, simplicity, and purpose. Always provide complete, well-structured presentation outlines without markdown formatting symbols like **, ---, or ===. Use clear, clean text formatting. Generate the complete outline without stopping midway. NEVER end your response with dashes (---) or any separator symbols. Always complete the full requested number of slides.',
         },
         { role: 'user', content: detailedPrompt },
       ],
