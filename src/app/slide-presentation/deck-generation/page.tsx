@@ -1017,7 +1017,8 @@ When creating the Powerpoint file for downloading:
                         /^(?:\s*)Slide\s*Title\s*:\s*(.+)$/im,
                         (_m, title) => `Slide ${index + 1}: ${title}`
                       )
-                      .replace(/^---\d+:?\s*/i, '');
+                      .replace(/^---\d+:?\s*/i, '')
+                      .replace(/\n?\s*-{3,}\s*$/g, ''); // Remove trailing --- separators
 
                     // Replace labels with styled HTML, then render safely
                     const html = styleLabelsHtml(formattedSlide);
