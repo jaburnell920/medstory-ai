@@ -288,6 +288,12 @@ Would you like to modify this Attack Point, create a new one, or move on to crea
           userMessage.toLowerCase().includes('dramatic') ||
           userMessage.toLowerCase().includes('urgent') ||
           userMessage.toLowerCase().includes('more') ||
+          userMessage.toLowerCase().includes('increase') ||
+          userMessage.toLowerCase().includes('length') ||
+          userMessage.toLowerCase().includes('longer') ||
+          userMessage.toLowerCase().includes('shorter') ||
+          userMessage.toLowerCase().includes('expand') ||
+          userMessage.toLowerCase().includes('reduce') ||
           (userMessage.toLowerCase().includes('make') && userMessage.toLowerCase().includes('it'))
         ) {
           // User is providing modification details without using the word "modify"
