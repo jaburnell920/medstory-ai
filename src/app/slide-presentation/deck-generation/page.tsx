@@ -115,11 +115,25 @@ export default function DeckGenerationPage() {
       if (contentType.startsWith('text/plain')) {
         const reader = res.body!.getReader();
         const decoder = new TextDecoder();
+        let chunkCount = 0;
+        let totalLength = 0;
 
+        console.log('Starting to read deck generation stream...');
         while (true) {
           const { done, value } = await reader.read();
-          if (done) break;
+          if (done) {
+            console.log(`Stream completed. Total chunks: ${chunkCount}, total length: ${totalLength}`);
+            break;
+          }
           const chunk = decoder.decode(value, { stream: true });
+          chunkCount++;
+          totalLength += chunk.length;
+          
+          // Log progress every 20 chunks
+          if (chunkCount % 20 === 0) {
+            console.log(`Received ${chunkCount} chunks, ${totalLength} characters so far`);
+          }
+          
           onChunk?.(chunk);
         }
         onDone?.();
@@ -448,8 +462,32 @@ When creating the Powerpoint file for downloading:
           setMessages((prev) => [...prev, { role: 'assistant', content: message }]);
         },
         onDone: () => {
-          // preserve exact text; no destructive clean
-          setResult((prev) => prev);
+          // Check if generation appears complete
+          setResult((prev) => {
+            const content = prev.trim();
+            const hasMultipleSlides = (content.match(/Slide \d+/gi) || []).length >= 2;
+            const hasReferences = content.includes('REFERENCES') || content.includes('References');
+            const endsAbruptly = !content.endsWith('.') && !content.endsWith('!') && !content.endsWith('?') && !hasReferences;
+            
+            if (content.length < 1000 || !hasMultipleSlides || endsAbruptly) {
+              console.warn('Generation may be incomplete:', {
+                length: content.length,
+                hasMultipleSlides,
+                hasReferences,
+                endsAbruptly,
+                lastChars: content.slice(-100)
+              });
+              toast.error('Generation may be incomplete. Please try again if the outline seems cut off.');
+            } else {
+              console.log('Generation appears complete:', {
+                length: content.length,
+                slideCount: (content.match(/Slide \d+/gi) || []).length
+              });
+              toast.success('Presentation outline generated successfully!');
+            }
+            
+            return prev;
+          });
         },
       });
     } catch (err) {
@@ -805,7 +843,32 @@ When creating the Powerpoint file for downloading:
             setMessages((prev) => [...prev, { role: 'assistant', content: message }]);
           },
           onDone: () => {
-            setResult((prev) => prev); // keep exact text
+            // Check if generation appears complete
+            setResult((prev) => {
+              const content = prev.trim();
+              const hasMultipleSlides = (content.match(/Slide \d+/gi) || []).length >= 2;
+              const hasReferences = content.includes('REFERENCES') || content.includes('References');
+              const endsAbruptly = !content.endsWith('.') && !content.endsWith('!') && !content.endsWith('?') && !hasReferences;
+              
+              if (content.length < 1000 || !hasMultipleSlides || endsAbruptly) {
+                console.warn('Generation may be incomplete:', {
+                  length: content.length,
+                  hasMultipleSlides,
+                  hasReferences,
+                  endsAbruptly,
+                  lastChars: content.slice(-100)
+                });
+                toast.error('Generation may be incomplete. Please try again if the outline seems cut off.');
+              } else {
+                console.log('Generation appears complete:', {
+                  length: content.length,
+                  slideCount: (content.match(/Slide \d+/gi) || []).length
+                });
+                toast.success('Presentation outline generated successfully!');
+              }
+              
+              return prev;
+            });
           },
         });
       } catch (err) {
