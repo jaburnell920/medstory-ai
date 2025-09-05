@@ -496,108 +496,96 @@ export default function CreateStoryFlowMap() {
         }
       }
 
-      // Try to get from savedTensionResolutionData
-      if (attackPoints.length === 0 || tensionResolutionPoints.length === 0) {
-        const savedTensionResolutionData = localStorage.getItem('savedTensionResolutionData');
-        if (savedTensionResolutionData) {
-          try {
-            const savedData = JSON.parse(savedTensionResolutionData);
-            console.log('Parsed savedTensionResolutionData for getDataFromMemory:', savedData);
+      // ONLY use saved tension-resolution data - do not fall back to all generated points
+      const savedTensionResolutionData = localStorage.getItem('savedTensionResolutionData');
+      if (savedTensionResolutionData) {
+        try {
+          const savedData = JSON.parse(savedTensionResolutionData);
+          console.log('Parsed savedTensionResolutionData for getDataFromMemory:', savedData);
 
-            // Handle array structure
-            if (Array.isArray(savedData) && savedData.length > 0) {
-              const firstItem = savedData[0];
+          // Handle array structure (most recent save is typically the last item)
+          if (Array.isArray(savedData) && savedData.length > 0) {
+            // Use the most recent saved data (last item in array)
+            const mostRecentItem = savedData[savedData.length - 1];
 
-              // Check for attack point
-              if (attackPoints.length === 0 && firstItem.selectedAttackPoint) {
-                attackPoints = [
-                  firstItem.selectedAttackPoint.content || firstItem.selectedAttackPoint,
-                ];
-                console.log('Got attack point from array:', attackPoints);
-              }
-
-              // Check for tension-resolution points
-              if (
-                tensionResolutionPoints.length === 0 &&
-                firstItem.selectedTensionPoints &&
-                firstItem.selectedTensionPoints.length > 0
-              ) {
-                interface SelectedTensionPoint {
-                  content?: string;
-                }
-
-                tensionResolutionPoints = firstItem.selectedTensionPoints.map(
-                  (point: SelectedTensionPoint | string) =>
-                    typeof point === 'string' ? point : point.content || point
-                );
-                console.log('Got tension points from array:', tensionResolutionPoints);
-              }
-            } else {
-              // Handle non-array structure
-              // Check for attack point
-              if (attackPoints.length === 0 && savedData.selectedAttackPoint) {
-                attackPoints = [
-                  savedData.selectedAttackPoint.content || savedData.selectedAttackPoint,
-                ];
-              } else if (attackPoints.length === 0 && savedData.attackPoint) {
-                attackPoints = [savedData.attackPoint];
-              }
-
-              // Check for tension-resolution points
-              if (
-                tensionResolutionPoints.length === 0 &&
-                savedData.selectedTensionResolutionPoints
-              ) {
-                tensionResolutionPoints = savedData.selectedTensionResolutionPoints;
-              } else if (tensionResolutionPoints.length === 0 && savedData.selectedTensionPoints) {
-                interface TensionPoint {
-                  content?: string;
-                }
-
-                tensionResolutionPoints = savedData.selectedTensionPoints.map(
-                  (point: TensionPoint | string) =>
-                    typeof point === 'string' ? point : point.content || point
-                );
-              } else if (
-                tensionResolutionPoints.length === 0 &&
-                savedData.tensionResolutionPoints
-              ) {
-                tensionResolutionPoints = savedData.tensionResolutionPoints;
-              }
+            // Check for attack point
+            if (attackPoints.length === 0 && mostRecentItem.selectedAttackPoint) {
+              attackPoints = [
+                mostRecentItem.selectedAttackPoint.content || mostRecentItem.selectedAttackPoint,
+              ];
+              console.log('Got attack point from saved data:', attackPoints);
             }
 
-            console.log('Got data from savedTensionResolutionData:', {
-              attackPoints,
-              tensionResolutionPoints,
-            });
-          } catch (e) {
-            console.error('Error parsing Saved Tension Resolution data:', e);
+            // Check for tension-resolution points - ONLY use selected/saved points
+            if (
+              tensionResolutionPoints.length === 0 &&
+              mostRecentItem.selectedTensionPoints &&
+              mostRecentItem.selectedTensionPoints.length > 0
+            ) {
+              interface SelectedTensionPoint {
+                content?: string;
+              }
+
+              tensionResolutionPoints = mostRecentItem.selectedTensionPoints.map(
+                (point: SelectedTensionPoint | string) =>
+                  typeof point === 'string' ? point : point.content || point
+              );
+              console.log('Got SAVED tension points from array:', tensionResolutionPoints);
+            }
+          } else {
+            // Handle non-array structure
+            // Check for attack point
+            if (attackPoints.length === 0 && savedData.selectedAttackPoint) {
+              attackPoints = [
+                savedData.selectedAttackPoint.content || savedData.selectedAttackPoint,
+              ];
+            } else if (attackPoints.length === 0 && savedData.attackPoint) {
+              attackPoints = [savedData.attackPoint];
+            }
+
+            // Check for tension-resolution points - ONLY use selected/saved points
+            if (
+              tensionResolutionPoints.length === 0 &&
+              savedData.selectedTensionPoints &&
+              savedData.selectedTensionPoints.length > 0
+            ) {
+              interface TensionPoint {
+                content?: string;
+              }
+
+              tensionResolutionPoints = savedData.selectedTensionPoints.map(
+                (point: TensionPoint | string) =>
+                  typeof point === 'string' ? point : point.content || point
+              );
+              console.log('Got SAVED tension points from object:', tensionResolutionPoints);
+            }
           }
+
+          console.log('Got data from savedTensionResolutionData:', {
+            attackPoints,
+            tensionResolutionPoints,
+          });
+        } catch (e) {
+          console.error('Error parsing Saved Tension Resolution data:', e);
         }
       }
 
-      // Fallback: get from individual localStorage items
+      // Only fall back to individual attack points if no saved data exists
+      // Do NOT fall back to all tension-resolution points - only use saved ones
       if (attackPoints.length === 0) {
         const attackPointsData = localStorage.getItem('attackPoints');
         if (attackPointsData) {
           try {
             attackPoints = JSON.parse(attackPointsData);
+            console.log('Fallback: Got attack points from individual storage:', attackPoints);
           } catch (e) {
             console.error('Error parsing Attack Points data:', e);
           }
         }
       }
 
-      if (tensionResolutionPoints.length === 0) {
-        const tensionResolutionData = localStorage.getItem('tensionResolutionPoints');
-        if (tensionResolutionData) {
-          try {
-            tensionResolutionPoints = JSON.parse(tensionResolutionData);
-          } catch (e) {
-            console.error('Error parsing Tension Resolution data:', e);
-          }
-        }
-      }
+      // REMOVED: Fallback to all tension-resolution points
+      // This was causing the issue - we should ONLY use saved tension-resolution points
 
       console.log('Final data from memory:', {
         coreStoryConcept,
