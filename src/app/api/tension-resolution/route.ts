@@ -10,12 +10,12 @@ const openai = process.env.OPENAI_API_KEY
 // Function to clean AI response by removing commentary while preserving structure
 function cleanAIResponse(response: string): string {
   if (!response) return response;
-  
+
   let cleaned = response;
-  
+
   // Remove "Assistant:" prefix
   cleaned = cleaned.replace(/^Assistant:\s*/i, '');
-  
+
   // Extract content within quotes if present
   const quotedMatch = cleaned.match(/"([^"]*(?:\n[^"]*)*?)"/);
   if (quotedMatch) {
@@ -23,14 +23,14 @@ function cleanAIResponse(response: string): string {
     // Find the follow-up question
     const followUpMatch = cleaned.match(/Would you like to[^?]*\?/);
     const followUp = followUpMatch ? followUpMatch[0] : '';
-    
+
     return quotedContent + (followUp ? '\n\n' + followUp : '');
   }
-  
+
   // Remove conversational lead-ins but preserve Attack Point structure
   const lines = cleaned.split('\n');
   let contentStartIndex = 0;
-  
+
   // First pass: Look specifically for "Attack Point" lines
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
@@ -39,33 +39,43 @@ function cleanAIResponse(response: string): string {
       break;
     }
   }
-  
+
   // If no "Attack Point" found, look for other content indicators
   if (contentStartIndex === 0) {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
-      
-      // If we find substantial content (long line), start from there
-      if (line.length > 50) {
+
+      // Skip empty lines and very short lines
+      if (line.length === 0 || line.length < 10) {
+        continue;
+      }
+
+      // Skip common conversational starters
+      if (line.match(/^(Here's|Let me|I'll|Allow me|Sure|Understood|Thank you)/i)) {
+        continue;
+      }
+
+      // If we find other content indicators, start from there
+      if (line.includes('Tension') || line.includes('Resolution') || line.includes('**')) {
         contentStartIndex = i;
         break;
       }
-      
-      // If we find other content indicators, start from there
-      if (line.includes('Tension') || line.includes('Resolution')) {
+
+      // If we find substantial content that looks like narrative content, start from there
+      if (line.length > 30 && !line.match(/^(What|How|Would you like|Do you want)/i)) {
         contentStartIndex = i;
         break;
       }
     }
   }
-  
+
   if (contentStartIndex > 0) {
     cleaned = lines.slice(contentStartIndex).join('\n');
   }
-  
+
   // Clean up extra whitespace
   cleaned = cleaned.replace(/\n\n\n+/g, '\n\n').trim();
-  
+
   return cleaned;
 }
 
@@ -263,15 +273,28 @@ Please start with the Attack Point phase.`,
           mockResult = `Would you like a short narrative (3-5 tension-resolution points), full narrative (8-12 tension-resolution points), or would you like to specify the number of tension-resolution points?`;
         } else if (userMessage.toLowerCase().includes('modify')) {
           // Check if this is the initial "modify" request or the actual modification details
-          if (userMessage.toLowerCase().trim() === 'modify') {
-            mockResult = `What modifications would you like to make to the Attack Point?`;
-          } else {
+          // Look at the previous assistant message to determine context
+          const lastAssistantMessage =
+            conversationHistory
+              .filter(
+                (msg: { role: 'user' | 'assistant'; content: string }) => msg.role === 'assistant'
+              )
+              .pop()?.content || '';
+
+          // If the last assistant message asked "What modifications would you like to make",
+          // then this user message contains modification details
+          if (
+            lastAssistantMessage.toLowerCase().includes('what modifications would you like to make')
+          ) {
             // User is providing modification details - generate modified attack point (keep same number)
             mockResult = `Attack Point #1
 
 In the pediatric ICU, time was running out for 8-year-old Emma. Her leukemia had become a relentless predator, devouring every conventional weapon in the oncologist's arsenal—chemotherapy, radiation, even a bone marrow transplant—all had failed. Her CD19+ B-cells, once vulnerable targets, had evolved into invisible phantoms, slipping past traditional treatments like shadows in the night. As her parents held vigil, watching their daughter's life force ebb away, her oncologist reluctantly prepared the palliative care conversation. But in the depths of Emma's failing immune system, a revolutionary army of engineered T-cells lay dormant, reprogrammed with chimeric antigen receptors, poised to launch the most precise and devastating counterattack that would either save her life or mark the final chapter in pediatric oncology's fight against the impossible.
 
 Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?`;
+          } else {
+            // This is the initial "modify" request - ask what modifications they want
+            mockResult = `What modifications would you like to make to the Attack Point?`;
           }
         } else if (
           userMessage.toLowerCase().includes('diuretics') ||
@@ -377,7 +400,8 @@ Would you like me to write a script based on the above story flow outline that w
           }
         } else if (
           // Check if user is declining TED talk in mock mode
-          (userMessage.toLowerCase().includes('no') || userMessage.toLowerCase().trim() === 'no')
+          userMessage.toLowerCase().includes('no') ||
+          userMessage.toLowerCase().trim() === 'no'
         ) {
           // Check if this is a response to the TED talk question
           const lastAssistantMessage =
@@ -623,10 +647,18 @@ After delivering any attack point ask: "Would you like to modify this Attack Poi
 
 CRITICAL: ALWAYS ask this question after every attack point generation, whether it's new or modified.
 
-IMPORTANT RESPONSE HANDLING:
-- If user says 'modify' or asks for modifications: ask "What modifications would you like to make?" and use the answer to modify the existing Attack Point keeping the same number. After modification, ALWAYS ask the follow-up question again.
+IMPORTANT RESPONSE HANDLING FOR MODIFICATIONS:
+- If user says 'modify' and the previous assistant message was NOT asking "What modifications would you like to make?": ask "What modifications would you like to make?" and wait for their response.
+- If user says 'modify' and the previous assistant message WAS asking "What modifications would you like to make?": treat the user's message as modification details and modify the existing Attack Point keeping the same number. After modification, ALWAYS ask the follow-up question again.
+- If user provides modification details (after being asked what modifications they want): modify the existing Attack Point keeping the same number. After modification, ALWAYS ask the follow-up question again.
 - If user says 'new', 'create', 'create a new one', 'new attack point', or similar: create a brand new Attack Point with the next sequential number (e.g., Attack Point #2, #3, etc.). After creation, ALWAYS ask the follow-up question.
 - If user says "move on" or "tension-resolution": move on to delivering tension-resolution points.
+
+CRITICAL MODIFICATION FLOW:
+1. User says "modify" → Ask "What modifications would you like to make?"
+2. User provides modification details → Generate modified Attack Point → Ask follow-up question
+3. If user says "modify" again → Ask "What modifications would you like to make?" again
+4. This pattern repeats every time the user wants to modify
 
 When creating a NEW attack point, increment the number and create completely new content. Do not modify the existing attack point.
 
