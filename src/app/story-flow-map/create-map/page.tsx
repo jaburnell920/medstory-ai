@@ -28,7 +28,10 @@ export default function CreateStoryFlowMap() {
   const [storyFlowData, setStoryFlowData] = useState<StoryFlowMapData | null>(null);
   const [showMap, setShowMap] = useState(false);
   const [messages, setMessages] = useState<{ role: 'assistant' | 'user'; content: string }[]>([]);
-  const [savedStoryFlowTable, setSavedStoryFlowTable] = useState<{ headers: string[]; rows: string[][] } | null>(null);
+  const [savedStoryFlowTable, setSavedStoryFlowTable] = useState<{
+    headers: string[];
+    rows: string[][];
+  } | null>(null);
 
   // Initialize with confirmation question
   useEffect(() => {
@@ -110,7 +113,7 @@ export default function CreateStoryFlowMap() {
             // Check for the standard CoreStoryConcept structure
             if (conceptData.content && conceptData.content.trim().length > 0) {
               hasCoreStoryConcept = true;
-            } 
+            }
             // Check for object with id, disease, and drug properties (valid concept)
             else if (conceptData.id && conceptData.disease && conceptData.drug) {
               hasCoreStoryConcept = true;
@@ -118,7 +121,7 @@ export default function CreateStoryFlowMap() {
             // Check for string content
             else if (typeof conceptData === 'string' && conceptData.trim().length > 0) {
               hasCoreStoryConcept = true;
-            } 
+            }
             // Check for array of concepts
             else if (Array.isArray(conceptData) && conceptData.length > 0) {
               hasCoreStoryConcept = true;
@@ -261,7 +264,8 @@ export default function CreateStoryFlowMap() {
         if (storyFlowTable) {
           try {
             const tableData = JSON.parse(storyFlowTable);
-            hasStoryFlowTable = tableData && tableData.headers && tableData.rows && tableData.rows.length > 0;
+            hasStoryFlowTable =
+              tableData && tableData.headers && tableData.rows && tableData.rows.length > 0;
             console.log('Has Story Flow Table:', hasStoryFlowTable);
           } catch (e) {
             console.error('Error parsing Story Flow Table:', e);
@@ -668,23 +672,25 @@ export default function CreateStoryFlowMap() {
     // Calculate positions with responsive scaling
     const tensionResolutionPairs = storyPoints.filter((p) => p.label !== 'AP' && p.label !== 'CSC');
 
-    // Dynamic spacing calculation based on number of tension-resolution points
-    const minSpacing = 100; // Minimum spacing between points
-    const maxSpacing = 150; // Maximum spacing between points
+    // Equal horizontal spacing calculation for all circles
     const baseWidth = 800; // Base width for calculations
     const baseHeight = 300; // Base height
-    
-    // Calculate optimal spacing based on number of points
-    const numPoints = tensionResolutionPairs.length;
-    const availableWidth = baseWidth - 240; // Account for margins and AP/CSC positions
-    const optimalSpacing = numPoints > 0 ? Math.max(minSpacing, Math.min(maxSpacing, availableWidth / numPoints)) : maxSpacing;
-    
-    // Calculate viewBox width to ensure all elements fit
     const axisMargin = 60;
-    const apWidth = 80; // Space for Attack Point
-    const cscWidth = 80; // Space for Core Story Concept
-    const tensionResolutionWidth = numPoints * optimalSpacing + (numPoints > 0 ? 75 : 0); // 75px for resolution offset
-    const viewBoxWidth = Math.max(baseWidth, axisMargin + apWidth + tensionResolutionWidth + cscWidth + 40);
+
+    // Count total number of circles: AP + (tension + resolution pairs) + CSC
+    const numTensionResolutionPairs = tensionResolutionPairs.length;
+    const totalCircles = 1 + numTensionResolutionPairs * 2 + 1; // AP + tension/resolution pairs + CSC
+
+    // Calculate available width for circle distribution (excluding margins)
+    const leftMargin = axisMargin + 40; // Space for Y-axis and some padding
+    const rightMargin = 40; // Right padding
+    const availableWidth = baseWidth - leftMargin - rightMargin;
+
+    // Calculate equal spacing between circles
+    const equalSpacing = totalCircles > 1 ? availableWidth / (totalCircles - 1) : 0;
+
+    // Calculate viewBox width to ensure all elements fit
+    const viewBoxWidth = Math.max(baseWidth, leftMargin + availableWidth + rightMargin);
     const viewBoxHeight = baseHeight;
 
     // Scale factor to fit values in SVG (values are 0-100, we want them in reasonable SVG coordinates)
@@ -757,10 +763,13 @@ export default function CreateStoryFlowMap() {
               let previousX = 0,
                 previousY = 0;
 
+              // Create array to track circle positions for equal spacing
+              let circleIndex = 0;
+
               storyPoints.forEach((point, index) => {
                 if (point.label === 'AP') {
-                  // Attack Point - positioned with more spacing
-                  const x = axisMargin + 40;
+                  // Attack Point - positioned at first position with equal spacing
+                  const x = leftMargin + circleIndex * equalSpacing;
                   const y = viewBoxHeight - axisMargin - point.tensionValue * yScale;
 
                   circles.push(
@@ -787,9 +796,10 @@ export default function CreateStoryFlowMap() {
 
                   previousX = x + 12; // Right edge of circle
                   previousY = y;
+                  circleIndex++;
                 } else if (point.label === 'CSC') {
-                  // Core Story Concept - positioned with dynamic spacing
-                  const x = axisMargin + apWidth + tensionResolutionWidth + cscWidth;
+                  // Core Story Concept - positioned at last position with equal spacing
+                  const x = leftMargin + (totalCircles - 1) * equalSpacing;
                   const y = viewBoxHeight - axisMargin - 25 * yScale;
 
                   circles.push(
@@ -829,10 +839,9 @@ export default function CreateStoryFlowMap() {
                     );
                   }
                 } else {
-                  // Tension-Resolution pairs with dynamic spacing
-                  const pairIndex = parseInt(point.label) - 1;
-                  const tensionX = axisMargin + apWidth + pairIndex * optimalSpacing;
-                  const resolutionX = tensionX + 75; // More horizontal spread
+                  // Tension-Resolution pairs with equal spacing
+                  const tensionX = leftMargin + circleIndex * equalSpacing;
+                  const resolutionX = leftMargin + (circleIndex + 1) * equalSpacing;
                   const tensionY = viewBoxHeight - axisMargin - point.tensionValue * yScale;
                   const resolutionY = viewBoxHeight - axisMargin - point.resolutionValue * yScale;
 
@@ -912,6 +921,7 @@ export default function CreateStoryFlowMap() {
 
                   previousX = resolutionX + 12; // Right edge of resolution circle
                   previousY = resolutionY;
+                  circleIndex += 2; // Increment by 2 for tension and resolution circles
                 }
               });
 
@@ -945,10 +955,7 @@ export default function CreateStoryFlowMap() {
             </thead>
             <tbody>
               {savedStoryFlowTable.rows.map((row, rowIndex) => (
-                <tr
-                  key={rowIndex}
-                  className={rowIndex % 2 === 0 ? 'bg-white' : 'bg-blue-25'}
-                >
+                <tr key={rowIndex} className={rowIndex % 2 === 0 ? 'bg-white' : 'bg-blue-25'}>
                   {row.map((cell, cellIndex) => (
                     <td
                       key={cellIndex}
@@ -991,7 +998,6 @@ export default function CreateStoryFlowMap() {
             loading={loading}
             placeholder="Type your response..."
           />
-
         </div>
 
         {/* Story Flow Map - Right Side - Fixed */}
