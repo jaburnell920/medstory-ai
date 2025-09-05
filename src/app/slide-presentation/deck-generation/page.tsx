@@ -23,7 +23,7 @@ const softClean = (content: string): string =>
     .replace(/\n?\s*-{3,}\s*$/g, '') // remove trailing --- separators
     .trim();
 
-// Replace labels with styled HTML, make punctuation optional, and add a blank line after each label
+// Replace labels with styled HTML, remove punctuation, and add reduced spacing after each label
 const styleLabelsHtml = (content: string): string => {
   const esc = (content || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
@@ -34,13 +34,13 @@ const styleLabelsHtml = (content: string): string => {
   );
 
   // Style section labels at line start; accept optional :, -, – or — and any spacing
-  // Also force a colon and add an extra newline so there's an empty line underneath
+  // Remove any existing punctuation and add a single newline
   const labelRegex = /(^|\r?\n)(\s*)(TEXT|VISUALS|SPEAKER\s*NOTES|REFERENCES)\s*(?:[:\-–—])?/gi;
 
   const withStyledLabels = withStyledHeaders.replace(
     labelRegex,
     (_m, ls, indent, label) =>
-      `${ls}${indent}<span class="font-bold text-blue-700">${label.replace(/\s+/g, ' ').toUpperCase()}:</span>\n\n`
+      `${ls}${indent}<span class="font-bold text-blue-700">${label.replace(/\s+/g, ' ').toUpperCase()}</span>\n`
   );
 
   return withStyledLabels;
