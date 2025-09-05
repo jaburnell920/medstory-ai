@@ -20,6 +20,7 @@ const softClean = (content: string): string =>
   (content || '')
     .replace(/\*\*(.*?)\*\*/g, '$1') // drop **bold**
     .replace(/\n{3,}/g, '\n\n') // collapse blank lines
+    .replace(/\n?\s*-{3,}\s*$/g, '') // remove trailing --- separators
     .trim();
 
 // Replace labels with styled HTML, make punctuation optional, and add a blank line after each label
