@@ -951,7 +951,7 @@ export default function TensionResolution() {
 
     // Also save a filtered story flow table with only selected tension-resolution points
     if (tableData && (selectedAttackPoint || selectedTensionPoints.size > 0)) {
-      const filteredTable = {
+      const filteredTable: { headers: string[]; rows: string[][] } = {
         headers: tableData.headers,
         rows: []
       };
