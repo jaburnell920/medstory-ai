@@ -122,18 +122,20 @@ export default function DeckGenerationPage() {
         while (true) {
           const { done, value } = await reader.read();
           if (done) {
-            console.log(`Stream completed. Total chunks: ${chunkCount}, total length: ${totalLength}`);
+            console.log(
+              `Stream completed. Total chunks: ${chunkCount}, total length: ${totalLength}`
+            );
             break;
           }
           const chunk = decoder.decode(value, { stream: true });
           chunkCount++;
           totalLength += chunk.length;
-          
+
           // Log progress every 20 chunks
           if (chunkCount % 20 === 0) {
             console.log(`Received ${chunkCount} chunks, ${totalLength} characters so far`);
           }
-          
+
           onChunk?.(chunk);
         }
         onDone?.();
@@ -465,31 +467,37 @@ When creating the Powerpoint file for downloading:
           // Check if generation appears complete after state update
           setResult((prev) => {
             const content = prev.trim();
-            
+
             // Schedule completion check for next tick to avoid setState during render
             setTimeout(() => {
               const hasMultipleSlides = (content.match(/Slide \d+/gi) || []).length >= 2;
-              const hasReferences = content.includes('REFERENCES') || content.includes('References');
-              const endsAbruptly = !content.endsWith('.') && !content.endsWith('!') && !content.endsWith('?') && !hasReferences;
-              
+              const hasReferences =
+                content.includes('REFERENCES') || content.includes('References');
+              const endsAbruptly =
+                !content.endsWith('.') &&
+                !content.endsWith('!') &&
+                !content.endsWith('?') &&
+                !hasReferences;
+
               if (content.length < 1000 || !hasMultipleSlides || endsAbruptly) {
                 console.warn('Generation may be incomplete:', {
                   length: content.length,
                   hasMultipleSlides,
                   hasReferences,
                   endsAbruptly,
-                  lastChars: content.slice(-100)
+                  lastChars: content.slice(-100),
                 });
-                toast.error('Generation may be incomplete. Please try again if the outline seems cut off.');
+                toast.error(
+                  'Generation may be incomplete. Please try again if the outline seems cut off.'
+                );
               } else {
                 console.log('Generation appears complete:', {
                   length: content.length,
-                  slideCount: (content.match(/Slide \d+/gi) || []).length
+                  slideCount: (content.match(/Slide \d+/gi) || []).length,
                 });
-                toast.success('Presentation outline generated successfully!');
               }
             }, 0);
-            
+
             return prev;
           });
         },
@@ -850,31 +858,37 @@ When creating the Powerpoint file for downloading:
             // Check if generation appears complete after state update
             setResult((prev) => {
               const content = prev.trim();
-              
+
               // Schedule completion check for next tick to avoid setState during render
               setTimeout(() => {
                 const hasMultipleSlides = (content.match(/Slide \d+/gi) || []).length >= 2;
-                const hasReferences = content.includes('REFERENCES') || content.includes('References');
-                const endsAbruptly = !content.endsWith('.') && !content.endsWith('!') && !content.endsWith('?') && !hasReferences;
-                
+                const hasReferences =
+                  content.includes('REFERENCES') || content.includes('References');
+                const endsAbruptly =
+                  !content.endsWith('.') &&
+                  !content.endsWith('!') &&
+                  !content.endsWith('?') &&
+                  !hasReferences;
+
                 if (content.length < 1000 || !hasMultipleSlides || endsAbruptly) {
                   console.warn('Generation may be incomplete:', {
                     length: content.length,
                     hasMultipleSlides,
                     hasReferences,
                     endsAbruptly,
-                    lastChars: content.slice(-100)
+                    lastChars: content.slice(-100),
                   });
-                  toast.error('Generation may be incomplete. Please try again if the outline seems cut off.');
+                  toast.error(
+                    'Generation may be incomplete. Please try again if the outline seems cut off.'
+                  );
                 } else {
                   console.log('Generation appears complete:', {
                     length: content.length,
-                    slideCount: (content.match(/Slide \d+/gi) || []).length
+                    slideCount: (content.match(/Slide \d+/gi) || []).length,
                   });
-                  toast.success('Presentation outline generated successfully!');
                 }
               }, 0);
-              
+
               return prev;
             });
           },
@@ -998,10 +1012,12 @@ When creating the Powerpoint file for downloading:
 
                     // Normalize "Slide Title:" -> "Slide N: ..."
                     let formattedSlide = slide.trim();
-                    formattedSlide = formattedSlide.replace(
-                      /^(?:\s*)Slide\s*Title\s*:\s*(.+)$/im,
-                      (_m, title) => `Slide ${index + 1}: ${title}`
-                    );
+                    formattedSlide = formattedSlide
+                      .replace(
+                        /^(?:\s*)Slide\s*Title\s*:\s*(.+)$/im,
+                        (_m, title) => `Slide ${index + 1}: ${title}`
+                      )
+                      .replace(/^---\d+:?\s*/i, '');
 
                     // Replace labels with styled HTML, then render safely
                     const html = styleLabelsHtml(formattedSlide);
