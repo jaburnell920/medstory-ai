@@ -462,29 +462,33 @@ When creating the Powerpoint file for downloading:
           setMessages((prev) => [...prev, { role: 'assistant', content: message }]);
         },
         onDone: () => {
-          // Check if generation appears complete
+          // Check if generation appears complete after state update
           setResult((prev) => {
             const content = prev.trim();
-            const hasMultipleSlides = (content.match(/Slide \d+/gi) || []).length >= 2;
-            const hasReferences = content.includes('REFERENCES') || content.includes('References');
-            const endsAbruptly = !content.endsWith('.') && !content.endsWith('!') && !content.endsWith('?') && !hasReferences;
             
-            if (content.length < 1000 || !hasMultipleSlides || endsAbruptly) {
-              console.warn('Generation may be incomplete:', {
-                length: content.length,
-                hasMultipleSlides,
-                hasReferences,
-                endsAbruptly,
-                lastChars: content.slice(-100)
-              });
-              toast.error('Generation may be incomplete. Please try again if the outline seems cut off.');
-            } else {
-              console.log('Generation appears complete:', {
-                length: content.length,
-                slideCount: (content.match(/Slide \d+/gi) || []).length
-              });
-              toast.success('Presentation outline generated successfully!');
-            }
+            // Schedule completion check for next tick to avoid setState during render
+            setTimeout(() => {
+              const hasMultipleSlides = (content.match(/Slide \d+/gi) || []).length >= 2;
+              const hasReferences = content.includes('REFERENCES') || content.includes('References');
+              const endsAbruptly = !content.endsWith('.') && !content.endsWith('!') && !content.endsWith('?') && !hasReferences;
+              
+              if (content.length < 1000 || !hasMultipleSlides || endsAbruptly) {
+                console.warn('Generation may be incomplete:', {
+                  length: content.length,
+                  hasMultipleSlides,
+                  hasReferences,
+                  endsAbruptly,
+                  lastChars: content.slice(-100)
+                });
+                toast.error('Generation may be incomplete. Please try again if the outline seems cut off.');
+              } else {
+                console.log('Generation appears complete:', {
+                  length: content.length,
+                  slideCount: (content.match(/Slide \d+/gi) || []).length
+                });
+                toast.success('Presentation outline generated successfully!');
+              }
+            }, 0);
             
             return prev;
           });
@@ -843,29 +847,33 @@ When creating the Powerpoint file for downloading:
             setMessages((prev) => [...prev, { role: 'assistant', content: message }]);
           },
           onDone: () => {
-            // Check if generation appears complete
+            // Check if generation appears complete after state update
             setResult((prev) => {
               const content = prev.trim();
-              const hasMultipleSlides = (content.match(/Slide \d+/gi) || []).length >= 2;
-              const hasReferences = content.includes('REFERENCES') || content.includes('References');
-              const endsAbruptly = !content.endsWith('.') && !content.endsWith('!') && !content.endsWith('?') && !hasReferences;
               
-              if (content.length < 1000 || !hasMultipleSlides || endsAbruptly) {
-                console.warn('Generation may be incomplete:', {
-                  length: content.length,
-                  hasMultipleSlides,
-                  hasReferences,
-                  endsAbruptly,
-                  lastChars: content.slice(-100)
-                });
-                toast.error('Generation may be incomplete. Please try again if the outline seems cut off.');
-              } else {
-                console.log('Generation appears complete:', {
-                  length: content.length,
-                  slideCount: (content.match(/Slide \d+/gi) || []).length
-                });
-                toast.success('Presentation outline generated successfully!');
-              }
+              // Schedule completion check for next tick to avoid setState during render
+              setTimeout(() => {
+                const hasMultipleSlides = (content.match(/Slide \d+/gi) || []).length >= 2;
+                const hasReferences = content.includes('REFERENCES') || content.includes('References');
+                const endsAbruptly = !content.endsWith('.') && !content.endsWith('!') && !content.endsWith('?') && !hasReferences;
+                
+                if (content.length < 1000 || !hasMultipleSlides || endsAbruptly) {
+                  console.warn('Generation may be incomplete:', {
+                    length: content.length,
+                    hasMultipleSlides,
+                    hasReferences,
+                    endsAbruptly,
+                    lastChars: content.slice(-100)
+                  });
+                  toast.error('Generation may be incomplete. Please try again if the outline seems cut off.');
+                } else {
+                  console.log('Generation appears complete:', {
+                    length: content.length,
+                    slideCount: (content.match(/Slide \d+/gi) || []).length
+                  });
+                  toast.success('Presentation outline generated successfully!');
+                }
+              }, 0);
               
               return prev;
             });
