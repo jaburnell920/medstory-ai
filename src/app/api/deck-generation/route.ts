@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
+// --- Segment config (Vercel reads these) ---
+export const runtime = 'nodejs'; // avoid Edge’s shorter limits for long generations
+export const dynamic = 'force-dynamic'; // no caching
+export const maxDuration = 60; // raise to your plan’s max (e.g., 60s Pro, higher on Fluid Compute)
+export const preferredRegion = ['iad1']; // your error shows iad1; pin close to reduce latency
+
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const { detailedPrompt } = body;
+  const { detailedPrompt } = await req.json();
 
   // Check if API key is available
   if (!process.env.OPENAI_API_KEY) {
@@ -101,53 +106,66 @@ export async function POST(req: NextRequest) {
 
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
+    // Keep overall request under your function ceiling
+    timeout: 55_000, // 55s; below maxDuration to leave time to flush response
+    maxRetries: 2,
   });
 
   try {
-    const chatCompletion = await openai.chat.completions.create({
-      model: 'gpt-4o',
+    // Stream the model output so the function stays active and returns data asap
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini', // faster + cheaper; good for outlines
+      temperature: 0.7,
+      // Keep the cap reasonable for 8–15 slides; adjust to your taste
+      max_tokens: 1400,
+      stream: true,
       messages: [
         {
           role: 'system',
           content:
             'You are a world-class expert in generative AI prompting, PowerPoint design, live presentation coaching, TED Talk-style speaking, narrative storytelling structure, cognitive and behavioral psychology, persuasive science/business communication, visual data storytelling and infographic design, and stoic philosophy for clarity, simplicity, and purpose. Always provide complete, well-structured presentation outlines without markdown formatting symbols like **, ---, or ===. Use clear, clean text formatting.',
         },
-        {
-          role: 'user',
-          content: detailedPrompt,
-        },
+        { role: 'user', content: detailedPrompt },
       ],
-      max_tokens: 4000,
-      temperature: 0.7,
     });
 
-    const content = chatCompletion.choices[0]?.message?.content;
-    
-    // Ensure we have content
-    if (!content || content.trim().length === 0) {
-      console.error('OpenAI returned empty content');
-      return NextResponse.json({ error: 'Failed to generate presentation outline - empty response received' }, { status: 500 });
-    }
+    // Turn the OpenAI async iterator into a web ReadableStream for Next.js
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const part of completion) {
+            const delta = part.choices?.[0]?.delta?.content;
+            if (delta) controller.enqueue(encoder.encode(delta));
+          }
+        } catch (err) {
+          controller.error(err);
+        } finally {
+          controller.close();
+        }
+      },
+    });
 
-    return NextResponse.json({ result: content });
-  } catch (error) {
+    // Send as plain text; your client can accumulate into a single string
+    return new NextResponse(stream, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'no-store',
+      },
+    });
+  } catch (error: unknown) {
     console.error('OpenAI Error:', error);
-    
-    // Provide more specific error messages based on the error type
+
     let errorMessage = 'Failed to generate presentation outline';
-    
-    if (error instanceof Error) {
-      if (error.message.includes('rate limit')) {
-        errorMessage = 'Rate limit exceeded. Please try again in a few moments.';
-      } else if (error.message.includes('insufficient_quota')) {
-        errorMessage = 'API quota exceeded. Please check your OpenAI account.';
-      } else if (error.message.includes('invalid_api_key')) {
-        errorMessage = 'Invalid API key. Please check your OpenAI configuration.';
-      } else if (error.message.includes('timeout')) {
-        errorMessage = 'Request timed out. Please try again.';
-      }
-    }
-    
+    const msg = String((error as Error)?.message || '');
+
+    if (msg.includes('rate limit')) errorMessage = 'Rate limit exceeded. Please try again shortly.';
+    else if (msg.includes('insufficient_quota'))
+      errorMessage = 'API quota exceeded. Please check your OpenAI account.';
+    else if (msg.includes('invalid_api_key'))
+      errorMessage = 'Invalid API key. Please check your OpenAI configuration.';
+    else if (msg.includes('timeout') || msg.includes('APIConnectionTimeoutError'))
+      errorMessage = 'Upstream timeout. Please retry.';
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

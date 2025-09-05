@@ -15,25 +15,34 @@ const questions = [
   'Do you want me to write speaker notes for each slide? (Y/N)',
 ];
 
-// Function to clean markdown symbols from content
-const cleanMarkdownSymbols = (content: string): string => {
-  if (!content) return '';
-  
-  return content
-    // Remove markdown bold symbols
-    .replace(/\*\*(.*?)\*\*/g, '$1')
-    // Remove standalone asterisks and stars
-    .replace(/^\*+\s*$/gm, '')
-    // Remove horizontal rules (---, ***, ===)
-    .replace(/^[-*=]{3,}\s*$/gm, '')
-    // Remove extra asterisks at the beginning of lines
-    .replace(/^\*+\s*/gm, '')
-    // Remove trailing asterisks
-    .replace(/\s*\*+$/gm, '')
-    // Clean up multiple consecutive newlines
-    .replace(/\n{3,}/g, '\n\n')
-    // Remove leading/trailing whitespace
+// Soft clean for display (non-destructive)
+const softClean = (content: string): string =>
+  (content || '')
+    .replace(/\*\*(.*?)\*\*/g, '$1') // drop **bold**
+    .replace(/\n{3,}/g, '\n\n') // collapse blank lines
     .trim();
+
+// Replace labels with styled HTML, make punctuation optional, and add a blank line after each label
+const styleLabelsHtml = (content: string): string => {
+  const esc = (content || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  // Optional: style "Slide N: Title"
+  const withStyledHeaders = esc.replace(
+    /(^|\r?\n)(\s*Slide\s*\d+\s*:\s*[^\r\n]+)/gi,
+    (_m, ls, header) => `${ls}<span class="font-bold text-blue-900">${header}</span>`
+  );
+
+  // Style section labels at line start; accept optional :, -, – or — and any spacing
+  // Also force a colon and add an extra newline so there's an empty line underneath
+  const labelRegex = /(^|\r?\n)(\s*)(TEXT|VISUALS|SPEAKER\s*NOTES|REFERENCES)\s*(?:[:\-–—])?/gi;
+
+  const withStyledLabels = withStyledHeaders.replace(
+    labelRegex,
+    (_m, ls, indent, label) =>
+      `${ls}${indent}<span class="font-bold text-blue-700">${label.replace(/\s+/g, ' ').toUpperCase()}:</span>\n\n`
+  );
+
+  return withStyledLabels;
 };
 
 export default function DeckGenerationPage() {
@@ -55,16 +64,102 @@ export default function DeckGenerationPage() {
   const [lastError, setLastError] = useState('');
   const resultRef = useRef<HTMLDivElement | null>(null);
 
+  // Streaming controller
+  const streamControllerRef = useRef<AbortController | null>(null);
+
+  // Stream helper
+  async function streamDeckGeneration({
+    detailedPrompt,
+    answers,
+    onStart,
+    onChunk,
+    onError,
+    onDone,
+  }: {
+    detailedPrompt: string;
+    answers: string[];
+    onStart?: () => void;
+    onChunk?: (text: string) => void;
+    onError?: (message: string) => void;
+    onDone?: () => void;
+  }) {
+    // Abort any in-flight request
+    if (streamControllerRef.current) {
+      streamControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    streamControllerRef.current = controller;
+
+    try {
+      onStart?.();
+
+      const res = await fetch('/api/deck-generation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answers, detailedPrompt }),
+        signal: controller.signal,
+      });
+
+      const contentType = res.headers.get('Content-Type') || '';
+
+      if (!res.ok) {
+        if (contentType.includes('application/json')) {
+          const data = await res.json().catch(() => ({}));
+          const msg = data?.error || `Request failed: ${res.status}`;
+          throw new Error(msg);
+        }
+        throw new Error(`Request failed: ${res.status}`);
+      }
+
+      // Streamed plaintext path
+      if (contentType.startsWith('text/plain')) {
+        const reader = res.body!.getReader();
+        const decoder = new TextDecoder();
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          onChunk?.(chunk);
+        }
+        onDone?.();
+        return;
+      }
+
+      // Fallback JSON path
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      onChunk?.(data.result || '');
+      onDone?.();
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === 'AbortError') return; // silent cancel
+      const message =
+        err instanceof Error ? err.message : 'Network error occurred. Please try again.';
+      onError?.(message);
+    } finally {
+      if (streamControllerRef.current === controller) {
+        streamControllerRef.current = null;
+      }
+    }
+  }
+
+  // Abort on unmount
+  useEffect(() => {
+    return () => {
+      if (streamControllerRef.current) streamControllerRef.current.abort();
+    };
+  }, []);
+
+  // Auto-scroll when result updates
   useEffect(() => {
     if (resultRef.current) {
       resultRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [result]);
 
+  // Initial check for required concepts in localStorage
   useEffect(() => {
-    // Check for Core Story Concept and Story Flow Outline in memory/localStorage
     const checkRequiredConcepts = () => {
-      // Check for Core Story Concept data - try multiple possible keys
       const coreStoryConceptData =
         localStorage.getItem('selectedCoreStoryConceptData') ||
         localStorage.getItem('coreStoryConcept') ||
@@ -93,7 +188,6 @@ export default function DeckGenerationPage() {
         }
       }
 
-      // Check for Story Flow Outline data (attack points and tension-resolution points)
       const storyFlowData = localStorage.getItem('storyFlowData');
       const attackPointsData = localStorage.getItem('attackPoints');
       const tensionResolutionData = localStorage.getItem('tensionResolutionPoints');
@@ -101,7 +195,6 @@ export default function DeckGenerationPage() {
 
       let hasStoryFlowOutline = false;
 
-      // Check if any story flow outline data exists
       if (storyFlowData) {
         try {
           const flowData = JSON.parse(storyFlowData);
@@ -110,11 +203,10 @@ export default function DeckGenerationPage() {
             ((flowData.attackPoints && flowData.attackPoints.length > 0) ||
               (flowData.tensionResolutionPoints && flowData.tensionResolutionPoints.length > 0));
         } catch {
-          // If parsing fails, check individual items
+          // ignore
         }
       }
 
-      // Fallback: check individual localStorage items
       if (!hasStoryFlowOutline) {
         let hasAttackPoints = false;
         let hasTensionResolution = false;
@@ -186,7 +278,6 @@ export default function DeckGenerationPage() {
         return;
       }
 
-      // Both concepts exist, proceed with the deck generation
       setHasRequiredConcepts(true);
       setMessages([
         {
@@ -199,7 +290,6 @@ export default function DeckGenerationPage() {
       setInitialCheckComplete(true);
     };
 
-    // Simulate checking (in a real app, this might be an API call)
     setTimeout(checkRequiredConcepts, 1000);
   }, []);
 
@@ -207,7 +297,7 @@ export default function DeckGenerationPage() {
     setLoading(true);
     setGenerationFailed(false);
     setResult('');
-    setRetryCount(prev => prev + 1);
+    setRetryCount((prev) => prev + 1);
 
     // Get the stored concepts and answers
     const coreStoryConceptData =
@@ -239,7 +329,6 @@ export default function DeckGenerationPage() {
 
     let storyFlowOutline = '';
 
-    // Compile story flow outline from available data
     if (storyFlowData) {
       try {
         const flowData = JSON.parse(storyFlowData);
@@ -343,27 +432,26 @@ When creating the Powerpoint file for downloading:
     `;
 
     try {
-      const res = await fetch('/api/deck-generation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          answers: answers,
-          detailedPrompt: detailedPrompt,
-        }),
+      await streamDeckGeneration({
+        detailedPrompt,
+        answers,
+        onStart: () => {
+          setResult('');
+        },
+        onChunk: (chunk) => {
+          setResult((prev) => prev + chunk);
+        },
+        onError: (message) => {
+          setLastError(message);
+          toast.error(message);
+          setGenerationFailed(true);
+          setMessages((prev) => [...prev, { role: 'assistant', content: message }]);
+        },
+        onDone: () => {
+          // preserve exact text; no destructive clean
+          setResult((prev) => prev);
+        },
       });
-      const data = await res.json();
-      
-      // Check if the response contains an error
-      if (data.error) {
-        setLastError(data.error);
-        toast.error(data.error);
-        setGenerationFailed(true);
-        return;
-      }
-      
-      // Clean the result content before setting it
-      const cleanedResult = cleanMarkdownSymbols(data.result || '');
-      setResult(cleanedResult);
     } catch (err) {
       const errorMessage = 'Network error occurred. Please check your connection and try again.';
       setLastError(errorMessage);
@@ -376,6 +464,9 @@ When creating the Powerpoint file for downloading:
   };
 
   const handleReset = () => {
+    // Cancel any in-flight stream
+    if (streamControllerRef.current) streamControllerRef.current.abort();
+
     setStep(0);
     setAnswers([]);
     setInput('');
@@ -395,7 +486,6 @@ When creating the Powerpoint file for downloading:
 
     // Re-run the initial check
     setTimeout(() => {
-      // Check for Core Story Concept data - try multiple possible keys
       const coreStoryConceptData =
         localStorage.getItem('selectedCoreStoryConceptData') ||
         localStorage.getItem('coreStoryConcept') ||
@@ -424,7 +514,6 @@ When creating the Powerpoint file for downloading:
         }
       }
 
-      // Check for Story Flow Outline data (attack points and tension-resolution points)
       const storyFlowData = localStorage.getItem('storyFlowData');
       const attackPointsData = localStorage.getItem('attackPoints');
       const tensionResolutionData = localStorage.getItem('tensionResolutionPoints');
@@ -432,7 +521,6 @@ When creating the Powerpoint file for downloading:
 
       let hasStoryFlowOutline = false;
 
-      // Check if any story flow outline data exists
       if (storyFlowData) {
         try {
           const flowData = JSON.parse(storyFlowData);
@@ -441,11 +529,10 @@ When creating the Powerpoint file for downloading:
             ((flowData.attackPoints && flowData.attackPoints.length > 0) ||
               (flowData.tensionResolutionPoints && flowData.tensionResolutionPoints.length > 0));
         } catch {
-          // If parsing fails, check individual items
+          // ignore
         }
       }
 
-      // Fallback: check individual localStorage items
       if (!hasStoryFlowOutline) {
         let hasAttackPoints = false;
         let hasTensionResolution = false;
@@ -542,7 +629,6 @@ When creating the Powerpoint file for downloading:
       setAnswers([...answers, input]);
       setLoading(true);
 
-      // Add a small delay to show the thinking animation
       setTimeout(() => {
         setMessages([
           ...newMessages,
@@ -596,7 +682,6 @@ When creating the Powerpoint file for downloading:
 
       let storyFlowOutline = '';
 
-      // Compile story flow outline from available data
       if (storyFlowData) {
         try {
           const flowData = JSON.parse(storyFlowData);
@@ -704,42 +789,32 @@ When creating the Powerpoint file for downloading:
       `;
 
       try {
-        // Create a new API endpoint for deck generation
-        const res = await fetch('/api/deck-generation', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            answers: updatedAnswers,
-            detailedPrompt: detailedPrompt,
-          }),
+        await streamDeckGeneration({
+          detailedPrompt,
+          answers: updatedAnswers,
+          onStart: () => {
+            setResult('');
+          },
+          onChunk: (chunk) => {
+            setResult((prev) => prev + chunk);
+          },
+          onError: (message) => {
+            setLastError(message);
+            toast.error(message);
+            setGenerationFailed(true);
+            setMessages((prev) => [...prev, { role: 'assistant', content: message }]);
+          },
+          onDone: () => {
+            setResult((prev) => prev); // keep exact text
+          },
         });
-        const data = await res.json();
-        
-        // Check if the response contains an error
-        if (data.error) {
-          setLastError(data.error);
-          toast.error(data.error);
-          setGenerationFailed(true);
-          setMessages((prev) => [
-            ...prev,
-            { role: 'assistant', content: data.error },
-          ]);
-          return;
-        }
-        
-        // Clean the result content before setting it
-        const cleanedResult = cleanMarkdownSymbols(data.result || '');
-        setResult(cleanedResult);
       } catch (err) {
         const errorMessage = 'Network error occurred. Please check your connection and try again.';
         setLastError(errorMessage);
         toast.error(errorMessage);
         console.error(err);
         setGenerationFailed(true);
-        setMessages((prev) => [
-          ...prev,
-          { role: 'assistant', content: errorMessage },
-        ]);
+        setMessages((prev) => [...prev, { role: 'assistant', content: errorMessage }]);
       } finally {
         setLoading(false);
       }
@@ -778,11 +853,11 @@ When creating the Powerpoint file for downloading:
             <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
               <div className="text-sm text-red-700 mb-3">
                 {lastError && (
-                  <p className="mb-2"><strong>Error:</strong> {lastError}</p>
+                  <p className="mb-2">
+                    <strong>Error:</strong> {lastError}
+                  </p>
                 )}
-                {retryCount > 0 && (
-                  <p className="mb-2">Retry attempts: {retryCount}</p>
-                )}
+                {retryCount > 0 && <p className="mb-2">Retry attempts: {retryCount}</p>}
                 <p>Generation failed. You can try again or reset to start over.</p>
               </div>
               <div className="flex gap-2 justify-center">
@@ -806,73 +881,69 @@ When creating the Powerpoint file for downloading:
         </div>
 
         {/* Result Section - Right Side - Fixed */}
-        <div className="flex-1 h-full">
+        <div className="flex-1 h-full" ref={resultRef}>
           {result ? (
             <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex flex-col">
               <h2 className="text-xl font-bold text-blue-900 mb-4 flex-shrink-0">
                 MEDSTORY Presentation Outline
               </h2>
+
+              {/* SAFELIST for Tailwind (ensures these classes are included even when injected via HTML) */}
+              <div className="hidden">
+                <span className="font-bold text-blue-700"></span>
+                <span className="font-bold text-blue-900"></span>
+              </div>
+
               <div className="space-y-4 overflow-y-auto flex-1">
                 {(() => {
-                  // First try to split by common slide separators
-                  let slides = result.split(/(?=Slide \d+:)|(?=### Slide \d+:)|(?=## Slide \d+:)/);
+                  const display = softClean(result);
 
-                  // If we don't have multiple slides, try splitting by separator lines
+                  // 1) Split into slides
+                  let slides = display.split(/(?=Slide \d+:)|(?=### Slide \d+:)|(?=## Slide \d+:)/);
+
                   if (slides.length <= 1) {
-                    slides = result.split(/\n-{3,}\n|\n={3,}\n|\n\*{3,}\n/);
+                    slides = display.split(/\n-{3,}\n|\n={3,}\n|\n\*{3,}\n/);
                   }
 
-                  // If we still don't have multiple slides, try splitting by double newlines
                   if (slides.length <= 1) {
-                    // Extract presentation overview/intro if it exists
-                    const introMatch = result.match(
+                    const introMatch = display.match(
                       /^(.*?)(Slide \d+:|## Slide \d+:|### Slide \d+:)/s
                     );
                     const intro = introMatch ? introMatch[1].trim() : '';
-
-                    // Split the rest by slide numbers
                     const slideContent = introMatch
-                      ? result.substring(introMatch[1].length)
-                      : result;
+                      ? display.substring(introMatch[1].length)
+                      : display;
                     const slideMatches =
                       slideContent.match(/Slide \d+:.*?(?=Slide \d+:|$)/gs) || [];
-
                     slides = intro ? [intro, ...slideMatches] : slideMatches;
+                  }
+
+                  if (slides.length === 0) {
+                    slides = [display];
                   }
 
                   return slides.map((slide, index) => {
                     if (!slide.trim()) return null;
 
-                    // Format the slide content
-                    const formattedSlide = slide.trim();
-
-                    // Split the slide content by sections
-                    const sections = formattedSlide.split(
-                      /(TEXT:|VISUALS:|SPEAKER NOTES:|REFERENCES:)/g
+                    // Normalize "Slide Title:" -> "Slide N: ..."
+                    let formattedSlide = slide.trim();
+                    formattedSlide = formattedSlide.replace(
+                      /^(?:\s*)Slide\s*Title\s*:\s*(.+)$/im,
+                      (_m, title) => `Slide ${index + 1}: ${title}`
                     );
+
+                    // Replace labels with styled HTML, then render safely
+                    const html = styleLabelsHtml(formattedSlide);
 
                     return (
                       <div
                         key={index}
                         className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
                       >
-                        <div className="text-gray-800 whitespace-pre-wrap">
-                          {sections.map((section, sectionIndex) => {
-                            if (
-                              section === 'TEXT:' ||
-                              section === 'VISUALS:' ||
-                              section === 'SPEAKER NOTES:' ||
-                              section === 'REFERENCES:'
-                            ) {
-                              return (
-                                <span key={sectionIndex} className="font-bold text-blue-700">
-                                  {section}
-                                </span>
-                              );
-                            }
-                            return <span key={sectionIndex}>{section}</span>;
-                          })}
-                        </div>
+                        <div
+                          className="text-gray-800 whitespace-pre-wrap"
+                          dangerouslySetInnerHTML={{ __html: html }}
+                        />
                       </div>
                     );
                   });
@@ -881,11 +952,6 @@ When creating the Powerpoint file for downloading:
             </div>
           ) : (
             <div></div>
-            // <div className="bg-white border border-gray-300 p-6 rounded-lg shadow-md h-full flex items-center justify-center">
-            //   <p className="text-gray-500 text-center">
-            //     MEDSTORY Presentation Outline will appear here once generated
-            //   </p>
-            // </div>
           )}
         </div>
       </div>
