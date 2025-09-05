@@ -285,18 +285,27 @@ In the relentless race against hypertension, cardiologists frequently grapple wi
 
 Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?`;
         } else if (
+          userMessage.toLowerCase().includes('shorter') ||
+          userMessage.toLowerCase().includes('reduce') ||
+          (userMessage.toLowerCase().includes('make') && userMessage.toLowerCase().includes('shorter'))
+        ) {
+          // User wants a shorter version
+          mockResult = `Attack Point #1
+
+Emma's leukemia had resisted all treatments. Her oncologist prepared for palliative care, but engineered T-cells with chimeric antigen receptors offered one last hope.
+
+Would you like to modify this Attack Point, create a new one, or move on to creating tension-resolution points?`;
+        } else if (
           userMessage.toLowerCase().includes('dramatic') ||
           userMessage.toLowerCase().includes('urgent') ||
           userMessage.toLowerCase().includes('more') ||
           userMessage.toLowerCase().includes('increase') ||
           userMessage.toLowerCase().includes('length') ||
           userMessage.toLowerCase().includes('longer') ||
-          userMessage.toLowerCase().includes('shorter') ||
           userMessage.toLowerCase().includes('expand') ||
-          userMessage.toLowerCase().includes('reduce') ||
-          (userMessage.toLowerCase().includes('make') && userMessage.toLowerCase().includes('it'))
+          (userMessage.toLowerCase().includes('make') && userMessage.toLowerCase().includes('longer'))
         ) {
-          // User is providing modification details without using the word "modify"
+          // User wants a longer/more dramatic version
           mockResult = `Attack Point #1
 
 In the pediatric ICU, time was running out for 8-year-old Emma. Her leukemia had become a relentless predator, devouring every conventional weapon in the oncologist's arsenal—chemotherapy, radiation, even a bone marrow transplant—all had failed. Her CD19+ B-cells, once vulnerable targets, had evolved into invisible phantoms, slipping past traditional treatments like shadows in the night. As her parents held vigil, watching their daughter's life force ebb away, her oncologist reluctantly prepared the palliative care conversation. But in the depths of Emma's failing immune system, a revolutionary army of engineered T-cells lay dormant, reprogrammed with chimeric antigen receptors, poised to launch the most precise and devastating counterattack that would either save her life or mark the final chapter in pediatric oncology's fight against the impossible.
